@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlmodel import Session, select, func
 from typing import Any
 import uuid
@@ -35,9 +35,12 @@ class BaseCRUD:
 
         return count, objects
     
-    def _update(self, object_db: Any, object_in: Any) -> Any:
+    def _update(self, object_db: Any, object_in: Any, force_update_of_cols: list[str] = ()) -> Any:
         object_data = object_in.model_dump(exclude_unset=True)
         object_db.sqlmodel_update(object_data)
+        # Force update of specific columns
+        for col in force_update_of_cols:
+            setattr(object_db, col, getattr(object_in, col, None))
         self.session.add(object_db)
         self.session.commit()
         self.session.refresh(object_db)
@@ -131,7 +134,7 @@ class BlogPostCRUD(BaseCRUD):
         if blog_post.tags:
             for tag_id in blog_post.tags:
                 tag = self.session.get(Tag, tag_id)
-                if not blog_post:
+                if not tag:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Tag with ID {tag_id} not found")
                 tags.append(tag)
         blog_post.tags = tags
@@ -141,8 +144,8 @@ class BlogPostCRUD(BaseCRUD):
         count_statement = select(func.count()).select_from(self.MODEL_CLASS)
         count = self.session.exec(count_statement).one()
 
-        statement = select(self.MODEL_CLASS).options(joinedload(self.MODEL_CLASS.tags)).offset(skip).limit(limit)
-        blog_posts = self.session.exec(statement).unique()
+        statement = select(self.MODEL_CLASS).options(selectinload(self.MODEL_CLASS.tags)).offset(skip).limit(limit)
+        blog_posts = self.session.exec(statement).all()
 
         return count, blog_posts
     
@@ -174,7 +177,7 @@ class BlogPostCRUD(BaseCRUD):
             if blog_post_in.tags:
                 for tag_id in blog_post_in.tags:
                     tag = self.session.get(Tag, tag_id)
-                    if not blog_post_in:
+                    if not tag:
                         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Tag with ID {tag_id} not found")
                     tags.append(tag)
             blog_post_in.tags = tags
@@ -213,7 +216,7 @@ class CommentCRUD(BaseCRUD):
         count = self.session.exec(count_statement).one()
 
         statement = select(self.MODEL_CLASS).options(joinedload(self.MODEL_CLASS.user)).offset(skip).limit(limit)
-        comments = self.session.exec(statement).unique()
+        comments = self.session.exec(statement).all()
 
         return count, comments
     
@@ -236,7 +239,7 @@ class CommentCRUD(BaseCRUD):
         return count, objects
 
     def update_comment(self, comment_db: Comment, comment_in: CommentUpdate) -> Comment:
-        return self._update(comment_db, comment_in)
+        return self._update(comment_db, comment_in, force_update_of_cols=['comment_date'])
 
     def delete_comment(self, comment: Comment) -> None:
         self._delete(comment)

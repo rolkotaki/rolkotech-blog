@@ -35,7 +35,24 @@ class Settings(BaseSettings):
             password=self.POSTGRES_PASSWORD,
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
+            path=self.POSTGRES_DB
+        )
+
+    @computed_field
+    @property
+    def POSTGRES_TEST_DB(self) -> str:
+        return f"{self.POSTGRES_DB}_test"
+    
+    @computed_field
+    @property
+    def TEST_DATABASE_URL(self) -> PostgresDsn:
+        return MultiHostUrl.build(
+            scheme="postgresql+psycopg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_SERVER,
+            port=self.POSTGRES_PORT,
+            path=self.POSTGRES_TEST_DB
         )
     
     FIRST_SUPERUSER: str

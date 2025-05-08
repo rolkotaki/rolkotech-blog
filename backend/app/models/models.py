@@ -35,7 +35,7 @@ class BlogPost(SQLModel, table=True):
     title: str = Field(max_length=255, nullable=False, index=True)
     url: str = Field(max_length=255, nullable=False, unique=True)
     content: str = Field(nullable=False)
-    image_path: str = Field(nullable=True)
+    image_path: str | None = Field(nullable=True)
     publication_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     comments: Optional[List["Comment"]] = Relationship(back_populates="blog_post")
     tags: Optional[List["Tag"]] = Relationship(
