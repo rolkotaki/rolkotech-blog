@@ -24,7 +24,7 @@ def authenticate(session: Session, email: str, password: str) -> User | None:
     return user
 
 
-@router.post("/login/token")
+@router.post("/login/access-token")
 def login_access_token(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
     """
     OAuth2 compatible token login, get an access token for future requests.

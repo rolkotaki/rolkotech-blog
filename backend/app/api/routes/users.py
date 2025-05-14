@@ -122,7 +122,7 @@ def update_user_me(session: SessionDep, user_in: UserUpdateMe, current_user: Cur
 @router.patch("/{user_id}",
               dependencies=[Depends(get_current_active_superuser)],
               response_model=UserPublic)
-def update_user(session: SessionDep, user_id: uuid.UUID, user_in: UserUpdate) -> UserPublic:
+def update_user(session: SessionDep, user_id: uuid.UUID, user_in: UserUpdate, current_user: CurrentUser) -> UserPublic:
     """
     Update a user (with admin privileges).
     """
@@ -145,6 +145,11 @@ def update_user(session: SessionDep, user_id: uuid.UUID, user_in: UserUpdate) ->
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="User with this name already exists"
             )
+    if user_in.is_superuser is not None and not user_in.is_superuser and db_user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super users cannot demote themselves"
+        )
     db_user = user_crud.update_user(user_db=db_user, user_in=user_in)
     return db_user
 

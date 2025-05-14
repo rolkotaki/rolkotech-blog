@@ -1,3 +1,4 @@
+from fastapi.testclient import TestClient
 import pytest
 import sqlalchemy
 from sqlalchemy import text
@@ -5,13 +6,25 @@ from sqlmodel import SQLModel, Session, delete, create_engine
 from typing import Generator
 
 from app.core.config import settings
-from app.db.db import init_db
+from app.db.db import init_db, get_session
+from app.main import app
 from app.models.models import BlogPost, BlogPostTagLink, Comment, Tag, User
+from app.tests.utils.access_tokens import get_superuser_token_headers, get_user_token_headers
 
 
 test_db_name = str(settings.POSTGRES_TEST_DB)
 test_db_url = str(settings.TEST_DATABASE_URL)
 test_engine = None
+
+
+def override_get_session() -> Generator[Session, None, None]:
+    """
+    Override the get_session dependency to use the test database.
+    """
+    if test_engine is None:
+        raise RuntimeError("Test engine not initialized.")
+    with Session(test_engine) as session:
+        yield session
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -53,7 +66,33 @@ def delete_tables() -> None:
         session.commit()
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def db() -> Generator[Session, None, None]:
     with Session(test_engine) as session:
         yield session
+
+
+@pytest.fixture(scope="module")
+def client() -> Generator[TestClient, None, None]:
+    # Initialize test DB with superuser
+    with Session(test_engine) as session:
+        init_db(session)
+    # Override the get_session dependency to use the test database
+    app.dependency_overrides[get_session] = override_get_session
+    # Create the test client
+    with TestClient(app) as c:
+        yield c
+    # Clean up the dependency overrides after the test
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="module")
+def superuser_token_headers(client: TestClient) -> dict[str, str]:
+    return get_superuser_token_headers(client)
+
+
+@pytest.fixture(scope="module")
+def normal_user_token_headers(client: TestClient) -> dict[str, str]:
+    with Session(test_engine) as session:
+        ret = get_user_token_headers(client, session)
+    return ret

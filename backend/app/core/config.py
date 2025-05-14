@@ -1,8 +1,8 @@
+from pydantic import HttpUrl, PostgresDsn, computed_field
+from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import secrets
 from typing import Literal
-from pydantic_core import MultiHostUrl
-from pydantic import HttpUrl, PostgresDsn, computed_field
 
 
 class Settings(BaseSettings):
@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_EMAIL: str
     FIRST_SUPERUSER_PASSWORD: str
+    TEST_USER: str
+    TEST_USER_EMAIL: str
+    TEST_USER_PASSWORD: str
    
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
