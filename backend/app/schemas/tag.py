@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class TagBase(BaseModel):
-    name: str = Field(max_length=50)
+    name: str = Field(min_length=1, max_length=50)
 
 
 class TagCreate(TagBase):

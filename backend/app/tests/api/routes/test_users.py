@@ -198,35 +198,29 @@ def test_12_read_user_by_id_superuser(client: TestClient, setup_user: User,
 
 
 def test_13_register_user(client: TestClient, db: Session) -> None:
-    name = "new_user"
-    email = "new_user@email.com"
-    password = "password"
-    data = {"name": name, "email": email, "password": password}
+    data = {"name": "new_user", "email": "new_user@email.com", "password": "password"}
     response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
     assert response.status_code == 200
     created_user = response.json()
-    assert created_user["name"] == name
-    assert created_user["email"] == email
+    assert created_user["name"] == data["name"]
+    assert created_user["email"] == data["email"]
     assert created_user["is_active"] is True
     assert created_user["is_superuser"] is False
     assert created_user["creation_date"] is not None
 
-    user_query = select(User).where(User.email == email)
+    user_query = select(User).where(User.email == data["email"])
     user_db = db.exec(user_query).first()
     assert user_db
-    assert user_db.email == email
-    assert user_db.name == name
+    assert user_db.email == data["email"]
+    assert user_db.name == data["name"]
     assert user_db.is_active is True
     assert user_db.is_superuser is False
     assert user_db.creation_date is not None
-    assert verify_password(password, user_db.password)
+    assert verify_password(data["password"], user_db.password)
 
 
 def test_14_register_user_username_exists(client: TestClient, setup_user: User) -> None:
-    name = setup_user.name
-    email = "new_user@email.com"
-    password = "password"
-    data = {"name": name, "email": email, "password": password}
+    data = {"name": setup_user.name, "email": "new_user@email.com", "password": "password"}
     response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
     assert response.status_code == 400
     created_user = response.json()
@@ -234,10 +228,7 @@ def test_14_register_user_username_exists(client: TestClient, setup_user: User) 
 
 
 def test_15_register_user_email_exists(client: TestClient, setup_user: User) -> None:
-    name = "new_user"
-    email = setup_user.email
-    password = "password"
-    data = {"name": name, "email": email, "password": password}
+    data = {"name": "new_user", "email": setup_user.email, "password": "password"}
     response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
     assert response.status_code == 400
     created_user = response.json()
@@ -245,44 +236,32 @@ def test_15_register_user_email_exists(client: TestClient, setup_user: User) -> 
 
 
 def test_16_create_user(client: TestClient, db: Session, superuser_token_headers: dict[str, str]) -> None:
-    name = "new_user"
-    email = "new_user@email.com"
-    password = "password"
-    is_active = True
-    is_superuser = False
-    data = {"name": name, "email": email, "password": password, 
-            "is_active": is_active, "is_superuser": is_superuser}
-    
+    data = {"name": "new_user", "email": "new_user@email.com", "password": "password", 
+            "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=superuser_token_headers, json=data)
     assert response.status_code == 200
     created_user = response.json()
-    assert created_user["name"] == name
-    assert created_user["email"] == email
-    assert created_user["is_active"] == is_active
-    assert created_user["is_superuser"] == is_superuser
+    assert created_user["name"] == data["name"]
+    assert created_user["email"] == data["email"]
+    assert created_user["is_active"] == data["is_active"]
+    assert created_user["is_superuser"] == data["is_superuser"]
     assert created_user["creation_date"] is not None
 
-    user_query = select(User).where(User.email == email)
+    user_query = select(User).where(User.email == data["email"])
     user_db = db.exec(user_query).first()
     assert user_db
-    assert user_db.email == email
-    assert user_db.name == name
-    assert user_db.is_active == is_active
-    assert user_db.is_superuser == is_superuser
+    assert user_db.email == data["email"]
+    assert user_db.name == data["name"]
+    assert user_db.is_active == data["is_active"]
+    assert user_db.is_superuser == data["is_superuser"]
     assert user_db.creation_date is not None
-    assert verify_password(password, user_db.password)
+    assert verify_password(data["password"], user_db.password)
 
 
 def test_17_create_user_username_exists(client: TestClient, setup_user: User, 
                                         superuser_token_headers: dict[str, str]) -> None:
-    name = setup_user.name
-    email = "new_user@email.com"
-    password = "password"
-    is_active = True
-    is_superuser = False
-    data = {"name": name, "email": email, "password": password, 
-            "is_active": is_active, "is_superuser": is_superuser}
-    
+    data = {"name": setup_user.name, "email": "new_user@email.com", "password": "password", 
+            "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=superuser_token_headers, json=data)
     assert response.status_code == 400
     created_user = response.json()
@@ -291,14 +270,8 @@ def test_17_create_user_username_exists(client: TestClient, setup_user: User,
 
 def test_18_create_user_email_exists(client: TestClient, setup_user: User, 
                                      superuser_token_headers: dict[str, str]) -> None:
-    name = "new_user"
-    email = setup_user.email
-    password = "password"
-    is_active = True
-    is_superuser = False
-    data = {"name": name, "email": email, "password": password, 
-            "is_active": is_active, "is_superuser": is_superuser}
-    
+    data = {"name": "new_user", "email": setup_user.email, "password": "password", 
+            "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=superuser_token_headers, json=data)
     assert response.status_code == 400
     created_user = response.json()
@@ -307,14 +280,8 @@ def test_18_create_user_email_exists(client: TestClient, setup_user: User,
 
 def test_19_create_user_without_admin_privilege(client: TestClient, 
                                                 normal_user_token_headers: dict[str, str]) -> None:
-    name = "new_user"
-    email = "new_user@email.com"
-    password = "password"
-    is_active = True
-    is_superuser = False
-
-    data = {"name": name, "email": email, "password": password, 
-            "is_active": is_active, "is_superuser": is_superuser}
+    data = {"name": "new_user", "email": "new_user@email.com", "password": "password", 
+            "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=normal_user_token_headers, json=data)
     assert response.status_code == 403
     created_user = response.json()
@@ -323,14 +290,12 @@ def test_19_create_user_without_admin_privilege(client: TestClient,
 
 def test_20_update_user_me(client: TestClient, db: Session, normal_user_token_headers: dict[str, str]) -> None:
     user = UserCRUD(db).get_user_by_email(email=settings.TEST_USER_EMAIL)
-    updated_name = "updated_user"
-    updated_email = "updated_user@email.com"
-    data = {"name": updated_name, "email": updated_email}
+    data = {"name": "updated_user", "email": "updated_user@email.com"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me", headers=normal_user_token_headers, json=data)
     assert response.status_code == 200
     created_user = response.json()
-    assert created_user["name"] == updated_name
-    assert created_user["email"] == updated_email
+    assert created_user["name"] == data["name"]
+    assert created_user["email"] == data["email"]
     assert created_user["is_active"] == user.is_active
     assert created_user["is_superuser"] == user.is_superuser
     assert created_user["creation_date"] == user.creation_date.strftime("%Y-%m-%dT%H:%M:%S.%f")
@@ -343,8 +308,7 @@ def test_20_update_user_me(client: TestClient, db: Session, normal_user_token_he
 
 def test_21_update_user_me_username_exists(client: TestClient, setup_user: User, 
                                            normal_user_token_headers: dict[str, str]) -> None:
-    updated_name = setup_user.name
-    data = {"name": updated_name}
+    data = {"name": setup_user.name}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
                             headers=normal_user_token_headers, json=data)
     assert response.status_code == 409
@@ -354,8 +318,7 @@ def test_21_update_user_me_username_exists(client: TestClient, setup_user: User,
 
 def test_22_update_user_me_email_exists(client: TestClient, setup_user: User, 
                                         normal_user_token_headers: dict[str, str]) -> None:
-    updated_email = setup_user.email
-    data = {"email": updated_email}
+    data = {"email": setup_user.email}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
                             headers=normal_user_token_headers, json=data)
     assert response.status_code == 409
@@ -373,13 +336,12 @@ def test_23_update_user_me_unauthorized(client: TestClient) -> None:
 
 
 def test_24_update_user(client: TestClient, setup_user: User, superuser_token_headers: dict[str, str]) -> None:
-    updated_name = "updated_user"
-    data = {"name": updated_name}
+    data = {"name": "updated_user"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 200
     created_user = response.json()
-    assert created_user["name"] == updated_name
+    assert created_user["name"] == data["name"]
     assert created_user["email"] == setup_user.email
     assert created_user["is_active"] == setup_user.is_active
     assert created_user["is_superuser"] == setup_user.is_superuser
@@ -389,33 +351,26 @@ def test_24_update_user(client: TestClient, setup_user: User, superuser_token_he
 
 def test_25_update_user_everything(client: TestClient, db: Session, setup_user: User, 
                                    superuser_token_headers: dict[str, str]) -> None:
-    updated_name = "updated_user"
-    updated_email = "updated_user@email.com"
-    updated_is_active = False
-    updated_is_superuser = True
-    updated_password = "updated_password"
-
-    data = {"name": updated_name, "email": updated_email, "is_active": updated_is_active,
-            "is_superuser": updated_is_superuser, "password": updated_password}
+    data = {"name": "updated_user", "email": "updated_user@email.com", "is_active": False,
+            "is_superuser": True, "password": "updated_password"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 200
     created_user = response.json()
     db.refresh(setup_user)
 
-    assert created_user["name"] == updated_name
-    assert created_user["email"] == updated_email
-    assert created_user["is_active"] == updated_is_active
-    assert created_user["is_superuser"] == updated_is_superuser
-    assert verify_password(updated_password, setup_user.password)
+    assert created_user["name"] == data["name"]
+    assert created_user["email"] == data["email"]
+    assert created_user["is_active"] == data["is_active"]
+    assert created_user["is_superuser"] == data["is_superuser"]
+    assert verify_password(data["password"], setup_user.password)
     assert created_user["creation_date"] == setup_user.creation_date.strftime("%Y-%m-%dT%H:%M:%S.%f")
     assert created_user["id"] == str(setup_user.id)
 
 
 def test_26_update_user_without_admin_privilege(client: TestClient, setup_user: User, 
                                                 normal_user_token_headers: dict[str, str]) -> None:
-    updated_name = "updated_user"
-    data = {"name": updated_name}
+    data = {"name": "updated_user"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                      headers=normal_user_token_headers, json=data)
     assert response.status_code == 403
@@ -484,8 +439,7 @@ def test_31_update_password_me(client: TestClient, normal_user_token_headers: di
 
 def test_32_update_password_me_incorrect_password(client: TestClient, 
                                                   normal_user_token_headers: dict[str, str]) -> None:
-    updated_password = "updated_password_999"
-    data = {"current_password": settings.TEST_USER_PASSWORD + "invalid", "new_password": updated_password}
+    data = {"current_password": settings.TEST_USER_PASSWORD + "invalid", "new_password": "updated_password_999"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me/password", 
                             headers=normal_user_token_headers, json=data)
     assert response.status_code == 400
