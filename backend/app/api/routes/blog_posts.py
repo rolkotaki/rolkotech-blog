@@ -78,8 +78,8 @@ def create_blog_post(session: SessionDep, blog_post_in: BlogPostCreate) -> BlogP
 
 
 @router.patch("/{id}", 
-            dependencies=[Depends(get_current_active_superuser)], 
-            response_model=BlogPostPublic)
+              dependencies=[Depends(get_current_active_superuser)], 
+              response_model=BlogPostPublic)
 def update_blog_post(session: SessionDep, id: int, blog_post_in: BlogPostUpdate) -> BlogPostPublic:
     """
     Update a blog post.

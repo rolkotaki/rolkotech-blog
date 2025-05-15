@@ -4,8 +4,11 @@ from sqlmodel import Session, delete, select
 
 from app.core.config import settings
 from app.core.security import verify_password
-from app.db.crud import UserCRUD
+from app.db.crud import UserCRUD, CommentCRUD, BlogPostCRUD
+from app.models.models import Comment
 from app.models.models import User
+from app.schemas.blog_post import BlogPostCreate
+from app.schemas.comment import CommentCreate
 from app.schemas.user import UserCreate
 
 
@@ -27,6 +30,20 @@ def setup_user_auth_headers(client: TestClient, setup_user: User) -> dict[str, s
     tokens = response.json()
     access_token = tokens["access_token"]
     return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture(scope="function")
+def setup_comment(db: Session, setup_user: User) -> Comment:
+    blog_post = BlogPostCRUD(db).create_blog_post(blog_post=BlogPostCreate(
+                                                               title="Blog Post 1",
+                                                               url="blog-post-1",
+                                                               content="Content of Blog Post 1",
+                                                               image_path="image.png",
+                                                               tags=[]))
+    comment = CommentCRUD(db).create_comment(comment=CommentCreate(content="This is a comment"),
+                                             blog_post_id=blog_post.id,
+                                             user_id=setup_user.id)
+    return comment
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -51,13 +68,40 @@ def test_01_read_users(client: TestClient, superuser_token_headers: dict[str, st
     assert "password" not in data["data"][0]
 
 
-def test_02_read_users(client: TestClient, superuser_token_headers: dict[str, str], 
-                       setup_user: User) -> None:
-    response = client.get(f"{settings.API_VERSION_STR}/users/", headers=superuser_token_headers)
+def test_02_read_users_with_skip_and_limit(client: TestClient, db: Session, 
+                                           superuser_token_headers: dict[str, str]) -> None:
+    user_1 = UserCRUD(db).create_user(user=UserCreate(name="user1",
+                                                      email="user1@email.com", 
+                                                      password="password"))
+    user_2 = UserCRUD(db).create_user(user=UserCreate(name="user2",
+                                                      email="user2@email.com", 
+                                                      password="password"))
+    user_3 = UserCRUD(db).create_user(user=UserCreate(name="user3",
+                                                      email="user3@email.com", 
+                                                      password="password"))
+    user_4 = UserCRUD(db).create_user(user=UserCreate(name="user4",
+                                                      email="user4@email.com", 
+                                                      password="password"))
+    response = client.get(f"{settings.API_VERSION_STR}/users/?skip=2&limit=2", 
+                          headers=superuser_token_headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["count"] == 2
+    assert data["count"] == 5  # With the superuser included
     assert len(data["data"]) == 2
+    assert data["data"][0]["id"] == str(user_2.id)
+    assert data["data"][0]["name"] == user_2.name
+    assert data["data"][0]["email"] == user_2.email
+    assert data["data"][0]["is_active"] == user_2.is_active
+    assert data["data"][0]["is_superuser"] == user_2.is_superuser
+    assert data["data"][0]["creation_date"] == user_2.creation_date.isoformat()
+    assert data["data"][1]["id"] == str(user_3.id)
+    assert data["data"][1]["name"] == user_3.name
+    assert data["data"][1]["email"] == user_3.email
+    assert data["data"][1]["is_active"] == user_3.is_active
+    assert data["data"][1]["is_superuser"] == user_3.is_superuser
+    assert data["data"][1]["creation_date"] == user_3.creation_date.isoformat()
+    assert "password" not in data["data"][0]
+    assert "password" not in data["data"][1]
     
 
 def test_03_read_users_without_admin_privilege(client: TestClient, 
@@ -298,7 +342,7 @@ def test_20_update_user_me(client: TestClient, db: Session, normal_user_token_he
     assert created_user["email"] == data["email"]
     assert created_user["is_active"] == user.is_active
     assert created_user["is_superuser"] == user.is_superuser
-    assert created_user["creation_date"] == user.creation_date.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    assert created_user["creation_date"] == user.creation_date.isoformat()
     assert created_user["id"] == str(user.id)
     # Revert changes
     data = {"name": settings.TEST_USER, "email": settings.TEST_USER_EMAIL}
@@ -345,7 +389,7 @@ def test_24_update_user(client: TestClient, setup_user: User, superuser_token_he
     assert created_user["email"] == setup_user.email
     assert created_user["is_active"] == setup_user.is_active
     assert created_user["is_superuser"] == setup_user.is_superuser
-    assert created_user["creation_date"] == setup_user.creation_date.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    assert created_user["creation_date"] == setup_user.creation_date.isoformat()
     assert created_user["id"] == str(setup_user.id)
 
 
@@ -364,7 +408,7 @@ def test_25_update_user_everything(client: TestClient, db: Session, setup_user: 
     assert created_user["is_active"] == data["is_active"]
     assert created_user["is_superuser"] == data["is_superuser"]
     assert verify_password(data["password"], setup_user.password)
-    assert created_user["creation_date"] == setup_user.creation_date.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    assert created_user["creation_date"] == setup_user.creation_date.isoformat()
     assert created_user["id"] == str(setup_user.id)
 
 
@@ -558,3 +602,20 @@ def test_43_delete_user_unauthorized(client: TestClient) -> None:
     assert response.status_code == 401
     created_user = response.json()
     assert created_user["detail"] == "Could not validate credentials"
+
+
+def test_44_delete_user_with_comment(client: TestClient, db: Session, setup_user: User, setup_comment: Comment,
+                                     superuser_token_headers: dict[str, str], ) -> None:
+    user_id = setup_user.id
+    comment_id = setup_comment.id
+    response = client.delete(f"{settings.API_VERSION_STR}/users/{user_id}", headers=superuser_token_headers)
+    assert response.status_code == 200
+    created_user = response.json()
+    assert created_user["message"] == "User deleted successfully"
+    # Check if user is deleted from DB
+    db.expire_all()
+    user_db = db.get(User, user_id)
+    assert not user_db
+    # Check that comment is deleted from DB
+    comment_db = db.get(Comment, comment_id)
+    assert not comment_db

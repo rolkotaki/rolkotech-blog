@@ -6,7 +6,7 @@ import uuid
 class CommentBase(BaseModel):
     content: str = Field(max_length=1000)
     comment_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    user_id: uuid.UUID
+    # user_id: uuid.UUID
     blog_post_id: int
 
 

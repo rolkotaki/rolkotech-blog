@@ -6,8 +6,8 @@ from app.schemas.tag import TagPublic
 
 
 class BlogPostBase(BaseModel):
-    title: str = Field(max_length=255)
-    url: str = Field(max_length=255)
+    title: str = Field(min_length=1, max_length=255)
+    url: str = Field(min_length=1, max_length=255)
     content: str = Field()
     image_path: str | None = Field(default=None)
     publication_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
