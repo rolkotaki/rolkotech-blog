@@ -25,7 +25,7 @@ class UsersPublic(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    name: str | None = Field(default=None, max_length=255)
+    name: str | None = Field(default=None, min_length=1, max_length=255)
     email: EmailStr | None = Field(default=None, max_length=255)
     password: SecretStr | None = Field(default=None, min_length=8, max_length=40)
     is_active: bool | None = Field(default=None)
@@ -39,7 +39,7 @@ class UserRegister(BaseModel):
 
 
 class UserUpdateMe(BaseModel):
-    name: str | None = Field(default=None, max_length=255)
+    name: str | None = Field(default=None, min_length=1, max_length=255)
     email: EmailStr | None = Field(default=None, max_length=255)
 
 

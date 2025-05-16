@@ -22,7 +22,7 @@ def override_get_session() -> Generator[Session, None, None]:
     Override the get_session dependency to use the test database.
     """
     if test_engine is None:
-        raise RuntimeError("Test engine not initialized.")
+        raise RuntimeError("Test engine not initialized.")  # pragma: no cover
     with Session(test_engine) as session:
         yield session
 
@@ -38,7 +38,7 @@ def setup_test_database():
     main_engine = sqlalchemy.create_engine(main_db_url, isolation_level="AUTOCOMMIT")
     with main_engine.connect() as conn:
         if not test_db_url.lower().endswith("test"):
-            raise RuntimeError("Refusing to create/drop non-test database!")
+            raise RuntimeError("Refusing to create/drop non-test database!")  # pragma: no cover
         conn.execute(text("DROP DATABASE IF EXISTS {}".format(test_db_name)))
         conn.execute(text("CREATE DATABASE {}".format(test_db_name)))
     # Create tables in test DB

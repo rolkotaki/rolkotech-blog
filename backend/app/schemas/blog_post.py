@@ -36,8 +36,8 @@ class BlogPostsPublic(BaseModel):
 
 
 class BlogPostUpdate(BaseModel):
-    title: str | None = Field(default=None, max_length=255)
-    url: str | None = Field(default=None, max_length=255)
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    url: str | None = Field(default=None, min_length=1, max_length=255)
     content: str | None = Field(default=None)
     image_path: str | None = Field(default=None)
     publication_date: datetime | None = Field(default=None)

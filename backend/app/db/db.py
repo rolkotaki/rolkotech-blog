@@ -11,8 +11,8 @@ engine = create_engine(str(settings.DATABASE_URL))
 
 
 def get_session() -> Generator[Session, None, None]:
-    with Session(engine) as session:
-        yield session
+    with Session(engine) as session:  # pragma: no cover
+        yield session  # pragma: no cover
 
 
 def init_db(session: Session) -> None:
