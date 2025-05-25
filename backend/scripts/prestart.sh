@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -8,21 +8,15 @@ VENV_ACTIVATE_PATH="$REPO_ROOT_DIR/venv/bin/activate"
 BACKEND_DIR="$REPO_ROOT_DIR/backend"
 export PYTHONPATH="$PYTHONPATH:$BACKEND_DIR"
 
-# Ensure venv exists
-if [[ ! -f "$VENV_ACTIVATE_PATH" ]]; then
-    echo "Virtual environment not found at $VENV_ACTIVATE_PATH"
-    exit 1
-fi
-
-# Run migrations
 (
+    # Use the virtual environment if it exists, otherwise use the system Python
+    [[ -f "$VENV_ACTIVATE_PATH" ]] && source "$VENV_ACTIVATE_PATH" || echo "Virtual environment not found, continuing with system Python"
+
     cd "$BACKEND_DIR"
+    
+    # Run migrations
     alembic upgrade head
-)
 
-# Create initial data in DB
-(
-    source "$VENV_ACTIVATE_PATH"
-    cd "$BACKEND_DIR"
+    # Create initial data in DB
     python app/initial_data.py
 )

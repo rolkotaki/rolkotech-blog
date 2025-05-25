@@ -1,0 +1,10 @@
+**/docker
+**/.idea
+**/venv
+**/htmlcov
+**/.git
+**/.gitignore
+**/.DS_Store
+**/__pycache__
+**/.pytest_cache
+*.pyc

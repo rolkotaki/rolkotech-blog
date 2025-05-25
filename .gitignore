@@ -1,3 +1,4 @@
 .vscode
 .env
 notes.txt
+docker/postgres_data
