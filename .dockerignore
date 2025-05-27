@@ -4,7 +4,12 @@
 **/htmlcov
 **/.git
 **/.gitignore
+**/.gitattributes
 **/.DS_Store
 **/__pycache__
 **/.pytest_cache
 *.pyc
+**/.vscode
+**/coverage
+**/.coverage
+**/notes.txt

@@ -1,0 +1,63 @@
+name: Test Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/test_backend.yml"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/test_backend.yml"
+
+jobs:
+  test_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          DEBUG=True
+          POSTGRES_SERVER=db
+          POSTGRES_PORT=5432
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          FIRST_SUPERUSER_EMAIL=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+          FIRST_SUPERUSER=${{ secrets.FIRST_SUPERUSER }}
+          FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
+          TEST_USER=${{ secrets.TEST_USER }}
+          TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
+          EOF
+      
+      - name: Remove existing Docker Compose containers
+        run: docker compose down -v --remove-orphans
+
+      - name: Start Docker Compose
+        run: docker compose up -d --build
+      
+      - name: Run tests
+        run: docker exec rolkotech-backend /rolkotech-blog/backend/scripts/test.sh ${{ github.sha }}
+      
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./docker/coverage/coverage.xml
+      
+      - name: Stop Docker Compose
+        run: docker compose down -v --remove-orphans
