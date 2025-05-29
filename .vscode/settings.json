@@ -1,0 +1,17 @@
+{
+  // Exclude common Python cache and environment folders from search
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+  },
+
+  // pytest configuration
+  "python.testing.pytestEnabled": true,
+  "python.testing.cwd": "${workspaceFolder}/backend",
+  "python.testing.pytestArgs": [
+    "--cov=app",
+    "--cov-report=html",
+    "--cov-config=${workspaceFolder}/backend/.coveragerc"
+  ]
+}

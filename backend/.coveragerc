@@ -1,8 +1,15 @@
 # .coveragerc
 [run]
+data_file = coverage/.coverage
 omit =
     app/initial_data.py
 
 [report]
 exclude_lines =
     pragma: no cover
+
+[html]
+directory = coverage/htmlcov
+
+[xml]
+output = coverage/coverage.xml
