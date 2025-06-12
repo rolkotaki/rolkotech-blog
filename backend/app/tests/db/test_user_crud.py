@@ -56,7 +56,7 @@ def test_03_register_user(db: Session) -> None:
     assert user.name == username
     assert user.email == email
     assert verify_password(password, user.password)
-    assert user.is_active is True
+    assert user.is_active is False
     assert user.is_superuser is False
     assert user.creation_date is not None and type(user.creation_date) is datetime
 

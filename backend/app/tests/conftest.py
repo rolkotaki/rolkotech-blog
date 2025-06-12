@@ -28,6 +28,14 @@ def override_get_session() -> Generator[Session, None, None]:
 
 
 @pytest.fixture(scope="session", autouse=True)
+def enable_test_mode():
+    original_test_mode = settings.TEST_MODE
+    settings.TEST_MODE = True
+    yield
+    settings.TEST_MODE = original_test_mode
+
+
+@pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
     """
     Create test DB before session, drop it after session.

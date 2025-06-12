@@ -1,12 +1,14 @@
 from fastapi.testclient import TestClient
 import pytest
 from sqlmodel import Session, delete, select
+from unittest.mock import patch
 
 from app.core.config import settings
 from app.core.security import verify_password
 from app.db.crud import UserCRUD, CommentCRUD, BlogPostCRUD
 from app.models.models import Comment
 from app.models.models import User
+from app.rolkotech_email.RolkoTechEmail import RolkoTechEmail
 from app.schemas.blog_post import BlogPostCreate
 from app.schemas.comment import CommentCreate
 from app.schemas.user import UserCreate
@@ -243,12 +245,14 @@ def test_12_read_user_by_id_superuser(client: TestClient, setup_user: User,
 
 def test_13_register_user(client: TestClient, db: Session) -> None:
     data = {"name": "new_user", "email": "new_user@email.com", "password": "password"}
-    response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+        mock_send.assert_called_once()
     assert response.status_code == 200
     created_user = response.json()
     assert created_user["name"] == data["name"]
     assert created_user["email"] == data["email"]
-    assert created_user["is_active"] is True
+    assert created_user["is_active"] is False
     assert created_user["is_superuser"] is False
     assert created_user["creation_date"] is not None
 
@@ -257,7 +261,7 @@ def test_13_register_user(client: TestClient, db: Session) -> None:
     assert user_db
     assert user_db.email == data["email"]
     assert user_db.name == data["name"]
-    assert user_db.is_active is True
+    assert user_db.is_active is False
     assert user_db.is_superuser is False
     assert user_db.creation_date is not None
     assert verify_password(data["password"], user_db.password)
@@ -265,7 +269,9 @@ def test_13_register_user(client: TestClient, db: Session) -> None:
 
 def test_14_register_user_invalid_username(client: TestClient) -> None:
     data = {"name": "", "email": "new_user@email.com", "password": "password"}
-    response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
@@ -274,11 +280,12 @@ def test_14_register_user_invalid_username(client: TestClient) -> None:
 
 def test_15_register_user_invalid_email(client: TestClient) -> None:
     data = {"name": "username", "email": "", "password": "password"}
-    response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
-    print(data["detail"][0]["msg"])
     assert data["detail"][0]["msg"] == "value is not a valid email address: An email address must have an @-sign."
 
     data = {"name": "username", "email": "something.com", "password": "password"}
@@ -286,7 +293,6 @@ def test_15_register_user_invalid_email(client: TestClient) -> None:
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
-    print(data["detail"][0]["msg"])
     assert data["detail"][0]["msg"] == "value is not a valid email address: An email address must have an @-sign."
 
     data = {"name": "username", "email": "something@email", "password": "password"}
@@ -294,24 +300,27 @@ def test_15_register_user_invalid_email(client: TestClient) -> None:
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
-    print(data["detail"][0]["msg"])
     assert data["detail"][0]["msg"] == "value is not a valid email address: The part after the @-sign is not valid. It should have a period."
 
 
 def test_16_register_user_username_exists(client: TestClient, setup_user: User) -> None:
     data = {"name": setup_user.name, "email": "new_user@email.com", "password": "password"}
-    response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "The user with this name already exists"
+    data = response.json()
+    assert data["detail"] == "The user with this name already exists"
 
 
 def test_17_register_user_email_exists(client: TestClient, setup_user: User) -> None:
     data = {"name": "new_user", "email": setup_user.email, "password": "password"}
-    response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "The user with this email already exists"
+    data = response.json()
+    assert data["detail"] == "The user with this email already exists"
 
 
 def test_18_create_user(client: TestClient, db: Session, superuser_token_headers: dict[str, str]) -> None:
@@ -353,8 +362,8 @@ def test_20_create_user_username_exists(client: TestClient, setup_user: User,
             "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=superuser_token_headers, json=data)
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "The user with this name already exists"
+    data = response.json()
+    assert data["detail"] == "The user with this name already exists"
 
 
 def test_21_create_user_email_exists(client: TestClient, setup_user: User, 
@@ -363,8 +372,8 @@ def test_21_create_user_email_exists(client: TestClient, setup_user: User,
             "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=superuser_token_headers, json=data)
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "The user with this email already exists"
+    data = response.json()
+    assert data["detail"] == "The user with this email already exists"
 
 
 def test_22_create_user_without_admin_privilege(client: TestClient, 
@@ -373,18 +382,46 @@ def test_22_create_user_without_admin_privilege(client: TestClient,
             "is_active": True, "is_superuser": False}
     response = client.post(f"{settings.API_VERSION_STR}/users/", headers=normal_user_token_headers, json=data)
     assert response.status_code == 403
-    created_user = response.json()
-    assert created_user["detail"] == "The user does not have admin privileges"
+    data = response.json()
+    assert data["detail"] == "The user does not have admin privileges"
 
 
 def test_23_update_user_me(client: TestClient, db: Session, normal_user_token_headers: dict[str, str]) -> None:
     user = UserCRUD(db).get_user_by_email(email=settings.TEST_USER_EMAIL)
     data = {"name": "updated_user", "email": "updated_user@email.com"}
-    response = client.patch(f"{settings.API_VERSION_STR}/users/me", headers=normal_user_token_headers, json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
+                                headers=normal_user_token_headers, json=data)
+        mock_send.assert_called_once()
     assert response.status_code == 200
     created_user = response.json()
     assert created_user["name"] == data["name"]
     assert created_user["email"] == data["email"]
+    assert created_user["is_active"] == False
+    assert created_user["is_superuser"] == user.is_superuser
+    assert created_user["creation_date"] == user.creation_date.isoformat()
+    assert created_user["id"] == str(user.id)
+    # Revert changes
+    db.refresh(user)
+    user.name = settings.TEST_USER
+    user.email = settings.TEST_USER_EMAIL
+    user.is_active = True
+    db.add(user)
+    db.commit()
+
+
+def test_24_update_user_me_without_email_update(client: TestClient, db: Session, 
+                                                normal_user_token_headers: dict[str, str]) -> None:
+    user = UserCRUD(db).get_user_by_email(email=settings.TEST_USER_EMAIL)
+    data = {"name": "updated_user"}
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
+                                headers=normal_user_token_headers, json=data)
+        mock_send.assert_not_called()
+    assert response.status_code == 200
+    created_user = response.json()
+    assert created_user["name"] == data["name"]
+    assert created_user["email"] == user.email
     assert created_user["is_active"] == user.is_active
     assert created_user["is_superuser"] == user.is_superuser
     assert created_user["creation_date"] == user.creation_date.isoformat()
@@ -395,90 +432,97 @@ def test_23_update_user_me(client: TestClient, db: Session, normal_user_token_he
     assert response.status_code == 200
 
 
-def test_24_update_user_me_username_exists(client: TestClient, setup_user: User, 
+def test_25_update_user_me_username_exists(client: TestClient, setup_user: User, 
                                            normal_user_token_headers: dict[str, str]) -> None:
     data = {"name": setup_user.name}
-    response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
-                            headers=normal_user_token_headers, json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
+                                headers=normal_user_token_headers, json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 409
-    created_user = response.json()
-    assert created_user["detail"] == "User with this name already exists"
+    data = response.json()
+    assert data["detail"] == "User with this name already exists"
 
 
-def test_25_update_user_me_email_exists(client: TestClient, setup_user: User, 
+def test_26_update_user_me_email_exists(client: TestClient, setup_user: User, 
                                         normal_user_token_headers: dict[str, str]) -> None:
     data = {"email": setup_user.email}
-    response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
-                            headers=normal_user_token_headers, json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
+                                headers=normal_user_token_headers, json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 409
-    created_user = response.json()
-    assert created_user["detail"] == "User with this email already exists"
+    data = response.json()
+    assert data["detail"] == "User with this email already exists"
 
 
-def test_26_update_user_me_unauthorized(client: TestClient) -> None:
+def test_27_update_user_me_unauthorized(client: TestClient) -> None:
     data = {"email": "updated_user@email.com"}
-    response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
-                            headers={"Authorization": f"Bearer invalid_token"}, json=data)
+    with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
+        response = client.patch(f"{settings.API_VERSION_STR}/users/me", 
+                                headers={"Authorization": f"Bearer invalid_token"}, 
+                                json=data)
+        mock_send.assert_not_called()
     assert response.status_code == 401
-    created_user = response.json()
-    assert created_user["detail"] == "Could not validate credentials"
+    data = response.json()
+    assert data["detail"] == "Could not validate credentials"
 
 
-def test_27_update_user(client: TestClient, setup_user: User, superuser_token_headers: dict[str, str]) -> None:
+def test_28_update_user(client: TestClient, setup_user: User, superuser_token_headers: dict[str, str]) -> None:
     data = {"name": "updated_user"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 200
-    created_user = response.json()
-    assert created_user["name"] == data["name"]
-    assert created_user["email"] == setup_user.email
-    assert created_user["is_active"] == setup_user.is_active
-    assert created_user["is_superuser"] == setup_user.is_superuser
-    assert created_user["creation_date"] == setup_user.creation_date.isoformat()
-    assert created_user["id"] == str(setup_user.id)
+    updated_user = response.json()
+    assert updated_user["name"] == data["name"]
+    assert updated_user["email"] == setup_user.email
+    assert updated_user["is_active"] == setup_user.is_active
+    assert updated_user["is_superuser"] == setup_user.is_superuser
+    assert updated_user["creation_date"] == setup_user.creation_date.isoformat()
+    assert updated_user["id"] == str(setup_user.id)
 
 
-def test_28_update_user_everything(client: TestClient, db: Session, setup_user: User, 
+def test_29_update_user_everything(client: TestClient, db: Session, setup_user: User, 
                                    superuser_token_headers: dict[str, str]) -> None:
     data = {"name": "updated_user", "email": "updated_user@email.com", "is_active": False,
             "is_superuser": True, "password": "updated_password"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 200
-    created_user = response.json()
+    updated_user = response.json()
     db.refresh(setup_user)
 
-    assert created_user["name"] == data["name"]
-    assert created_user["email"] == data["email"]
-    assert created_user["is_active"] == data["is_active"]
-    assert created_user["is_superuser"] == data["is_superuser"]
+    assert updated_user["name"] == data["name"]
+    assert updated_user["email"] == data["email"]
+    assert updated_user["is_active"] == data["is_active"]
+    assert updated_user["is_superuser"] == data["is_superuser"]
     assert verify_password(data["password"], setup_user.password)
-    assert created_user["creation_date"] == setup_user.creation_date.isoformat()
-    assert created_user["id"] == str(setup_user.id)
+    assert updated_user["creation_date"] == setup_user.creation_date.isoformat()
+    assert updated_user["id"] == str(setup_user.id)
 
 
-def test_29_update_user_without_admin_privilege(client: TestClient, setup_user: User, 
+def test_30_update_user_without_admin_privilege(client: TestClient, setup_user: User, 
                                                 normal_user_token_headers: dict[str, str]) -> None:
     data = {"name": "updated_user"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                      headers=normal_user_token_headers, json=data)
     assert response.status_code == 403
-    created_user = response.json()
-    assert created_user["detail"] == "The user does not have admin privileges"
+    data = response.json()
+    assert data["detail"] == "The user does not have admin privileges"
 
 
-def test_30_update_user_demote_current_superuser(client: TestClient, db: Session, 
+def test_31_update_user_demote_current_superuser(client: TestClient, db: Session, 
                                                  superuser_token_headers: dict[str, str]) -> None:
     user = UserCRUD(db).get_user_by_email(email=settings.FIRST_SUPERUSER_EMAIL)
     data = {"is_superuser": False}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 403
-    created_user = response.json()
-    assert created_user["detail"] == "Super users cannot demote themselves"
+    data = response.json()
+    assert data["detail"] == "Super users cannot demote themselves"
 
 
-def test_31_update_user_without_admin_privilege(client: TestClient, db: Session, setup_user: User, 
+def test_32_update_user_without_admin_privilege(client: TestClient, db: Session, setup_user: User, 
                                                 superuser_token_headers: dict[str, str]) -> None:
     user_id = setup_user.id
     db.delete(setup_user)
@@ -487,38 +531,38 @@ def test_31_update_user_without_admin_privilege(client: TestClient, db: Session,
     response = client.patch(f"{settings.API_VERSION_STR}/users/{user_id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 404
-    created_user = response.json()
-    assert created_user["detail"] == "User not found"
+    data = response.json()
+    assert data["detail"] == "User not found"
 
 
-def test_32_update_user_username_exists(client: TestClient, setup_user: User, 
+def test_33_update_user_username_exists(client: TestClient, setup_user: User, 
                                         superuser_token_headers: dict[str, str]) -> None:
     data = {"name": settings.TEST_USER}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 409
-    created_user = response.json()
-    assert created_user["detail"] == "User with this name already exists"
+    data = response.json()
+    assert data["detail"] == "User with this name already exists"
 
 
-def test_33_update_user_email_exists(client: TestClient, setup_user: User, 
+def test_34_update_user_email_exists(client: TestClient, setup_user: User, 
                                      superuser_token_headers: dict[str, str]) -> None:
     data = {"email": settings.TEST_USER_EMAIL}
     response = client.patch(f"{settings.API_VERSION_STR}/users/{setup_user.id}", 
                             headers=superuser_token_headers, json=data)
     assert response.status_code == 409
-    created_user = response.json()
-    assert created_user["detail"] == "User with this email already exists"
+    data = response.json()
+    assert data["detail"] == "User with this email already exists"
 
 
-def test_34_update_password_me(client: TestClient, normal_user_token_headers: dict[str, str]) -> None:
+def test_35_update_password_me(client: TestClient, normal_user_token_headers: dict[str, str]) -> None:
     updated_password = "updated_password_999"
     data = {"current_password": settings.TEST_USER_PASSWORD, "new_password": updated_password}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me/password", 
                             headers=normal_user_token_headers, json=data)
     assert response.status_code == 200
-    created_user = response.json()
-    assert created_user["message"] == "Password updated successfully"
+    data = response.json()
+    assert data["message"] == "Password updated successfully"
     # Reset password to original
     data = {"current_password": updated_password, "new_password": settings.TEST_USER_PASSWORD}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me/password", 
@@ -526,44 +570,44 @@ def test_34_update_password_me(client: TestClient, normal_user_token_headers: di
     assert response.status_code == 200
 
 
-def test_35_update_password_me_incorrect_password(client: TestClient, 
+def test_36_update_password_me_incorrect_password(client: TestClient, 
                                                   normal_user_token_headers: dict[str, str]) -> None:
     data = {"current_password": settings.TEST_USER_PASSWORD + "invalid", "new_password": "updated_password_999"}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me/password", 
                             headers=normal_user_token_headers, json=data)
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "Incorrect password"
+    data = response.json()
+    assert data["detail"] == "Incorrect password"
 
 
-def test_36_update_password_me_same_password(client: TestClient, 
+def test_37_update_password_me_same_password(client: TestClient, 
                                              normal_user_token_headers: dict[str, str]) -> None:
     data = {"current_password": settings.TEST_USER_PASSWORD, "new_password": settings.TEST_USER_PASSWORD}
     response = client.patch(f"{settings.API_VERSION_STR}/users/me/password", 
                             headers=normal_user_token_headers, json=data)
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "New password cannot be the same as the current one"
+    data = response.json()
+    assert data["detail"] == "New password cannot be the same as the current one"
 
 
-def test_37_update_password_me_not_current_user(client: TestClient, 
+def test_38_update_password_me_not_current_user(client: TestClient, 
                                                 setup_user_auth_headers: dict[str, str]) -> None:    
     data = {"current_password": settings.TEST_USER_PASSWORD, "new_password": "updated_password_999"}
     # Call endpoint with setup_user token
     response = client.patch(f"{settings.API_VERSION_STR}/users/me/password", 
                             headers=setup_user_auth_headers, json=data)
     assert response.status_code == 400
-    created_user = response.json()
-    assert created_user["detail"] == "Incorrect password"
+    data = response.json()
+    assert data["detail"] == "Incorrect password"
 
 
-def test_38_delete_user_me(client: TestClient, db: Session, setup_user: User,
+def test_39_delete_user_me(client: TestClient, db: Session, setup_user: User,
                            setup_user_auth_headers: dict[str, str]) -> None:
     user_id = setup_user.id
     response = client.delete(f"{settings.API_VERSION_STR}/users/me", headers=setup_user_auth_headers)
     assert response.status_code == 200
-    created_user = response.json()
-    assert created_user["message"] == "User deleted successfully"
+    data = response.json()
+    assert data["message"] == "User deleted successfully"
     
     # Check if user is deleted from DB
     db.expire_all()
@@ -571,14 +615,14 @@ def test_38_delete_user_me(client: TestClient, db: Session, setup_user: User,
     assert not user_db
 
 
-def test_39_delete_user_me_superuser(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
+def test_40_delete_user_me_superuser(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
     response = client.delete(f"{settings.API_VERSION_STR}/users/me", headers=superuser_token_headers)
     assert response.status_code == 403
-    created_user = response.json()
-    assert created_user["detail"] == "Super users are not allowed to delete themselves"
+    data = response.json()
+    assert data["detail"] == "Super users are not allowed to delete themselves"
 
 
-def test_40_delete_user_me_not_exist(client: TestClient, db: Session, setup_user: User,
+def test_41_delete_user_me_not_exist(client: TestClient, db: Session, setup_user: User,
                                      setup_user_auth_headers: dict[str, str]) -> None:
     # Delete setup_user
     db.delete(setup_user)
@@ -587,76 +631,76 @@ def test_40_delete_user_me_not_exist(client: TestClient, db: Session, setup_user
     # Call endpoint with setup_user token
     response = client.delete(f"{settings.API_VERSION_STR}/users/me", headers=setup_user_auth_headers)
     assert response.status_code == 404
-    created_user = response.json()
-    assert created_user["detail"] == "User not found"
+    data = response.json()
+    assert data["detail"] == "User not found"
 
 
-def test_41_delete_user_me_unauthorized(client: TestClient) -> None:
+def test_42_delete_user_me_unauthorized(client: TestClient) -> None:
     response = client.delete(f"{settings.API_VERSION_STR}/users/me", 
                              headers={"Authorization": f"Bearer invalid_token"})
     assert response.status_code == 401
-    created_user = response.json()
-    assert created_user["detail"] == "Could not validate credentials"
+    data = response.json()
+    assert data["detail"] == "Could not validate credentials"
 
 
-def test_42_delete_user(client: TestClient, db: Session, superuser_token_headers: dict[str, str], 
+def test_43_delete_user(client: TestClient, db: Session, superuser_token_headers: dict[str, str], 
                         setup_user: User) -> None:
     user_id = setup_user.id
     response = client.delete(f"{settings.API_VERSION_STR}/users/{user_id}", headers=superuser_token_headers)
     assert response.status_code == 200
-    created_user = response.json()
-    assert created_user["message"] == "User deleted successfully"
+    data = response.json()
+    assert data["message"] == "User deleted successfully"
     # Check if user is deleted from DB
     db.expire_all()
     user_db = db.get(User, user_id)
     assert not user_db
 
 
-def test_43_delete_user_without_admin_privilege(client: TestClient, setup_user: User, 
+def test_44_delete_user_without_admin_privilege(client: TestClient, setup_user: User, 
                                                 normal_user_token_headers: dict[str, str]) -> None:
     user_id = setup_user.id
     response = client.delete(f"{settings.API_VERSION_STR}/users/{user_id}", headers=normal_user_token_headers)
     assert response.status_code == 403
-    created_user = response.json()
-    assert created_user["detail"] == "The user does not have admin privileges"
+    data = response.json()
+    assert data["detail"] == "The user does not have admin privileges"
 
 
-def test_44_delete_user_not_exist(client: TestClient, db: Session, superuser_token_headers: dict[str, str], 
+def test_45_delete_user_not_exist(client: TestClient, db: Session, superuser_token_headers: dict[str, str], 
                                   setup_user: User) -> None:
     user_id = setup_user.id
     db.delete(setup_user)
     db.commit()
     response = client.delete(f"{settings.API_VERSION_STR}/users/{user_id}", headers=superuser_token_headers)
     assert response.status_code == 404
-    created_user = response.json()
-    assert created_user["detail"] == "User not found"
+    data = response.json()
+    assert data["detail"] == "User not found"
 
 
-def test_45_delete_user_superuser(client: TestClient, db: Session, 
+def test_46_delete_user_superuser(client: TestClient, db: Session, 
                                   superuser_token_headers: dict[str, str]) -> None:
     user = UserCRUD(db).get_user_by_email(email=settings.FIRST_SUPERUSER_EMAIL)
     response = client.delete(f"{settings.API_VERSION_STR}/users/{user.id}", headers=superuser_token_headers)
     assert response.status_code == 403
-    created_user = response.json()
-    assert created_user["detail"] == "Super users are not allowed to delete themselves"
+    data = response.json()
+    assert data["detail"] == "Super users are not allowed to delete themselves"
 
 
-def test_46_delete_user_unauthorized(client: TestClient) -> None:
+def test_47_delete_user_unauthorized(client: TestClient) -> None:
     response = client.delete(f"{settings.API_VERSION_STR}/users/1", 
                              headers={"Authorization": f"Bearer invalid_token"})
     assert response.status_code == 401
-    created_user = response.json()
-    assert created_user["detail"] == "Could not validate credentials"
+    data = response.json()
+    assert data["detail"] == "Could not validate credentials"
 
 
-def test_47_delete_user_with_comment(client: TestClient, db: Session, setup_user: User, setup_comment: Comment,
+def test_48_delete_user_with_comment(client: TestClient, db: Session, setup_user: User, setup_comment: Comment,
                                      superuser_token_headers: dict[str, str], ) -> None:
     user_id = setup_user.id
     comment_id = setup_comment.id
     response = client.delete(f"{settings.API_VERSION_STR}/users/{user_id}", headers=superuser_token_headers)
     assert response.status_code == 200
-    created_user = response.json()
-    assert created_user["message"] == "User deleted successfully"
+    data = response.json()
+    assert data["message"] == "User deleted successfully"
     # Check if user is deleted from DB
     db.expire_all()
     user_db = db.get(User, user_id)

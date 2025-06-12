@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Request, HTTPException, status, BackgroundTasks
 import uuid
 
 from app.api.deps import SessionDep, CurrentUser, get_current_active_superuser
-from app.core.security import get_password_hash, verify_password
+from app.core.security import get_password_hash, verify_password, generate_token
 from app.db.crud import UserCRUD
 from app.models.models import User
+from app.rolkotech_email.EmailGenerator import EMAIL_GENERATOR
 from app.schemas.message import Message
 from app.schemas.user import (UserPublic, UsersPublic, UserCreate, UserUpdate, 
                               UserUpdateMe, UpdatePassword, UserRegister)
@@ -51,7 +52,8 @@ def read_user_by_id(user_id: uuid.UUID, session: SessionDep, current_user: Curre
 
 
 @router.post("/signup", response_model=UserPublic)
-def register_user(session: SessionDep, user_in: UserRegister) -> UserPublic:
+def register_user(request: Request, session: SessionDep, user_in: UserRegister, 
+                  background_tasks: BackgroundTasks) -> UserPublic:
     """
     Create a new user by user signup.
     """
@@ -70,6 +72,18 @@ def register_user(session: SessionDep, user_in: UserRegister) -> UserPublic:
         )
     user_create = UserRegister.model_validate(user_in)
     user = user_crud.create_user(user=user_create)
+
+    # Generate activation token
+    token = generate_token(user.email)
+    activation_link = f"{request.base_url}users/activate?token={token}"
+    # Send activation email
+    activation_email = EMAIL_GENERATOR.create_user_activation_email(
+        email=user.email,
+        username=user.name,
+        activation_link=activation_link
+    )
+    background_tasks.add_task(activation_email.send)
+
     return user
 
 
@@ -98,7 +112,8 @@ def create_user(session: SessionDep, user_in: UserCreate) -> UserPublic:
 
 
 @router.patch("/me", response_model=UserPublic)
-def update_user_me(session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser) -> UserPublic:
+def update_user_me(request: Request, session: SessionDep, user_in: UserUpdateMe, 
+                   current_user: CurrentUser, background_tasks: BackgroundTasks) -> UserPublic:
     """
     Update own user.
     """
@@ -115,7 +130,25 @@ def update_user_me(session: SessionDep, user_in: UserUpdateMe, current_user: Cur
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="User with this name already exists"
             )
+    # If the user's email has changed, deactivate the user until they activate their new email
+    if user_in.email and user_in.email != current_user.email:
+        user_in.is_active = False
+    
     current_user = user_crud.update_user(user_db=current_user, user_in=user_in)
+
+    # If the user's email has changed, send an activation email
+    if not user_in.is_active:
+        # Generate activation token
+        token = generate_token(current_user.email)
+        activation_link = f"{request.base_url}users/activate?token={token}"
+        # Send activation email
+        activation_email = EMAIL_GENERATOR.create_user_activation_email(
+            email=current_user.email,
+            username=current_user.name,
+            activation_link=activation_link
+        )
+        background_tasks.add_task(activation_email.send)
+
     return current_user
 
 
