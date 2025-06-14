@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import logging
 import pytest
 import sqlalchemy
 from sqlalchemy import text
@@ -31,6 +32,7 @@ def override_get_session() -> Generator[Session, None, None]:
 def enable_test_mode():
     original_test_mode = settings.TEST_MODE
     settings.TEST_MODE = True
+    logging.disable(logging.CRITICAL) 
     yield
     settings.TEST_MODE = original_test_mode
 

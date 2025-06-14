@@ -4,6 +4,7 @@ import uuid
 from app.api.deps import SessionDep, CurrentUser, get_current_active_superuser
 from app.core.security import get_password_hash, verify_password, generate_token
 from app.db.crud import UserCRUD
+from app.logger import logger
 from app.models.models import User
 from app.rolkotech_email.EmailGenerator import EMAIL_GENERATOR
 from app.schemas.message import Message
@@ -72,6 +73,8 @@ def register_user(request: Request, session: SessionDep, user_in: UserRegister,
         )
     user_create = UserRegister.model_validate(user_in)
     user = user_crud.create_user(user=user_create)
+
+    logger.info(f"New user registered: {user.name} ({user.email})")
 
     # Generate activation token
     token = generate_token(user.email)
@@ -215,8 +218,12 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Message:
             status_code=status.HTTP_403_FORBIDDEN, 
             detail="Super users are not allowed to delete themselves"
         )
+    username = current_user.name
+    email = current_user.email
     user_crud = UserCRUD(session)
     user_crud.delete_user(user_db=current_user)
+
+    logger.info(f"User deleted themself: {username} ({email})")
     return Message(message="User deleted successfully")
 
 
@@ -234,6 +241,10 @@ def delete_user(session: SessionDep, current_user: CurrentUser, user_id: uuid.UU
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Super users are not allowed to delete themselves"
         )
+    username = user.name
+    email = user.email
     user_crud = UserCRUD(session)
     user_crud.delete_user(user_db=user)
+
+    logger.info(f"User deleted: {username} ({email})")
     return Message(message="User deleted successfully")

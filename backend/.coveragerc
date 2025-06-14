@@ -3,6 +3,8 @@
 data_file = coverage/.coverage
 omit =
     app/initial_data.py
+    app/db/db.py
+    app/logger.py
 
 [report]
 exclude_lines =

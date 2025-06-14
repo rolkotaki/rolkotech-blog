@@ -5,6 +5,7 @@ from sendgrid.helpers.mail.exceptions import SendGridException
 from threading import RLock
 
 from app.core.config import settings
+from app.logger import logger
 
 
 class RolkoTechEmail:
@@ -16,9 +17,11 @@ class RolkoTechEmail:
     _sg_lock: RLock = RLock()
 
     def __init__(self, to: str, subject: str, message: str):
+        self.to: str = to
+        self.subject: str = subject
         email_from: Email = Email(settings.EMAIL_FROM)
-        email_to: To = To(to)
-        subject: Subject = Subject(subject)
+        email_to: To = To(self.to)
+        subject: Subject = Subject(self.subject)
         content: HtmlContent = HtmlContent(message)
         self.mail: Mail = Mail(email_from, email_to, subject, content)
         type(self)._create_api_client()
@@ -48,9 +51,10 @@ class RolkoTechEmail:
                 return None
             response = type(self)._sg.send(self.mail)
             return response
-        except SendGridException:
-            # TODO: Log the exception
+        except SendGridException as se:
+            logger.error(f"Failed to send email to {self.to} with subject {self.subject} due to SendGridException: {str(se)}", 
+                         exc_info=True)
             return None
         except Exception as e:
-            # TODO: Log the exception
+            logger.error(f"Failed to send email to {self.to} with subject {self.subject}: {str(e)}", exc_info=True)
             return None

@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.security import (verify_password, create_access_token, get_password_hash,
                                generate_token, verify_token)
 from app.db.crud import UserCRUD
+from app.logger import logger
 from app.models.models import User
 from app.rolkotech_email.EmailGenerator import EMAIL_GENERATOR
 from app.schemas.message import Message
@@ -61,6 +62,7 @@ def activate_user(session: SessionDep, token: str) -> Message:
     user.is_active = True
     session.add(user)
     session.commit()
+    logger.info(f"User {user.name} ({user.email}) activated their account.")
     return Message(message="Account activated successfully.")
 
 
