@@ -43,8 +43,9 @@ class RolkoTechEmail:
         if settings.ENVIRONMENT == "local":
             # In local development, we might not want to verify SSL certificates
             import ssl
+
             ssl._create_default_https_context = ssl._create_unverified_context
-        
+
         try:
             if settings.TEST_MODE:
                 # Do not send emails in test mode
@@ -52,9 +53,14 @@ class RolkoTechEmail:
             response = type(self)._sg.send(self.mail)
             return response
         except SendGridException as se:
-            logger.error(f"Failed to send email to {self.to} with subject {self.subject} due to SendGridException: {str(se)}", 
-                         exc_info=True)
+            logger.error(
+                f"Failed to send email to {self.to} with subject {self.subject} due to SendGridException: {str(se)}",
+                exc_info=True,
+            )
             return None
         except Exception as e:
-            logger.error(f"Failed to send email to {self.to} with subject {self.subject}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Failed to send email to {self.to} with subject {self.subject}: {str(e)}",
+                exc_info=True,
+            )
             return None

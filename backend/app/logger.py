@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import UTC
 import json
 import logging
 from logging.config import dictConfig
@@ -9,20 +10,21 @@ __all__ = ["logger"]
 
 
 logger_name = "app"
-log_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "backend.log")
+log_path = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "logs", "backend.log"
+)
 
 
 class JsonFormatter(logging.Formatter):
-
     def format(self, record):
         log_record = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "module": record.module,
             "line": record.lineno,
             "message": record.getMessage(),
-            "exception": ""
+            "exception": "",
         }
         if record.exc_info:
             log_record["exception"] = self.formatException(record.exc_info)
@@ -38,9 +40,7 @@ log_config = {
             "format": "%(asctime)s [%(levelname)s] %(module)s %(filename)s %(lineno)s: %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        "json": {
-            "()": JsonFormatter
-        }
+        "json": {"()": JsonFormatter},
     },
     "handlers": {
         "console": {
@@ -61,11 +61,11 @@ log_config = {
     "loggers": {
         logger_name: {
             "handlers": ["console", "rotating_file"],
-            "level": "DEBUG", 
-            "propagate": False
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
-    "root": {"handlers": ["console"], "level": "DEBUG"}
+    "root": {"handlers": ["console"], "level": "DEBUG"},
 }
 
 dictConfig(log_config)

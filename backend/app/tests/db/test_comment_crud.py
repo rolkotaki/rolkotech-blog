@@ -12,13 +12,18 @@ from app.schemas.user import UserCreate
 
 @pytest.fixture(scope="function")
 def setup_user_and_blog_post(db: Session) -> tuple[UUID, int]:
-    user = UserCRUD(db).create_user(user=UserCreate(name="user1", email="user1@email.com", 
-                                                    password="password"))
-    blog_post = BlogPostCRUD(db).create_blog_post(blog_post=BlogPostCreate(title="Blog Post 1",
-                                                                           url="blog-post-1",
-                                                                           content="Content of Blog Post 1",
-                                                                           image_path="image.png",
-                                                                           tags=[]))
+    user = UserCRUD(db).create_user(
+        user=UserCreate(name="user1", email="user1@email.com", password="password")
+    )
+    blog_post = BlogPostCRUD(db).create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 1",
+            url="blog-post-1",
+            content="Content of Blog Post 1",
+            image_path="image.png",
+            tags=[],
+        )
+    )
     return user.id, blog_post.id
 
 
@@ -33,26 +38,30 @@ def delete_data(db: Session) -> None:
 def test_01_create_comment(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_create = CommentCreate(content="This is a comment")
-    comment = CommentCRUD(db).create_comment(comment=comment_create,
-                                             user_id=user_id,
-                                             blog_post_id=blog_post_id)
-    
-    assert comment.id is not None and type(comment.id) == int
+    comment = CommentCRUD(db).create_comment(
+        comment=comment_create, user_id=user_id, blog_post_id=blog_post_id
+    )
+
+    assert comment.id is not None and type(comment.id) is int
     assert comment.content == comment_create.content
     assert comment.user_id == user_id
     assert comment.blog_post_id == blog_post_id
-    assert comment.comment_date is not None and type(comment.comment_date) == datetime
+    assert comment.comment_date is not None and type(comment.comment_date) is datetime
 
 
 def test_02_read_comments(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment_1 = comment_crud.create_comment(comment=CommentCreate(content="Comment 1"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
-    comment_2 = comment_crud.create_comment(comment=CommentCreate(content="Comment 2"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 2"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
 
     count, comments = comment_crud.read_comments(skip=0, limit=10)
     assert count == 2
@@ -70,12 +79,14 @@ def test_02_read_comments(db: Session, setup_user_and_blog_post) -> None:
 def test_03_read_comments_with_username(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment_1 = comment_crud.create_comment(comment=CommentCreate(content="Comment 1"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
 
     count, comments = comment_crud.read_comments_with_username(skip=0, limit=10)
-    print(comments) 
+    print(comments)
     assert count == 1
     assert len(comments) == 1
     assert comments[0].user.name == "user1"
@@ -85,22 +96,32 @@ def test_03_read_comments_with_username(db: Session, setup_user_and_blog_post) -
 def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment_1 = comment_crud.create_comment(comment=CommentCreate(content="Comment 1"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
-    comment_2 = comment_crud.create_comment(comment=CommentCreate(content="Comment 2"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 2"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
 
-    count, comments = comment_crud.read_comments_for_blog_post(blog_post_id=blog_post_id, skip=0, limit=10)
+    count, comments = comment_crud.read_comments_for_blog_post(
+        blog_post_id=blog_post_id, skip=0, limit=10
+    )
     assert count == 2
     assert len(comments) == 2
 
-    count, comments = comment_crud.read_comments_for_blog_post(blog_post_id=blog_post_id, skip=0, limit=1)
+    count, comments = comment_crud.read_comments_for_blog_post(
+        blog_post_id=blog_post_id, skip=0, limit=1
+    )
     assert count == 2
     assert len(comments) == 1
 
-    count, comments = comment_crud.read_comments_for_blog_post(blog_post_id=blog_post_id, skip=1, limit=2)
+    count, comments = comment_crud.read_comments_for_blog_post(
+        blog_post_id=blog_post_id, skip=1, limit=2
+    )
     assert count == 2
     assert len(comments) == 1
 
@@ -108,22 +129,32 @@ def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -
 def test_05_read_comments_for_user(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment_1 = comment_crud.create_comment(comment=CommentCreate(content="Comment 1"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
-    comment_2 = comment_crud.create_comment(comment=CommentCreate(content="Comment 2"),
-                                            user_id=user_id,
-                                            blog_post_id=blog_post_id)
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 2"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
 
-    count, comments = comment_crud.read_comments_for_user(user_id=user_id, skip=0, limit=10)
+    count, comments = comment_crud.read_comments_for_user(
+        user_id=user_id, skip=0, limit=10
+    )
     assert count == 2
     assert len(comments) == 2
 
-    count, comments = comment_crud.read_comments_for_user(user_id=user_id, skip=0, limit=1)
+    count, comments = comment_crud.read_comments_for_user(
+        user_id=user_id, skip=0, limit=1
+    )
     assert count == 2
     assert len(comments) == 1
 
-    count, comments = comment_crud.read_comments_for_user(user_id=user_id, skip=1, limit=2)
+    count, comments = comment_crud.read_comments_for_user(
+        user_id=user_id, skip=1, limit=2
+    )
     assert count == 2
     assert len(comments) == 1
 
@@ -131,16 +162,22 @@ def test_05_read_comments_for_user(db: Session, setup_user_and_blog_post) -> Non
 def test_06_update_comment(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment = comment_crud.create_comment(comment=CommentCreate(content="Comment 1"),
-                                          user_id=user_id,
-                                          blog_post_id=blog_post_id)
-    
+    comment = comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+
     comment_update = CommentUpdate(content="Updated Comment")
-    comment_updated = comment_crud.update_comment(comment_db=comment, comment_in=comment_update)
+    comment_updated = comment_crud.update_comment(
+        comment_db=comment, comment_in=comment_update
+    )
 
     assert comment_updated.content == comment_update.content
     assert comment_updated.id == comment.id
-    assert comment_updated.comment_date.replace(tzinfo=None) == comment_update.comment_date.replace(tzinfo=None)
+    assert comment_updated.comment_date.replace(
+        tzinfo=None
+    ) == comment_update.comment_date.replace(tzinfo=None)
     assert comment_updated.user_id == user_id
     assert comment_updated.blog_post_id == blog_post_id
 
@@ -148,9 +185,11 @@ def test_06_update_comment(db: Session, setup_user_and_blog_post) -> None:
 def test_07_delete_comment(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment = comment_crud.create_comment(comment=CommentCreate(content="Comment 1"),
-                                          user_id=user_id,
-                                          blog_post_id=blog_post_id)
+    comment = comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
     count = db.exec(select(func.count()).select_from(Comment)).one()
     assert count == 1
     comment_crud.delete_comment(comment=comment)

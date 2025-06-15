@@ -12,9 +12,11 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 
-app = FastAPI(title=settings.API_PROJECT_NAME,
-              openapi_url=f"{settings.API_VERSION_STR}/openapi.json",
-              generate_unique_id_function=custom_generate_unique_id)
+app = FastAPI(
+    title=settings.API_PROJECT_NAME,
+    openapi_url=f"{settings.API_VERSION_STR}/openapi.json",
+    generate_unique_id_function=custom_generate_unique_id,
+)
 
 if settings.all_cors_origins:
     app.add_middleware(
@@ -27,10 +29,15 @@ if settings.all_cors_origins:
 
 app.include_router(api_router, prefix=settings.API_VERSION_STR)
 
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled error: {exc}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": f"An unexpected error has occured: {exc}" if settings.DEBUG else "Internal Server Error"},
+        content={
+            "message": f"An unexpected error has occured: {exc}"
+            if settings.DEBUG
+            else "Internal Server Error"
+        },
     )

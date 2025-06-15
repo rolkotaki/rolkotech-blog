@@ -20,9 +20,9 @@ class Settings(BaseSettings):
         # Use top level .env file (one level above ./backend/)
         env_file="../.env",
         env_ignore_empty=True,
-        extra="ignore"
+        extra="ignore",
     )
-    
+
     PROJECT_NAME: str = "RolkoTech Blog"
     API_PROJECT_NAME: str = "RolkoTech Blog API"
     API_VERSION_STR: str = "/api"
@@ -34,13 +34,16 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str
 
     # CORS settings
-    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = []
+    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl], BeforeValidator(parse_cors)] = []
 
     @computed_field
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS + [self.FRONTEND_HOST]]
-    
+        return [
+            str(origin).rstrip("/")
+            for origin in self.BACKEND_CORS_ORIGINS + [self.FRONTEND_HOST]
+        ]
+
     POSTGRES_SERVER: str
     POSTGRES_PORT: int
     POSTGRES_DB: str
@@ -56,14 +59,14 @@ class Settings(BaseSettings):
             password=self.POSTGRES_PASSWORD,
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB
+            path=self.POSTGRES_DB,
         )
 
     @computed_field
     @property
     def POSTGRES_TEST_DB(self) -> str:
         return f"{self.POSTGRES_DB}_test"
-    
+
     @computed_field
     @property
     def TEST_DATABASE_URL(self) -> PostgresDsn:
@@ -73,16 +76,16 @@ class Settings(BaseSettings):
             password=self.POSTGRES_PASSWORD,
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
-            path=self.POSTGRES_TEST_DB
+            path=self.POSTGRES_TEST_DB,
         )
-    
+
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_EMAIL: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
     TEST_USER: str
     TEST_USER_EMAIL: EmailStr
     TEST_USER_PASSWORD: str
-   
+
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week

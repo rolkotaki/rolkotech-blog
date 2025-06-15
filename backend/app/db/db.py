@@ -1,5 +1,5 @@
 from sqlmodel import Session, create_engine, select
-from typing import Generator
+from collections.abc import Generator
 
 from app.core.config import settings
 from app.db.crud import UserCRUD
@@ -11,7 +11,7 @@ from app.schemas.user import UserCreate
 engine = create_engine(str(settings.DATABASE_URL))
 
 
-def get_session() -> Generator[Session, None, None]:
+def get_session() -> Generator[Session]:
     with Session(engine) as session:
         yield session
 

@@ -44,9 +44,9 @@ def test_02_read_tags(client: TestClient, setup_tag: Tag) -> None:
 
 
 def test_03_read_tags_with_skip_and_limit(client: TestClient, db: Session) -> None:
-    tag_1 = TagCRUD(db).create_tag(tag=TagCreate(name="test_tag_1"))
+    TagCRUD(db).create_tag(tag=TagCreate(name="test_tag_1"))
     tag_2 = TagCRUD(db).create_tag(tag=TagCreate(name="test_tag_2"))
-    tag_3 = TagCRUD(db).create_tag(tag=TagCreate(name="test_tag_3"))
+    TagCRUD(db).create_tag(tag=TagCreate(name="test_tag_3"))
     response = client.get(f"{settings.API_VERSION_STR}/tags/?skip=1&limit=1")
     assert response.status_code == 200
     data = response.json()
@@ -75,7 +75,9 @@ def test_05_read_tag_not_found(client: TestClient) -> None:
     assert data["detail"] == "Tag not found"
 
 
-def test_06_read_tag_with_blog_posts(client: TestClient, db: Session, setup_tag: Tag) -> None:
+def test_06_read_tag_with_blog_posts(
+    client: TestClient, db: Session, setup_tag: Tag
+) -> None:
     # No blog posts associated with the tag
     response = client.get(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}/blogposts")
     assert response.status_code == 200
@@ -88,12 +90,15 @@ def test_06_read_tag_with_blog_posts(client: TestClient, db: Session, setup_tag:
     assert len(data["blog_posts"]) == 0
 
     # One blog post associated with the tag
-    blog_post = BlogPostCRUD(db).create_blog_post(blog_post=BlogPostCreate(
-                                                               title="Blog Post 1",
-                                                               url="blog-post-1",
-                                                               content="Content of Blog Post 1",
-                                                               image_path="image.png",
-                                                               tags=[setup_tag.id]))
+    blog_post = BlogPostCRUD(db).create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 1",
+            url="blog-post-1",
+            content="Content of Blog Post 1",
+            image_path="image.png",
+            tags=[setup_tag.id],
+        )
+    )
     response = client.get(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}/blogposts")
     assert response.status_code == 200
     data = response.json()
@@ -104,11 +109,15 @@ def test_06_read_tag_with_blog_posts(client: TestClient, db: Session, setup_tag:
     assert data["blog_posts"][0]["image_path"] == blog_post.image_path
 
     # Two blog posts associated with the tag
-    BlogPostCRUD(db).create_blog_post(blog_post=BlogPostCreate(title="Blog Post 2",
-                                                               url="blog-post-2",
-                                                               content="Content of Blog Post 2",
-                                                               image_path="image.png",
-                                                               tags=[setup_tag.id]))
+    BlogPostCRUD(db).create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 2",
+            url="blog-post-2",
+            content="Content of Blog Post 2",
+            image_path="image.png",
+            tags=[setup_tag.id],
+        )
+    )
     response = client.get(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}/blogposts")
     assert response.status_code == 200
     data = response.json()
@@ -122,10 +131,15 @@ def test_07_read_tag_with_blog_posts_not_found(client: TestClient) -> None:
     assert data["detail"] == "Tag not found"
 
 
-def test_08_create_tag(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
+def test_08_create_tag(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": "new_tag"}
-    response = client.post(f"{settings.API_VERSION_STR}/tags/", headers=superuser_token_headers, 
-                           json=tag_data)
+    response = client.post(
+        f"{settings.API_VERSION_STR}/tags/",
+        headers=superuser_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
@@ -133,29 +147,43 @@ def test_08_create_tag(client: TestClient, superuser_token_headers: dict[str, st
     assert data["name"] == tag_data["name"]
 
 
-def test_09_create_tag_with_existing_name(client: TestClient, setup_tag: Tag,
-                                         superuser_token_headers: dict[str, str]) -> None:
+def test_09_create_tag_with_existing_name(
+    client: TestClient, setup_tag: Tag, superuser_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": setup_tag.name}
-    response = client.post(f"{settings.API_VERSION_STR}/tags/", headers=superuser_token_headers, 
-                           json=tag_data)
+    response = client.post(
+        f"{settings.API_VERSION_STR}/tags/",
+        headers=superuser_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 400
     data = response.json()
     assert data["detail"] == "A tag with this name already exists"
 
 
-def test_10_create_tag_unauthorized(client: TestClient, normal_user_token_headers: dict[str, str]) -> None:
+def test_10_create_tag_unauthorized(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": "new_tag"}
-    response = client.post(f"{settings.API_VERSION_STR}/tags/", headers=normal_user_token_headers,
-                            json=tag_data)
+    response = client.post(
+        f"{settings.API_VERSION_STR}/tags/",
+        headers=normal_user_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 403
     data = response.json()
     assert data["detail"] == "The user does not have admin privileges"
 
 
-def test_11_create_tag_invalid_data(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
+def test_11_create_tag_invalid_data(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": ""}
-    response = client.post(f"{settings.API_VERSION_STR}/tags/", headers=superuser_token_headers, 
-                           json=tag_data)
+    response = client.post(
+        f"{settings.API_VERSION_STR}/tags/",
+        headers=superuser_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
@@ -163,10 +191,15 @@ def test_11_create_tag_invalid_data(client: TestClient, superuser_token_headers:
     assert data["detail"][0]["type"] == "string_too_short"
 
 
-def test_12_update_tag(client: TestClient, setup_tag: Tag, superuser_token_headers: dict[str, str]) -> None:
+def test_12_update_tag(
+    client: TestClient, setup_tag: Tag, superuser_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": "updated_tag"}
-    response = client.patch(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}", 
-                            headers=superuser_token_headers, json=tag_data)
+    response = client.patch(
+        f"{settings.API_VERSION_STR}/tags/{setup_tag.id}",
+        headers=superuser_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
@@ -174,70 +207,106 @@ def test_12_update_tag(client: TestClient, setup_tag: Tag, superuser_token_heade
     assert data["name"] == tag_data["name"]
 
 
-def test_13_update_tag_not_found(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
+def test_13_update_tag_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": "updated_tag"}
-    response = client.patch(f"{settings.API_VERSION_STR}/tags/999", 
-                            headers=superuser_token_headers, json=tag_data)
+    response = client.patch(
+        f"{settings.API_VERSION_STR}/tags/999",
+        headers=superuser_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Tag not found"
 
 
-def test_14_update_tag_name_already_exists(client: TestClient, db: Session, setup_tag: Tag,
-                                          superuser_token_headers: dict[str, str]) -> None:
+def test_14_update_tag_name_already_exists(
+    client: TestClient,
+    db: Session,
+    setup_tag: Tag,
+    superuser_token_headers: dict[str, str],
+) -> None:
     tag = TagCRUD(db).create_tag(tag=TagCreate(name="test_tag_2"))
     tag_data = {"name": tag.name}
-    response = client.patch(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}", 
-                            headers=superuser_token_headers, json=tag_data)
+    response = client.patch(
+        f"{settings.API_VERSION_STR}/tags/{setup_tag.id}",
+        headers=superuser_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 400
     data = response.json()
     assert data["detail"] == "A tag with this name already exists"
 
 
-def test_15_update_tag_unauthorized(client: TestClient, setup_tag: Tag,
-                                    normal_user_token_headers: dict[str, str]) -> None:
+def test_15_update_tag_unauthorized(
+    client: TestClient, setup_tag: Tag, normal_user_token_headers: dict[str, str]
+) -> None:
     tag_data = {"name": "updated_tag"}
-    response = client.patch(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}", 
-                            headers=normal_user_token_headers, json=tag_data)
+    response = client.patch(
+        f"{settings.API_VERSION_STR}/tags/{setup_tag.id}",
+        headers=normal_user_token_headers,
+        json=tag_data,
+    )
     assert response.status_code == 403
     data = response.json()
     assert data["detail"] == "The user does not have admin privileges"
 
 
-def test_16_delete_tag(client: TestClient, setup_tag: Tag, superuser_token_headers: dict[str, str]) -> None:
-    response = client.delete(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}", 
-                             headers=superuser_token_headers)
+def test_16_delete_tag(
+    client: TestClient, setup_tag: Tag, superuser_token_headers: dict[str, str]
+) -> None:
+    response = client.delete(
+        f"{settings.API_VERSION_STR}/tags/{setup_tag.id}",
+        headers=superuser_token_headers,
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Tag deleted successfully"
 
 
-def test_17_delete_tag_not_found(client: TestClient, superuser_token_headers: dict[str, str]) -> None:
-    response = client.delete(f"{settings.API_VERSION_STR}/tags/999", 
-                             headers=superuser_token_headers)
+def test_17_delete_tag_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    response = client.delete(
+        f"{settings.API_VERSION_STR}/tags/999", headers=superuser_token_headers
+    )
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Tag not found"
 
 
-def test_18_delete_tag_unauthorized(client: TestClient, setup_tag: Tag,
-                                    normal_user_token_headers: dict[str, str]) -> None:
-    response = client.delete(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}", 
-                             headers=normal_user_token_headers)
+def test_18_delete_tag_unauthorized(
+    client: TestClient, setup_tag: Tag, normal_user_token_headers: dict[str, str]
+) -> None:
+    response = client.delete(
+        f"{settings.API_VERSION_STR}/tags/{setup_tag.id}",
+        headers=normal_user_token_headers,
+    )
     assert response.status_code == 403
     data = response.json()
     assert data["detail"] == "The user does not have admin privileges"
 
 
-def test_19_delete_tag_with_blog_posts(client: TestClient, db: Session, setup_tag: Tag,
-                                       superuser_token_headers: dict[str, str]) -> None:
-    blog_post = BlogPostCRUD(db).create_blog_post(blog_post=BlogPostCreate(title="Blog Post 1",
-                                                                           url="blog-post-1",
-                                                                           content="Content of Blog Post 1",
-                                                                           image_path="image.png",
-                                                                           tags=[setup_tag.id]))
-    response = client.delete(f"{settings.API_VERSION_STR}/tags/{setup_tag.id}", 
-                             headers=superuser_token_headers)
+def test_19_delete_tag_with_blog_posts(
+    client: TestClient,
+    db: Session,
+    setup_tag: Tag,
+    superuser_token_headers: dict[str, str],
+) -> None:
+    blog_post = BlogPostCRUD(db).create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 1",
+            url="blog-post-1",
+            content="Content of Blog Post 1",
+            image_path="image.png",
+            tags=[setup_tag.id],
+        )
+    )
+    response = client.delete(
+        f"{settings.API_VERSION_STR}/tags/{setup_tag.id}",
+        headers=superuser_token_headers,
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Tag deleted successfully"

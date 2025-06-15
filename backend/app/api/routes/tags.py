@@ -29,7 +29,9 @@ def read_tag(session: SessionDep, id: int) -> TagPublic:
     """
     tag = session.get(Tag, id)
     if not tag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+        )
     return tag
 
 
@@ -40,21 +42,21 @@ def read_tag_with_blog_posts(session: SessionDep, id: int) -> BlogPostsByTag:
     """
     tag = TagCRUD(session).read_tag_with_blog_posts(tag_id=id)
     if not tag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
-    
-    blog_posts = [BlogPostPublic.model_validate(blog_post, from_attributes=True)
-                  for blog_post in tag.blog_posts]
-    
-    return BlogPostsByTag(
-        id=tag.id,
-        name=tag.name,
-        blog_posts=blog_posts
-    )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+        )
+
+    blog_posts = [
+        BlogPostPublic.model_validate(blog_post, from_attributes=True)
+        for blog_post in tag.blog_posts
+    ]
+
+    return BlogPostsByTag(id=tag.id, name=tag.name, blog_posts=blog_posts)
 
 
-@router.post("/", 
-             dependencies=[Depends(get_current_active_superuser)],
-             response_model=TagPublic)
+@router.post(
+    "/", dependencies=[Depends(get_current_active_superuser)], response_model=TagPublic
+)
 def create_tag(session: SessionDep, tag_in: TagCreate) -> TagPublic:
     """
     Create new tag.
@@ -70,16 +72,20 @@ def create_tag(session: SessionDep, tag_in: TagCreate) -> TagPublic:
     return tag
 
 
-@router.patch("/{id}", 
-            dependencies=[Depends(get_current_active_superuser)], 
-            response_model=TagPublic)
+@router.patch(
+    "/{id}",
+    dependencies=[Depends(get_current_active_superuser)],
+    response_model=TagPublic,
+)
 def update_tag(session: SessionDep, id: int, tag_in: TagUpdate) -> TagPublic:
     """
     Update a tag.
     """
     tag = session.get(Tag, id)
     if not tag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+        )
     tag_crud = TagCRUD(session)
     if tag.name != tag_in.name and tag_crud.get_tag_by_name(tag_name=tag_in.name):
         raise HTTPException(
@@ -90,15 +96,19 @@ def update_tag(session: SessionDep, id: int, tag_in: TagUpdate) -> TagPublic:
     return db_tag
 
 
-@router.delete("/{id}", 
-               dependencies=[Depends(get_current_active_superuser)], 
-               response_model=Message)
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(get_current_active_superuser)],
+    response_model=Message,
+)
 def delete_tag(session: SessionDep, id: int) -> Message:
     """
     Delete a tag.
     """
     tag = session.get(Tag, id)
     if not tag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+        )
     TagCRUD(session).delete_tag(tag_db=tag)
     return Message(message="Tag deleted successfully")

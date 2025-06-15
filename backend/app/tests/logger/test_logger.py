@@ -13,4 +13,6 @@ def test_01_global_exception_handler(client: TestClient):
                 client.get(f"{settings.API_VERSION_STR}/tags/")
             except Exception:
                 pass
-            mock_logger.assert_called_once_with("Unhandled error: Test exception", exc_info=True)
+            mock_logger.assert_called_once_with(
+                "Unhandled error: Test exception", exc_info=True
+            )

@@ -6,8 +6,13 @@ from typing import Annotated
 
 from app.api.deps import SessionDep
 from app.core.config import settings
-from app.core.security import (verify_password, create_access_token, get_password_hash,
-                               generate_token, verify_token)
+from app.core.security import (
+    verify_password,
+    create_access_token,
+    get_password_hash,
+    generate_token,
+    verify_token,
+)
 from app.db.crud import UserCRUD
 from app.logger import logger
 from app.models.models import User
@@ -30,21 +35,29 @@ def authenticate(session: Session, email: str, password: str) -> User | None:
 
 
 @router.post("/login/access-token")
-def login_access_token(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+def login_access_token(
+    session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+) -> Token:
     """
     OAuth2 compatible token login, get an access token for future requests.
     """
-    user = authenticate(session=session, email=form_data.username, 
-                        password=form_data.password)
+    user = authenticate(
+        session=session, email=form_data.username, password=form_data.password
+    )
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                            detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect username or password",
+        )
     elif not user.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                            detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+        )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return Token(access_token=create_access_token(user.id, expires_delta=access_token_expires), 
-                 token_type="bearer")
+    return Token(
+        access_token=create_access_token(user.id, expires_delta=access_token_expires),
+        token_type="bearer",
+    )
 
 
 @router.get("/users/activate", response_model=Message)
@@ -55,8 +68,9 @@ def activate_user(session: SessionDep, token: str) -> Message:
     user_email = verify_token(token)
     user = UserCRUD(session).get_user_by_email(email=user_email)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="Invalid activation link.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid activation link."
+        )
     if user.is_active:
         return Message(message="Account already activated.")
     user.is_active = True
@@ -67,7 +81,9 @@ def activate_user(session: SessionDep, token: str) -> Message:
 
 
 @router.post("/users/forgot-password", response_model=Message)
-def forgot_password(request: Request, session: SessionDep, email: str, background_tasks: BackgroundTasks):
+def forgot_password(
+    request: Request, session: SessionDep, email: str, background_tasks: BackgroundTasks
+):
     """
     Send password reset email if a user exists with the given email.
     """
@@ -75,7 +91,7 @@ def forgot_password(request: Request, session: SessionDep, email: str, backgroun
     user = UserCRUD(session).get_user_by_email(email=email)
     if not user or not user.is_active:
         return Message(message=message)
-    
+
     # Generate a token and send the reset link
     token = generate_token(user.email)
     # TODO: Possibly the URL should point to the frontend instead of backend
@@ -96,8 +112,9 @@ def reset_password(session: SessionDep, data: PasswordReset):
     user_email = verify_token(data.token)
     user = UserCRUD(session).get_user_by_email(email=user_email)
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                            detail="Invalid or expired token.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token."
+        )
     user.password = get_password_hash(data.new_password.get_secret_value())
     session.add(user)
     session.commit()

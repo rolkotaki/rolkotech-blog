@@ -1,16 +1,19 @@
+from collections.abc import Generator
 from fastapi.testclient import TestClient
 import logging
 import pytest
 import sqlalchemy
 from sqlalchemy import text
 from sqlmodel import SQLModel, Session, delete, create_engine
-from typing import Generator
 
 from app.core.config import settings
 from app.db.db import init_db, get_session
 from app.main import app
 from app.models.models import BlogPost, BlogPostTagLink, Comment, Tag, User
-from app.tests.utils.access_tokens import get_superuser_token_headers, get_user_token_headers
+from app.tests.utils.access_tokens import (
+    get_superuser_token_headers,
+    get_user_token_headers,
+)
 
 
 test_db_name = str(settings.POSTGRES_TEST_DB)
@@ -18,7 +21,7 @@ test_db_url = str(settings.TEST_DATABASE_URL)
 test_engine = None
 
 
-def override_get_session() -> Generator[Session, None, None]:
+def override_get_session() -> Generator[Session]:
     """
     Override the get_session dependency to use the test database.
     """
@@ -32,7 +35,7 @@ def override_get_session() -> Generator[Session, None, None]:
 def enable_test_mode():
     original_test_mode = settings.TEST_MODE
     settings.TEST_MODE = True
-    logging.disable(logging.CRITICAL) 
+    logging.disable(logging.CRITICAL)
     yield
     settings.TEST_MODE = original_test_mode
 
@@ -48,9 +51,11 @@ def setup_test_database():
     main_engine = sqlalchemy.create_engine(main_db_url, isolation_level="AUTOCOMMIT")
     with main_engine.connect() as conn:
         if not test_db_url.lower().endswith("test"):
-            raise RuntimeError("Refusing to create/drop non-test database!")  # pragma: no cover
-        conn.execute(text("DROP DATABASE IF EXISTS {}".format(test_db_name)))
-        conn.execute(text("CREATE DATABASE {}".format(test_db_name)))
+            raise RuntimeError(
+                "Refusing to create/drop non-test database!"
+            )  # pragma: no cover
+        conn.execute(text(f"DROP DATABASE IF EXISTS {test_db_name}"))
+        conn.execute(text(f"CREATE DATABASE {test_db_name}"))
     # Create tables in test DB
     test_engine = create_engine(test_db_url)
     SQLModel.metadata.create_all(test_engine)
@@ -62,7 +67,7 @@ def setup_test_database():
 
     test_engine.dispose()
     with main_engine.connect() as conn:
-        conn.execute(text("DROP DATABASE IF EXISTS {}".format(test_db_name)))
+        conn.execute(text(f"DROP DATABASE IF EXISTS {test_db_name}"))
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -77,13 +82,13 @@ def delete_tables() -> None:
 
 
 @pytest.fixture(scope="module")
-def db() -> Generator[Session, None, None]:
+def db() -> Generator[Session]:
     with Session(test_engine) as session:
         yield session
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator[TestClient, None, None]:
+def client() -> Generator[TestClient]:
     # Initialize test DB with superuser
     with Session(test_engine) as session:
         init_db(session)

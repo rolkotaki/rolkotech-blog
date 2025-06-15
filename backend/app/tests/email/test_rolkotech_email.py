@@ -40,36 +40,46 @@ def set_non_local_environment():
 
 def test_01_email_when_not_testing_not_local(test_mode_off, set_non_local_environment):
     RolkoTechEmail._sg = Mock()
-    RolkoTechEmail._sg.send = Mock(return_value='response')
-    mail = RolkoTechEmail(to="test@mail.com", subject="Test Subject", message="Test Message")
+    RolkoTechEmail._sg.send = Mock(return_value="response")
+    mail = RolkoTechEmail(
+        to="test@mail.com", subject="Test Subject", message="Test Message"
+    )
     response = mail.send()
     import ssl
+
     assert ssl._create_default_https_context is not ssl._create_unverified_context
-    assert response == 'response'
+    assert response == "response"
 
 
 def test_02_email_when_not_testing_local(test_mode_off, set_local_environment):
     RolkoTechEmail._sg = Mock()
-    RolkoTechEmail._sg.send = Mock(return_value='response')
-    mail = RolkoTechEmail(to="test@mail.com", subject="Test Subject", message="Test Message")
+    RolkoTechEmail._sg.send = Mock(return_value="response")
+    mail = RolkoTechEmail(
+        to="test@mail.com", subject="Test Subject", message="Test Message"
+    )
     response = mail.send()
     import ssl
+
     assert ssl._create_default_https_context is ssl._create_unverified_context
-    assert response == 'response'
+    assert response == "response"
 
 
 def test_03_email_when_testing(test_mode_on):
     RolkoTechEmail._sg = Mock()
-    RolkoTechEmail._sg.send = Mock(return_value='response')
-    mail = RolkoTechEmail(to="test@mail.com", subject="Test Subject", message="Test Message")
-    response = mail.send()
+    RolkoTechEmail._sg.send = Mock(return_value="response")
+    mail = RolkoTechEmail(
+        to="test@mail.com", subject="Test Subject", message="Test Message"
+    )
+    mail.send()
     RolkoTechEmail._sg.send.assert_not_called()
 
 
 def test_04_email_when_sendgrid_exception(test_mode_off):
     RolkoTechEmail._sg = Mock()
     RolkoTechEmail._sg.send = Mock(side_effect=SendGridException())
-    mail = RolkoTechEmail(to="test@mail.com", subject="Test Subject", message="Test Message")
+    mail = RolkoTechEmail(
+        to="test@mail.com", subject="Test Subject", message="Test Message"
+    )
     response = mail.send()
     assert response is None
 
@@ -77,6 +87,8 @@ def test_04_email_when_sendgrid_exception(test_mode_off):
 def test_05_email_when_exception(test_mode_off):
     RolkoTechEmail._sg = Mock()
     RolkoTechEmail._sg.send = Mock(side_effect=Exception())
-    mail = RolkoTechEmail(to="test@mail.com", subject="Test Subject", message="Test Message")
+    mail = RolkoTechEmail(
+        to="test@mail.com", subject="Test Subject", message="Test Message"
+    )
     response = mail.send()
     assert response is None

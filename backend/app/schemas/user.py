@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import UTC
 from pydantic import BaseModel, Field, EmailStr, SecretStr
 import uuid
 
@@ -8,12 +9,12 @@ class UserBase(BaseModel):
     email: EmailStr = Field(max_length=255)
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
-    creation_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    creation_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class UserCreate(UserBase):
     password: SecretStr = Field(min_length=8, max_length=40)
-    
+
 
 class UserPublic(UserBase):
     id: uuid.UUID

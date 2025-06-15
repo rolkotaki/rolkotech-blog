@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import UTC
 from pydantic import BaseModel, Field
 
 from app.schemas.comment import CommentPublicWithUsername
@@ -10,7 +11,7 @@ class BlogPostBase(BaseModel):
     url: str = Field(min_length=1, max_length=255)
     content: str = Field()
     image_path: str | None = Field(default=None)
-    publication_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    publication_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class BlogPostCreate(BlogPostBase):
