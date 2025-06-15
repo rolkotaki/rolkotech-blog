@@ -19,6 +19,10 @@ SessionDep = Annotated[Session, Depends(get_session)]
 def get_current_user(
     session: SessionDep, token: Annotated[str, Depends(oauth2_scheme)]
 ) -> User:
+    """
+    Get the current user from the token.
+    This function decodes the JWT token and retrieves the user from the database.
+    """
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -47,6 +51,9 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 def get_current_active_superuser(current_user: CurrentUser) -> User:
+    """
+    Get the current user and check if they are a superuser.
+    """
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

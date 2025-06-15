@@ -17,6 +17,9 @@ def get_session() -> Generator[Session]:
 
 
 def init_db(session: Session) -> None:
+    """
+    Initialize the database with the first superuser if it does not exist.
+    """
     try:
         user = session.exec(
             select(User).where(User.email == settings.FIRST_SUPERUSER_EMAIL)

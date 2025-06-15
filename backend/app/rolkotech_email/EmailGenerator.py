@@ -32,6 +32,9 @@ class EmailGenerator:
     def create_user_activation_email(
         email: str, username: str, activation_link: str, **kwargs
     ) -> RolkoTechEmail:
+        """
+        Create an email for user account activation.
+        """
         email_body = EmailGenerator.jinja_env.get_template(
             USER_ACTIVATION_TEMPLATE
         ).render(name=username, activation_link=activation_link, **kwargs)
@@ -43,6 +46,9 @@ class EmailGenerator:
     def create_password_reset_email(
         email: str, username: str, reset_link: str, **kwargs
     ) -> RolkoTechEmail:
+        """
+        Create an email for password reset.
+        """
         email_body = EmailGenerator.jinja_env.get_template(
             PASSWORD_RESET_TEMPLATE
         ).render(name=username, reset_link=reset_link, **kwargs)

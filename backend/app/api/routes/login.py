@@ -26,6 +26,10 @@ router = APIRouter(tags=["login"])
 
 
 def authenticate(session: Session, email: str, password: str) -> User | None:
+    """
+    Authenticate a user by email and password.
+    Returns the user if authentication is successful, otherwise None.
+    """
     user = UserCRUD(session).get_user_by_email(email=email)
     if not user:
         return None

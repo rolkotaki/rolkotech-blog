@@ -212,7 +212,8 @@ def delete_comment_on_blog_post(
     session: SessionDep, blog_post_id: int, id: int, current_user: CurrentUser
 ) -> Message:
     """
-    Delete a comment.
+    Delete a comment on a blog post.
+    Either by the user who created it or by a superuser.
     """
     blog_post = session.get(BlogPost, blog_post_id)
     if not blog_post:
@@ -242,7 +243,8 @@ def delete_comment_on_blog_post(
 @router.delete("/comments/{id}", response_model=Message)
 def delete_comment(session: SessionDep, id: int, current_user: CurrentUser) -> Message:
     """
-    Delete a comment.
+    Delete a specific comment.
+    Either by the user who created it or by a superuser.
     """
     comment = session.get(Comment, id)
     if not comment:
