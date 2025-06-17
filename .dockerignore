@@ -1,6 +1,8 @@
 **/docker
 **/.idea
-**/venv
+**/.vscode
+**/.github
+**/.venv
 **/htmlcov
 **/.git
 **/.gitignore
@@ -13,3 +15,11 @@
 **/coverage
 **/.coverage
 **/notes.txt
+**/docker-compose.yml
+**/*.log
+**/README.md
+**/.env
+**/docker
+**/.dockerignore
+**/Dockerfile
+**/.ruff_cache

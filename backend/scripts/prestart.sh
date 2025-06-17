@@ -4,8 +4,8 @@ set -e
 
 
 REPO_ROOT_DIR=$(dirname $(realpath $0))/../..
-VENV_ACTIVATE_PATH="$REPO_ROOT_DIR/venv/bin/activate"
 BACKEND_DIR="$REPO_ROOT_DIR/backend"
+VENV_ACTIVATE_PATH="$BACKEND_DIR/.venv/bin/activate"
 export PYTHONPATH="$PYTHONPATH:$BACKEND_DIR"
 
 (

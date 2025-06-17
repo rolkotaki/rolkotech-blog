@@ -1,3 +1,4 @@
+# I use uv for package management, so this file is not used, but I leave it here if someone wants to use it
 alembic==1.15.2
 annotated-types==0.7.0
 anyio==4.9.0

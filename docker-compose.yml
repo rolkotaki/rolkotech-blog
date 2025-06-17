@@ -17,7 +17,7 @@ services:
       start_period: 10s
       retries: 5
 
-  prestart:
+  backend_prestart:
     image: '${DOCKER_IMAGE_BACKEND?DOCKER_IMAGE_BACKEND variable not set}:${TAG-latest}'
     build:
       context: .
@@ -30,7 +30,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["bash", "backend/scripts/prestart.sh"]
+    command: ["bash", "./scripts/prestart.sh"]
 
   backend:
     image: '${DOCKER_IMAGE_BACKEND?DOCKER_IMAGE_BACKEND variable not set}:${TAG-latest}'
@@ -47,7 +47,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      prestart:
+      backend_prestart:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]

@@ -9,6 +9,7 @@ on:
       - "backend/app/**"
       - "backend/scripts/lint.sh"
       - "backend/pyproject.toml"
+      - ".github/workflows/lint_backend.yml"
   pull_request:
     types:
       - opened
@@ -17,6 +18,7 @@ on:
       - "backend/app/**"
       - "backend/scripts/lint.sh"
       - "backend/pyproject.toml"
+      - ".github/workflows/lint_backend.yml"
 
 jobs:
   lint_backend:
@@ -24,14 +26,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.13"
-      - name: Install requirements
-        run: |
-          pip install -r backend/requirements_dev.txt
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.7.13"
+          enable-cache: true
+      
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+        working-directory: backend
       
       - name: Run linting
-        run: |
-            bash backend/scripts/lint.sh
+        run: uv run bash scripts/lint.sh
+        working-directory: backend

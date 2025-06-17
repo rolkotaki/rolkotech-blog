@@ -1,9 +1,11 @@
+.venv
 venv
 __pycache__
 *.pyc
 *.pyo
 *.pyd
-http_requests
-coverage
+.ruff_cache
 .coverage
+coverage
 *.log
+http_requests

@@ -1,4 +1,9 @@
 {
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "backend/app"
+  ],
+
   // Exclude common Python cache and environment folders from search
   "files.exclude": {
     "**/__pycache__": true,
@@ -13,5 +18,5 @@
     "--cov=app",
     "--cov-report=html",
     "--cov-config=${workspaceFolder}/backend/.coveragerc"
-  ]
+  ],
 }
