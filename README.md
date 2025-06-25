@@ -63,7 +63,3 @@ Coming soon ...
 ## License
 
 This project is licensed under the terms of the MIT license.
-
-#
-
-FastAPI's [full stack template](https://github.com/fastapi/full-stack-fastapi-template) was a great reference and guide.

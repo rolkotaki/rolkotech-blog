@@ -133,3 +133,7 @@ ruff check app
 ruff format app --check
 ```
 With `ruff format app --diff` you can see the changes that would be applied by `ruff format app`.
+
+#
+
+FastAPI's [full stack template](https://github.com/fastapi/full-stack-fastapi-template) was a great reference and guide.
