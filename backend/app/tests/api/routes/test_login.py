@@ -331,7 +331,9 @@ def test_17_password_reset_no_token(client: TestClient) -> None:
         json={"new_password": "new_password"},
     )
     assert response.status_code == 422
-    assert "token" in response.json()["detail"][0]["loc"]
+    data = response.json()
+    assert "message" in data
+    assert data["message"] == "Token: Field required"
 
 
 def test_18_password_reset_no_new_password(client: TestClient) -> None:
@@ -340,7 +342,9 @@ def test_18_password_reset_no_new_password(client: TestClient) -> None:
         f"{settings.API_VERSION_STR}/users/reset-password", json={"token": token}
     )
     assert response.status_code == 422
-    assert "new_password" in response.json()["detail"][0]["loc"]
+    data = response.json()
+    assert "message" in data
+    assert data["message"] == "New_Password: Field required"
 
 
 def test_19_password_reset_invalid_new_password(
@@ -358,4 +362,9 @@ def test_19_password_reset_invalid_new_password(
     )
 
     assert response.status_code == 422
-    assert "new_password" in response.json()["detail"][0]["loc"]
+    data = response.json()
+    assert "message" in data
+    assert (
+        data["message"]
+        == "New_Password: Value should have at least 8 items after validation, not 5"
+    )

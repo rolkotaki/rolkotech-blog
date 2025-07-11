@@ -304,9 +304,8 @@ def test_12_create_blog_post_invalid_title(
     )
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
-    assert data["detail"][0]["type"] == "string_too_short"
+    assert "message" in data
+    assert data["message"] == "Title: String should have at least 1 character"
 
 
 def test_13_create_blog_post_invalid_url(
@@ -324,9 +323,8 @@ def test_13_create_blog_post_invalid_url(
     )
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
-    assert data["detail"][0]["type"] == "string_too_short"
+    assert "message" in data
+    assert data["message"] == "Url: String should have at least 1 character"
 
 
 def test_14_update_blog_post(

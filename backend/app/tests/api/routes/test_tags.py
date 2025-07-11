@@ -186,9 +186,8 @@ def test_11_create_tag_invalid_data(
     )
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
-    assert data["detail"][0]["type"] == "string_too_short"
+    assert "message" in data
+    assert data["message"] == "Name: String should have at least 1 character"
 
 
 def test_12_update_tag(

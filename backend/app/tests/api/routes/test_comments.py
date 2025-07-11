@@ -403,7 +403,8 @@ def test_20_create_comment_invalid_data(
     )
     assert response.status_code == 422
     data = response.json()
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
+    assert "message" in data
+    assert data["message"] == "Content: String should have at least 1 character"
 
 
 def test_21_update_comment_on_blog_post(
@@ -525,7 +526,8 @@ def test_27_update_comment_on_blog_post_invalid_data(
     )
     assert response.status_code == 422
     data = response.json()
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
+    assert "message" in data
+    assert data["message"] == "Content: String should have at least 1 character"
 
 
 def test_28_delete_comment_on_blog_post(

@@ -326,8 +326,8 @@ def test_14_register_user_invalid_username(client: TestClient) -> None:
         mock_send.assert_not_called()
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
+    assert "message" in data
+    assert data["message"] == "Name: String should have at least 1 character"
 
 
 def test_15_register_user_invalid_email(client: TestClient) -> None:
@@ -337,30 +337,30 @@ def test_15_register_user_invalid_email(client: TestClient) -> None:
         mock_send.assert_not_called()
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
+    assert "message" in data
     assert (
-        data["detail"][0]["msg"]
-        == "value is not a valid email address: An email address must have an @-sign."
+        data["message"]
+        == "Email: value is not a valid email address: An email address must have an @-sign."
     )
 
     data = {"name": "username", "email": "something.com", "password": "password"}
     response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
+    assert "message" in data
     assert (
-        data["detail"][0]["msg"]
-        == "value is not a valid email address: An email address must have an @-sign."
+        data["message"]
+        == "Email: value is not a valid email address: An email address must have an @-sign."
     )
 
     data = {"name": "username", "email": "something@email", "password": "password"}
     response = client.post(f"{settings.API_VERSION_STR}/users/signup", json=data)
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
+    assert "message" in data
     assert (
-        data["detail"][0]["msg"]
-        == "value is not a valid email address: The part after the @-sign is not valid. It should have a period."
+        data["message"]
+        == "Email: value is not a valid email address: The part after the @-sign is not valid. It should have a period."
     )
 
 
@@ -435,8 +435,8 @@ def test_19_create_user_username_invalid_data(
     )
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data
-    assert data["detail"][0]["msg"] == "String should have at least 1 character"
+    assert "message" in data
+    assert data["message"] == "Name: String should have at least 1 character"
 
 
 def test_20_create_user_username_exists(
