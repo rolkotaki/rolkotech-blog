@@ -74,7 +74,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ../docker/coverage/coverage.xml
+          files: ./docker/coverage/coverage.xml
       
       - name: Stop Docker Compose
         run: docker compose down -v --remove-orphans
