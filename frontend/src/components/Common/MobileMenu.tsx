@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import UserDeleteConfirmationModal from "./UserDeleteConfirmationModal";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -7,6 +9,7 @@ interface MobileMenuProps {
 
 function MobileMenu({ isOpen }: MobileMenuProps) {
   const { isAuthenticated, logout, user } = useAuth();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (!isOpen) return null;
 
@@ -28,13 +31,28 @@ function MobileMenu({ isOpen }: MobileMenuProps) {
         {isAuthenticated ? (
           <>
             {user && (
-              <span className="text-sm text-gray-600">
-                Hello, {user.name}
-              </span>
+              <span className="text-sm text-gray-600">Hello, {user.name}</span>
             )}
+            <Link to="/me" className="text-sm text-blue-600 hover:underline">
+              Update Profile
+            </Link>
+            <Link
+              to="/me/password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Change Password
+            </Link>
+
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="text-sm text-red-600 hover:underline text-left"
+            >
+              Delete My Account
+            </button>
+
             <button
               onClick={logout}
-              className="text-sm text-red-600 hover:underline text-left"
+              className="text-sm text-gray-700 hover:underline text-left"
             >
               Log Out
             </button>
@@ -53,6 +71,11 @@ function MobileMenu({ isOpen }: MobileMenuProps) {
           </>
         )}
       </div>
+
+      <UserDeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 }

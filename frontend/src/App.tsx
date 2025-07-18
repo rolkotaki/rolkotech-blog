@@ -7,6 +7,8 @@ import About from "./pages/About";
 import Home from "./pages/Home";
 import LogIn from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import UpdateMe from "./pages/UpdateMe";
+import ChangePassword from "./pages/ChangePassword";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<LogIn />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/me" element={<UpdateMe />} />
+            <Route path="/me/password" element={<ChangePassword />} />
           </Routes>
         </main>
         <Footer />

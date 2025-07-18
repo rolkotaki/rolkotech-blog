@@ -1,11 +1,22 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import {
+  validatePassword,
+  validateEmail,
+  validateName,
+} from "../utils/validation";
+import BackendErrorMessage from "../components/Common/BackendErrorMessage";
+import PasswordToggleButton from "../components/Common/PasswordToggleButton";
+import PasswordInfo from "../components/Common/PasswordInfo";
+import FieldError from "../components/Common/FieldError";
+import GoToLoginLink from "../components/Common/GoToLoginLink";
 
 function SignUp() {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
@@ -18,36 +29,16 @@ function SignUp() {
   }
 
   // Validation functions
-  const validateName = (value: string): string => {
-    if (!value.trim()) return "Name is required";
-    if (value.trim().length < 1) return "Name must be at least 1 character";
-    if (value.trim().length > 255)
-      return "Name must be less than 256 characters";
-    return "";
+  const validateNameField = (value: string): string => {
+    return validateName(value);
   };
 
-  const validateEmail = (value: string): string => {
-    if (!value.trim()) return "Email is required";
-    if (value.trim().length > 255)
-      return "Email must be less than 256 characters";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) return "Please enter a valid email address";
-    return "";
+  const validateEmailField = (value: string): string => {
+    return validateEmail(value);
   };
 
-  const validatePassword = (value: string): string => {
-    if (!value) return "Password is required";
-    if (value.length < 8) return "Password must be at least 8 characters";
-    if (value.trim().length > 40)
-      return "Password must be less than 41 characters";
-    if (!/[A-Z]/.test(value))
-      return "Password must contain at least one uppercase letter";
-    if (!/[a-z]/.test(value))
-      return "Password must contain at least one lowercase letter";
-    if (!/\d/.test(value)) return "Password must contain at least one number";
-    if (!/[!@#$%^&*(),.?":{}|<>/\\[\]~`_+=\-;']/.test(value))
-      return "Password must contain at least one special character";
-    return "";
+  const validatePasswordField = (value: string): string => {
+    return validatePassword(value);
   };
 
   // Real-time validation on blur
@@ -56,13 +47,13 @@ function SignUp() {
 
     switch (field) {
       case "name":
-        errorMessage = validateName(value);
+        errorMessage = validateNameField(value);
         break;
       case "email":
-        errorMessage = validateEmail(value);
+        errorMessage = validateEmailField(value);
         break;
       case "password":
-        errorMessage = validatePassword(value);
+        errorMessage = validatePasswordField(value);
         break;
     }
 
@@ -86,9 +77,9 @@ function SignUp() {
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
 
-    errors.name = validateName(name);
-    errors.email = validateEmail(email);
-    errors.password = validatePassword(password);
+    errors.name = validateNameField(name);
+    errors.email = validateEmailField(email);
+    errors.password = validatePasswordField(password);
 
     // Filter out empty error messages
     const validationErrors = Object.keys(errors).reduce((acc, key) => {
@@ -106,7 +97,6 @@ function SignUp() {
     e.preventDefault();
     setError("");
 
-    // Validate form before submission
     if (!validateForm()) {
       return;
     }
@@ -137,12 +127,9 @@ function SignUp() {
         </h2>
 
         {/* Error message from backend */}
-        {error && (
-          <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            {error}
-          </div>
-        )}
+        <BackendErrorMessage error={error} />
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
@@ -161,9 +148,7 @@ function SignUp() {
                   : "border-gray-300 focus:ring-blue-500"
               }`}
             />
-            {fieldErrors.name && (
-              <p className="text-red-600 text-xs mt-1">{fieldErrors.name}</p>
-            )}
+            <FieldError error={fieldErrors.name} />
           </div>
 
           {/* Email */}
@@ -183,39 +168,36 @@ function SignUp() {
                   : "border-gray-300 focus:ring-blue-500"
               }`}
             />
-            {fieldErrors.email && (
-              <p className="text-red-600 text-xs mt-1">{fieldErrors.email}</p>
-            )}
+            <FieldError error={fieldErrors.email} />
           </div>
 
           {/* Password */}
           <div>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => handleBlur("password", password)}
-              onFocus={() => handleFocus("password")}
-              className={`w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 ${
-                fieldErrors.password
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
-              }`}
-            />
-            {fieldErrors.password && (
-              <p className="text-red-600 text-xs mt-1">
-                {fieldErrors.password}
-              </p>
-            )}
-            {/* Password requirements hint */}
-            <p className="text-xs text-gray-500 mt-1">
-              Password must be at least 8 characters with uppercase, lowercase,
-              number, and special character
-            </p>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => handleBlur("password", password)}
+                onFocus={() => handleFocus("password")}
+                className={`w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 ${
+                  fieldErrors.password
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-blue-500"
+                }`}
+              />
+
+              <PasswordToggleButton
+                isVisible={showPassword}
+                onToggle={() => setShowPassword(!showPassword)}
+              />
+            </div>
+            <FieldError error={fieldErrors.password} />
           </div>
+          <PasswordInfo />
 
           {/* Submit Button */}
           <button
@@ -227,13 +209,7 @@ function SignUp() {
           </button>
         </form>
 
-        {/* Login Link */}
-        <p className="mt-4 text-sm text-center">
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Log in
-          </Link>
-        </p>
+        <GoToLoginLink />
       </div>
     </div>
   );

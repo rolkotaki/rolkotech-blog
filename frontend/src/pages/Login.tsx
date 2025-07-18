@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import BackendErrorMessage from "../components/Common/BackendErrorMessage";
+import PasswordToggleButton from "../components/Common/PasswordToggleButton";
+import GoToSignUpLink from "../components/Common/GoToSignUpLink";
 
 function LogIn() {
   const [email, setEmail] = useState<string>("");
@@ -23,7 +26,7 @@ function LogIn() {
 
     try {
       await login(email, password);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.detail ||
@@ -43,9 +46,10 @@ function LogIn() {
           Log in to your account
         </h2>
 
-        {/* Error message */}
-        {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+        {/* Error message from backend */}
+        <BackendErrorMessage error={error} />
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
           <div>
@@ -72,61 +76,10 @@ function LogIn() {
               className="w-full border border-gray-300 px-4 py-2 rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            {/* Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-blue-600 focus:outline-none"
-            >
-              {/* Eye Icon (visible when password is hidden) */}
-              {!showPassword ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-              ) : (
-                /* Eye-Off Icon (visible when password is shown) */
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 3l18 18"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.94 17.94A9.956 9.956 0 0112 19c-4.48 0-8.27-2.94-9.54-7a9.954 9.954 0 012.39-3.6M9.88 9.88a3 3 0 004.24 4.24M14.12 14.12a3 3 0 00-4.24-4.24"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 5c4.48 0 8.27 2.94 9.54 7-.44 1.4-1.16 2.68-2.1 3.76"
-                  />
-                </svg>
-              )}
-            </button>
+            <PasswordToggleButton
+              isVisible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+            />
           </div>
 
           {/* Submit */}
@@ -139,13 +92,7 @@ function LogIn() {
           </button>
         </form>
 
-        {/* Signup Link */}
-        <p className="mt-4 text-sm text-center">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
-        </p>
+        <GoToSignUpLink />
       </div>
     </div>
   );

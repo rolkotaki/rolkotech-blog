@@ -1,25 +1,9 @@
 import React, { createContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { authService } from "../services/auth";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  is_active: boolean;
-  is_superuser: boolean;
-  creation_date: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  isAuthenticated: boolean;
-  isSuperUser: boolean;
-}
+import { authService } from "../services/auth.service";
+import { userService } from "../services/user.service";
+import type { User, AuthContextType } from "../types";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -28,15 +12,26 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     localStorage.getItem("token")
   );
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (token) {
       const getUser = async () => {
-        const user = await authService.getCurrentUser();
-        setUser(user);
+        try {
+          setIsLoading(true);
+          const user = await userService.getCurrentUser();
+          setUser(user);
+        } catch {
+          setToken(null);
+          localStorage.removeItem("token");
+        } finally {
+          setIsLoading(false);
+        }
       };
       getUser();
+    } else {
+      setIsLoading(false);
     }
   }, [token]);
 
@@ -45,7 +40,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     if (response?.access_token) {
       setToken(response.access_token);
       localStorage.setItem("token", response.access_token);
-      const userProfile = await authService.getCurrentUser();
+      const userProfile = await userService.getCurrentUser();
       setUser(userProfile);
       navigate("/");
     }
@@ -63,6 +58,18 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     navigate("/login");
   };
 
+  const deleteUser = async () => {
+    await userService.deleteMe();
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+  const updateUser = (newUser: User | null) => {
+    setUser(newUser);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -70,8 +77,11 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         login,
         logout,
         register,
+        deleteUser,
+        setUser: updateUser,
         isAuthenticated: !!user,
         isSuperUser: user?.is_superuser || false,
+        isLoading,
       }}
     >
       {children}
