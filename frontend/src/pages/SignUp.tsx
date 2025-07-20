@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import {
   validatePassword,
   validateEmail,
-  validateName,
+  validateUsername,
 } from "../utils/validation";
 import BackendErrorMessage from "../components/Common/BackendErrorMessage";
 import PasswordToggleButton from "../components/Common/PasswordToggleButton";
@@ -13,7 +13,7 @@ import FieldError from "../components/Common/FieldError";
 import GoToLoginLink from "../components/Common/GoToLoginLink";
 
 function SignUp() {
-  const [name, setName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -29,8 +29,8 @@ function SignUp() {
   }
 
   // Validation functions
-  const validateNameField = (value: string): string => {
-    return validateName(value);
+  const validateUsernameField = (value: string): string => {
+    return validateUsername(value);
   };
 
   const validateEmailField = (value: string): string => {
@@ -46,8 +46,8 @@ function SignUp() {
     let errorMessage = "";
 
     switch (field) {
-      case "name":
-        errorMessage = validateNameField(value);
+      case "username":
+        errorMessage = validateUsernameField(value);
         break;
       case "email":
         errorMessage = validateEmailField(value);
@@ -77,7 +77,7 @@ function SignUp() {
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
 
-    errors.name = validateNameField(name);
+    errors.username = validateUsernameField(username);
     errors.email = validateEmailField(email);
     errors.password = validatePasswordField(password);
 
@@ -105,7 +105,7 @@ function SignUp() {
 
     try {
       // register function already navigates to /login on success
-      await register(name, email, password);
+      await register(username, email, password);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage =
@@ -131,24 +131,24 @@ function SignUp() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
+          {/* Username */}
           <div>
             <input
               type="text"
-              name="name"
-              placeholder="Name"
+              name="username"
+              placeholder="Username"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => handleBlur("name", name)}
-              onFocus={() => handleFocus("name")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onBlur={() => handleBlur("username", username)}
+              onFocus={() => handleFocus("username")}
               className={`w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 ${
-                fieldErrors.name
+                fieldErrors.username
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
             />
-            <FieldError error={fieldErrors.name} />
+            <FieldError error={fieldErrors.username} />
           </div>
 
           {/* Email */}

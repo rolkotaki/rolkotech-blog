@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { userService } from "../services/user.service";
-import { validateEmail, validateName } from "../utils/validation";
+import { validateEmail, validateUsername } from "../utils/validation";
 import BackendErrorMessage from "../components/Common/BackendErrorMessage";
 import BackendSuccessMessage from "../components/Common/BackendSuccessMessage";
 import BackToHomeLink from "../components/Common/BackToHomeLink";
 import FieldError from "../components/Common/FieldError";
 
 function UpdateMe() {
-  const [name, setName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
@@ -21,7 +21,7 @@ function UpdateMe() {
   // Use current user data
   useEffect(() => {
     if (user) {
-      setName(user.name);
+      setUsername(user.name);
       setEmail(user.email);
     }
   }, [user]);
@@ -41,8 +41,8 @@ function UpdateMe() {
   }
 
   // Validation functions
-  const validateNameField = (value: string): string => {
-    return validateName(value);
+  const validateUsernameField = (value: string): string => {
+    return validateUsername(value);
   };
 
   const validateEmailField = (value: string): string => {
@@ -54,8 +54,8 @@ function UpdateMe() {
     let errorMessage = "";
 
     switch (field) {
-      case "name":
-        errorMessage = validateNameField(value);
+      case "username":
+        errorMessage = validateUsernameField(value);
         break;
       case "email":
         errorMessage = validateEmailField(value);
@@ -82,7 +82,7 @@ function UpdateMe() {
   const validateForm = (): boolean => {
     const errors: { [key: string]: string } = {};
 
-    errors.name = validateNameField(name);
+    errors.username = validateUsernameField(username);
     errors.email = validateEmailField(email);
 
     // Filter out empty error messages
@@ -109,7 +109,7 @@ function UpdateMe() {
     setIsLoading(true);
 
     try {
-      const updatedUser = await userService.updateMe({ name, email });
+      const updatedUser = await userService.updateMe({ name: username, email });
       setUser(updatedUser);
       setSuccess("Profile updated successfully!");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,24 +141,24 @@ function UpdateMe() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
+          {/* Username */}
           <div>
             <input
               type="text"
-              name="name"
-              placeholder="Name"
+              name="username"
+              placeholder="Username"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => handleBlur("name", name)}
-              onFocus={() => handleFocus("name")}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onBlur={() => handleBlur("username", username)}
+              onFocus={() => handleFocus("username")}
               className={`w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 ${
-                fieldErrors.name
+                fieldErrors.username
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
             />
-            <FieldError error={fieldErrors.name} />
+            <FieldError error={fieldErrors.username} />
           </div>
 
           {/* Email */}

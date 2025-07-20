@@ -36,9 +36,9 @@ export const validateEmail = (email: string): string => {
   return "";
 };
 
-export const validateName = (name: string): string => {
-  if (!name) return "Name is required";
-  if (name.trim().length < 1) return "Name must be at least 1 character";
-  if (name.trim().length > 255) return "Name must be less than 256 characters";
+export const validateUsername = (username: string): string => {
+  if (!username) return "Username is required";
+  if (username.trim().length < 1) return "Username must be at least 1 character";
+  if (username.trim().length > 255) return "Username must be less than 256 characters";
   return "";
 };
