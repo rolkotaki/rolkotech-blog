@@ -1,3 +1,5 @@
+import meImage from "../assets/images/me.png";
+
 function About() {
   return (
     <main className="container mx-auto px-4 py-12 max-w-3xl flex-grow">
@@ -6,7 +8,7 @@ function About() {
       <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6">
         {/* Image */}
         <img
-          src="me.png"
+          src={meImage}
           alt="Roland Takacs"
           className="w-32 h-32 rounded-full object-cover mb-4 md:mb-0"
         />
