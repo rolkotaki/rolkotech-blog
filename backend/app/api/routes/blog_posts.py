@@ -34,13 +34,13 @@ def read_blog_posts(
     return BlogPostsPublic(data=blog_posts, count=count)
 
 
-@router.get("/{id}", response_model=BlogPostPublicWithComments)
-def read_blog_post(session: SessionDep, id: int) -> BlogPostPublicWithComments:
+@router.get("/{url}", response_model=BlogPostPublicWithComments)
+def read_blog_post(session: SessionDep, url: str) -> BlogPostPublicWithComments:
     """
     Get blog post by ID with its tags and comments.
     """
     blog_post = BlogPostCRUD(session).read_blog_post_with_comments_and_tags(
-        blog_post_id=id
+        blog_post_url=url
     )
     if not blog_post:
         raise HTTPException(

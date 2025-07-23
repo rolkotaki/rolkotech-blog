@@ -166,7 +166,7 @@ def test_05_read_blog_post_with_comments_and_tags(
     blog_post = blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
     blog_post_with_comments_and_tags = (
-        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.id)
+        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.url)
     )
     assert blog_post_with_comments_and_tags.id == blog_post.id
     assert len(blog_post_with_comments_and_tags.comments) == 0
@@ -181,7 +181,7 @@ def test_05_read_blog_post_with_comments_and_tags(
     blog_post = blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
     blog_post_with_comments_and_tags = (
-        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.id)
+        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.url)
     )
     assert blog_post_with_comments_and_tags.id == blog_post.id
     assert len(blog_post_with_comments_and_tags.comments) == 0
@@ -208,7 +208,7 @@ def test_05_read_blog_post_with_comments_and_tags(
     )
 
     blog_post_with_comments_and_tags = (
-        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.id)
+        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.url)
     )
 
     assert blog_post_with_comments_and_tags.id == blog_post.id

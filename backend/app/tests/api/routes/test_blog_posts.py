@@ -135,7 +135,7 @@ def test_03_read_blog_posts_with_skip_and_limit(
 
 
 def test_04_read_blog_post(client: TestClient, setup_blog_post: BlogPost) -> None:
-    response = client.get(f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.id}")
+    response = client.get(f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == setup_blog_post.id
@@ -152,7 +152,7 @@ def test_05_read_blog_post_with_tags_and_comments(
     client: TestClient, setup_blog_post_with_tag_and_comment: BlogPost
 ) -> None:
     blog_post, tag, comment = setup_blog_post_with_tag_and_comment
-    response = client.get(f"{settings.API_VERSION_STR}/blogposts/{blog_post.id}")
+    response = client.get(f"{settings.API_VERSION_STR}/blogposts/{blog_post.url}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == blog_post.id
@@ -174,7 +174,7 @@ def test_05_read_blog_post_with_tags_and_comments(
 
 
 def test_06_read_blog_post_not_found(client: TestClient) -> None:
-    response = client.get(f"{settings.API_VERSION_STR}/blogposts/999")
+    response = client.get(f"{settings.API_VERSION_STR}/blogposts/not-existing-url")
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Blog post not found"

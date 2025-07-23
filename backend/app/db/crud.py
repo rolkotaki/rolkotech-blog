@@ -217,16 +217,16 @@ class BlogPostCRUD(BaseCRUD):
 
         return count, blog_posts
 
-    def read_blog_post_with_comments_and_tags(self, blog_post_id: int) -> BlogPost:
+    def read_blog_post_with_comments_and_tags(self, blog_post_url: str) -> BlogPost:
         """
-        Read a blog post by its ID and include its associated comments and tags.
+        Read a blog post by its URL and include its associated comments and tags.
         """
         statement = (
             select(self.MODEL_CLASS)
             .options(
                 joinedload(self.MODEL_CLASS.comments), joinedload(self.MODEL_CLASS.tags)
             )
-            .where(self.MODEL_CLASS.id == blog_post_id)
+            .where(self.MODEL_CLASS.url == blog_post_url)
         )
         blog_post = self.session.exec(statement).first()
         return blog_post
