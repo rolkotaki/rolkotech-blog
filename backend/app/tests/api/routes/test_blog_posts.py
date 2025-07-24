@@ -91,18 +91,13 @@ def test_02_read_blog_posts(client: TestClient, setup_blog_post: BlogPost) -> No
     assert data["data"][0]["tags"] == []
 
 
-def test_03_read_blog_posts_with_skip_and_limit(
-    client: TestClient, db: Session
+def test_03_read_blog_posts_with_skip_and_limit_and_search(
+    client: TestClient,
+    db: Session,
+    setup_blog_post_with_tag_and_comment: tuple[BlogPost, Tag, Comment],
 ) -> None:
-    BlogPostCRUD(db).create_blog_post(
-        blog_post=BlogPostCreate(
-            title="Blog Post 1",
-            url="blog-post-1",
-            content="Content of Blog Post 1",
-            image_path="image.png",
-            tags=[],
-        )
-    )
+    blog_post_1, tag, _ = setup_blog_post_with_tag_and_comment
+
     blog_post_2 = BlogPostCRUD(db).create_blog_post(
         blog_post=BlogPostCreate(
             title="Blog Post 2",
@@ -132,6 +127,124 @@ def test_03_read_blog_posts_with_skip_and_limit(
     assert data["data"][0]["content"] == blog_post_2.content
     assert data["data"][0]["image_path"] == blog_post_2.image_path
     assert data["data"][0]["tags"] == []
+
+    # Test searching by title
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=title&search_value=nonexistent"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 0
+    assert len(data["data"]) == 0
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=title&search_value=2"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == blog_post_2.id
+    assert data["data"][0]["title"] == blog_post_2.title
+    assert data["data"][0]["url"] == blog_post_2.url
+    assert data["data"][0]["content"] == blog_post_2.content
+    assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["tags"] == []
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?skip=1&limit=1&search_by=title&search_value=blog"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 3
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == blog_post_2.id
+    assert data["data"][0]["title"] == blog_post_2.title
+    assert data["data"][0]["url"] == blog_post_2.url
+    assert data["data"][0]["content"] == blog_post_2.content
+    assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["tags"] == []
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=title&search_value=blog"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 3
+    assert len(data["data"]) == 3
+
+    # Test searching by content
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=content&search_value=nonexistent"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 0
+    assert len(data["data"]) == 0
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=content&search_value=2"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == blog_post_2.id
+    assert data["data"][0]["title"] == blog_post_2.title
+    assert data["data"][0]["url"] == blog_post_2.url
+    assert data["data"][0]["content"] == blog_post_2.content
+    assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["tags"] == []
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?skip=1&limit=1&search_by=content&search_value=blog"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 3
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == blog_post_2.id
+    assert data["data"][0]["title"] == blog_post_2.title
+    assert data["data"][0]["url"] == blog_post_2.url
+    assert data["data"][0]["content"] == blog_post_2.content
+    assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["tags"] == []
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=content&search_value=blog"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 3
+    assert len(data["data"]) == 3
+
+    # Test searching by tag
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=tag&search_value=nonexistent"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 0
+    assert len(data["data"]) == 0
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=tag&search_value=test_tag"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == blog_post_1.id
+    assert data["data"][0]["title"] == blog_post_1.title
+    assert data["data"][0]["url"] == blog_post_1.url
+    assert data["data"][0]["content"] == blog_post_1.content
+    assert data["data"][0]["image_path"] == blog_post_1.image_path
+    assert (
+        data["data"][0]["publication_date"] == blog_post_1.publication_date.isoformat()
+    )
+    assert len(data["data"][0]["tags"]) == 1
+    assert data["data"][0]["tags"][0]["id"] == tag.id
+    assert data["data"][0]["tags"][0]["name"] == tag.name
 
 
 def test_04_read_blog_post(client: TestClient, setup_blog_post: BlogPost) -> None:

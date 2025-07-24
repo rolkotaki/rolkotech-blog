@@ -1,5 +1,5 @@
 export const validateRequired = (value: string, fieldName: string): string => {
-  if (!value || value.trim() === "") return `${fieldName} is required`;
+  if (!value || !value.trim()) return `${fieldName} is required`;
   return "";
 };
 

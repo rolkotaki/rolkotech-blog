@@ -134,21 +134,101 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
     )
     blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
-    count, blog_posts = blog_post_crud.read_blog_posts(skip=0, limit=10)
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=10, search_by="", search_value=""
+    )
     assert count == 2
     assert len(blog_posts) == 2
 
-    count, blog_posts = blog_post_crud.read_blog_posts(skip=0, limit=1)
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=1, search_by="", search_value=""
+    )
     assert count == 2
     assert len(blog_posts) == 1
 
-    count, blog_posts = blog_post_crud.read_blog_posts(skip=1, limit=10)
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=1, limit=10, search_by="", search_value=""
+    )
     assert count == 2
     assert len(blog_posts) == 1
 
-    count, blog_posts = blog_post_crud.read_blog_posts(skip=2, limit=10)
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=2, limit=10, search_by="", search_value=""
+    )
     assert count == 2
     assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="tag", search_value="nonexistent"
+    )
+    assert count == 0
+    assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="tag", search_value="tag1"
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=1, limit=1, search_by="tag", search_value="tag1"
+    )
+    assert count == 1
+    assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=1, search_by="tag", search_value="tag1"
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="title", search_value="nonexistent"
+    )
+    assert count == 0
+    assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="title", search_value="blog post"
+    )
+    assert count == 2
+    assert len(blog_posts) == 2
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=1, limit=1, search_by="title", search_value="blog post"
+    )
+    assert count == 2
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="title", search_value="1"
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="content", search_value="nonexistent"
+    )
+    assert count == 0
+    assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="content", search_value="post"
+    )
+    assert count == 2
+    assert len(blog_posts) == 2
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=1, limit=1, search_by="content", search_value="post"
+    )
+    assert count == 2
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="content", search_value="1"
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
 
 
 def test_05_read_blog_post_with_comments_and_tags(

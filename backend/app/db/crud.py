@@ -200,16 +200,38 @@ class BlogPostCRUD(BaseCRUD):
         blog_post.tags = tags
         return self._create(blog_post)
 
-    def read_blog_posts(self, skip: int, limit: int) -> tuple[int, list[BlogPost]]:
+    def read_blog_posts(
+        self, skip: int, limit: int, search_by: str, search_value: str
+    ) -> tuple[int, list[BlogPost]]:
         """
-        Read blog posts from the database with pagination.
+        Read blog posts from the database with pagination and optional filtering.
         """
-        count_statement = select(func.count()).select_from(self.MODEL_CLASS)
+        base_query = select(self.MODEL_CLASS)
+
+        # Apply the search filter if specified
+        if search_by and search_value:
+            if search_by == "tag":
+                base_query = (
+                    base_query.join(self.MODEL_CLASS.tags)
+                    .where(Tag.name.ilike(f"%{search_value}%"))
+                    .distinct()
+                )
+            elif search_by == "title":
+                base_query = base_query.where(
+                    self.MODEL_CLASS.title.ilike(f"%{search_value}%")
+                )
+            elif search_by == "content":
+                base_query = base_query.where(
+                    self.MODEL_CLASS.content.ilike(f"%{search_value}%")
+                )
+
+        # Count
+        count_statement = select(func.count()).select_from(base_query.subquery())
         count = self.session.exec(count_statement).one()
 
+        # Apply pagination
         statement = (
-            select(self.MODEL_CLASS)
-            .options(selectinload(self.MODEL_CLASS.tags))
+            base_query.options(selectinload(self.MODEL_CLASS.tags))
             .offset(skip)
             .limit(limit)
         )

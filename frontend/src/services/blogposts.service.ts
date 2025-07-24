@@ -3,12 +3,21 @@ import { BLOGPOSTS_PER_PAGE } from "../types/blogposts";
 import type { BlogPosts, BlogPost } from "../types";
 
 export const blogpostService = {
-  getBlogPosts: async (page: number): Promise<BlogPosts> => {
+  getBlogPosts: async (
+    page: number,
+    searchBy?: string,
+    searchValue?: string
+  ): Promise<BlogPosts> => {
     const limit: number = BLOGPOSTS_PER_PAGE;
     const skip: number = (page - 1) * limit;
-    const response = await api.get<BlogPosts>(
-      `/blogposts?limit=${limit}&skip=${skip}`
-    );
+
+    let url = `/blogposts?limit=${limit}&skip=${skip}`;
+    if (searchBy && searchValue) {
+      url += `&search_by=${encodeURIComponent(searchBy)}`;
+      url += `&search_value=${encodeURIComponent(searchValue)}`;
+    }
+
+    const response = await api.get<BlogPosts>(url);
     return response.data;
   },
 

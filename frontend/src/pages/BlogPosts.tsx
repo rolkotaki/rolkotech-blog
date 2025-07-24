@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { blogpostService } from "../services/blogposts.service";
 import BlogPostBox from "../components/BlogPost/BlogPostBox";
+import BlogPostSearch from "../components/BlogPost/BlogPostSearch.tsx";
 import Pagination from "../components/BlogPost/Pagination";
 import { BLOGPOSTS_PER_PAGE } from "../types/blogposts";
 import type { BlogPost } from "../types/blogposts";
@@ -14,13 +15,19 @@ function BlogPosts() {
   const [error, setError] = useState<string>("");
 
   const currentPage = parseInt(searchParams.get("page") || "1");
+  const searchBy = searchParams.get("search_by") || "";
+  const searchValue = searchParams.get("search_value") || "";
 
   useEffect(() => {
     const fetchBlogPosts = async () => {
       try {
         setLoading(true);
         setError("");
-        const response = await blogpostService.getBlogPosts(currentPage);
+        const response = await blogpostService.getBlogPosts(
+          currentPage,
+          searchBy || undefined,
+          searchValue || undefined
+        );
         setBlogPosts(response.data);
         setTotalCount(response.count);
       } catch (err) {
@@ -32,10 +39,22 @@ function BlogPosts() {
     };
 
     fetchBlogPosts();
-  }, [currentPage]);
+  }, [currentPage, searchBy, searchValue]);
 
   const handlePageChange = (page: number) => {
-    setSearchParams({ page: page.toString() });
+    const newParams: Record<string, string> = { page: page.toString() };
+    if (searchBy) newParams.search_by = searchBy;
+    if (searchValue) newParams.search_value = searchValue;
+    setSearchParams(newParams);
+  };
+
+  const handleSearch = (newSearchBy: string, newSearchValue: string) => {
+    const newParams: Record<string, string> = {};
+    if (newSearchBy && newSearchValue) {
+      newParams.search_by = newSearchBy;
+      newParams.search_value = newSearchValue;
+    }
+    setSearchParams(newParams);
   };
 
   if (loading) {
@@ -56,6 +75,12 @@ function BlogPosts() {
 
   return (
     <div className="flex-grow flex flex-col container mx-auto px-4 py-8">
+      <BlogPostSearch
+        onSearch={handleSearch}
+        isLoading={loading}
+        currentSearchBy={searchBy}
+        currentSearchValue={searchValue}
+      />
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {blogPosts.map((post) => (
           <BlogPostBox

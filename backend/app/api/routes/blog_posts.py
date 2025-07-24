@@ -20,12 +20,18 @@ router = APIRouter(prefix="/blogposts", tags=["blogposts"])
 
 @router.get("/", response_model=BlogPostsPublic)
 def read_blog_posts(
-    session: SessionDep, skip: int = 0, limit: int = 100
+    session: SessionDep,
+    skip: int = 0,
+    limit: int = 100,
+    search_by: str | None = None,
+    search_value: str | None = None,
 ) -> BlogPostsPublic:
     """
-    Retrieve blog posts.
+    Retrieve blog posts with optional filtering.
     """
-    count, blog_posts = BlogPostCRUD(session).read_blog_posts(skip=skip, limit=limit)
+    count, blog_posts = BlogPostCRUD(session).read_blog_posts(
+        skip=skip, limit=limit, search_by=search_by, search_value=search_value
+    )
     # Convert BlogPost models to BlogPostPublic models
     blog_posts = [
         BlogPostPublic.model_validate(blog_post, from_attributes=True)
