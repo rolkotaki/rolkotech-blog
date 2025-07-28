@@ -1,5 +1,6 @@
 import type { BlogPost as BlogPostType } from "../../types/blogposts";
 import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogposts";
+import MarkdownContentProps from "./MarkdownContent";
 
 interface BlogPostProps {
   blogPost: BlogPostType;
@@ -21,8 +22,8 @@ function BlogPost({ blogPost }: BlogPostProps) {
         className="w-full h-auto rounded-lg shadow-md mb-6"
       />
 
-      <article className="prose prose-blue max-w-none">
-        {blogPost.content}
+      <article className="prose prose-blue max-w-none mt-8">
+        <MarkdownContentProps content={blogPost.content} />
       </article>
     </div>
   );

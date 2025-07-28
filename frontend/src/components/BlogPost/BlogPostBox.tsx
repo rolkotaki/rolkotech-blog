@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogposts";
+import MarkdownContentProps from "./MarkdownContent";
 
 interface BlogPostBoxProps {
   url: string;
@@ -29,7 +30,18 @@ function BlogPostBox({
         <div className="p-5">
           <p className="text-sm text-gray-400 mb-1">{publicationDate}</p>
           <h3 className="text-xl font-semibold text-blue-700 mb-2">{title}</h3>
-          <p className="text-gray-600 mb-3">{content}</p>
+          <div
+            className="prose prose-blue max-w-none mt-4 mb-2 line-clamp-3"
+            style={{ fontSize: "1rem", lineHeight: "1.5em" }}
+          >
+            <MarkdownContentProps
+              content={
+                (content + "\n\n")
+                  .split("\n\n")
+                  .filter((s) => s.trim().length > 0)[0]
+              }
+            />
+          </div>
           {tags.map((tag, idx) => (
             <>
               <span

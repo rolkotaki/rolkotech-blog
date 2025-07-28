@@ -92,10 +92,7 @@ function BlogPosts() {
               post.publication_date
             ).toLocaleDateString()}
             tags={post.tags.map((tag) => tag.name)}
-            content={
-              post.content.substring(0, 150) +
-              (post.content.length > 150 ? "..." : "")
-            }
+            content={post.content}
           />
         ))}
       </div>

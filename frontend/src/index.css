@@ -1,1 +1,28 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Remove backticks from inline code */
+.prose code::before,
+.prose code::after {
+  content: none !important;
+}
+
+.prose {
+  font-family: Merriweather, Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 2rem;
+}
+
+.prose pre {
+  padding: 0em;
+  margin-top: 0em;
+}
+
+.prose a {
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}

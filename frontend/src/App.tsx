@@ -17,7 +17,7 @@ function App() {
     <AuthProvider>
       <div className="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
         <NavBar />
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col pt-16">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/articles" element={<BlogPosts />} />
