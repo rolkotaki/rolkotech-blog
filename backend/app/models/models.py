@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import UTC
+from datetime import datetime, UTC
 from pydantic import EmailStr
 from sqlmodel import SQLModel, Field, Relationship, Column, ForeignKey
 import uuid
@@ -56,6 +55,9 @@ class Comment(SQLModel, table=True):
     )
     blog_post_id: int = Field(
         sa_column=Column(ForeignKey("blogpost.id", ondelete="CASCADE"))
+    )
+    reply_to: int | None = Field(
+        default=None, sa_column=Column(ForeignKey("comment.id", ondelete="CASCADE"))
     )
     # Relationships
     user: "User" = Relationship(back_populates="comments")

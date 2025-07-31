@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogposts";
+import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogpost";
 import MarkdownContentProps from "./MarkdownContent";
 
 interface BlogPostBoxProps {

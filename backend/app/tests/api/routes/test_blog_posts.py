@@ -258,13 +258,13 @@ def test_04_read_blog_post(client: TestClient, setup_blog_post: BlogPost) -> Non
     assert data["image_path"] == setup_blog_post.image_path
     assert data["publication_date"] == setup_blog_post.publication_date.isoformat()
     assert data["tags"] == []
-    assert data["comments"] == []
 
 
 def test_05_read_blog_post_with_tags_and_comments(
-    client: TestClient, setup_blog_post_with_tag_and_comment: BlogPost
+    client: TestClient,
+    setup_blog_post_with_tag_and_comment: tuple[BlogPost, Tag, Comment],
 ) -> None:
-    blog_post, tag, comment = setup_blog_post_with_tag_and_comment
+    blog_post, tag, _ = setup_blog_post_with_tag_and_comment
     response = client.get(f"{settings.API_VERSION_STR}/blogposts/{blog_post.url}")
     assert response.status_code == 200
     data = response.json()
@@ -277,13 +277,6 @@ def test_05_read_blog_post_with_tags_and_comments(
     assert len(data["tags"]) == 1
     assert data["tags"][0]["id"] == tag.id
     assert data["tags"][0]["name"] == tag.name
-    assert len(data["comments"]) == 1
-    assert data["comments"][0]["id"] == comment.id
-    assert data["comments"][0]["content"] == comment.content
-    assert data["comments"][0]["comment_date"] == comment.comment_date.isoformat()
-    assert "user_id" not in data["comments"][0]
-    assert data["comments"][0]["blog_post_id"] == comment.blog_post_id
-    assert data["comments"][0]["username"] == comment.user.name
 
 
 def test_06_read_blog_post_not_found(client: TestClient) -> None:
@@ -642,7 +635,7 @@ def test_22_delete_blog_post_unauthorized(
 
 def test_23_delete_blog_post_with_comments(
     client: TestClient,
-    setup_blog_post_with_tag_and_comment: BlogPost,
+    setup_blog_post_with_tag_and_comment: tuple[BlogPost, Tag, Comment],
     superuser_token_headers: dict[str, str],
 ) -> None:
     blog_post, tag, comment = setup_blog_post_with_tag_and_comment

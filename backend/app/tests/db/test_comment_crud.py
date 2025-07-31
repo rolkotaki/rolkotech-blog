@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, UTC
 import pytest
 from sqlmodel import Session, select, func, delete
 from uuid import UUID
@@ -96,13 +96,20 @@ def test_03_read_comments_with_username(db: Session, setup_user_and_blog_post) -
 def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
-    comment_crud.create_comment(
-        comment=CommentCreate(content="Comment 1"),
+    comment_1 = comment_crud.create_comment(
+        comment=CommentCreate(
+            content="Comment 1", comment_date=datetime.now(UTC) - timedelta(days=1)
+        ),
         user_id=user_id,
         blog_post_id=blog_post_id,
     )
     comment_crud.create_comment(
-        comment=CommentCreate(content="Comment 2"),
+        comment=CommentCreate(content="Comment 2", comment_date=datetime.now(UTC)),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 3", reply_to=comment_1.id),
         user_id=user_id,
         blog_post_id=blog_post_id,
     )
@@ -112,6 +119,9 @@ def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -
     )
     assert count == 2
     assert len(comments) == 2
+
+    assert comments[0].content == "Comment 2"
+    assert comments[1].content == "Comment 1"
 
     count, comments = comment_crud.read_comments_for_blog_post(
         blog_post_id=blog_post_id, skip=0, limit=1
@@ -126,7 +136,38 @@ def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -
     assert len(comments) == 1
 
 
-def test_05_read_comments_for_user(db: Session, setup_user_and_blog_post) -> None:
+def test_05_read_comment_replies(db: Session, setup_user_and_blog_post) -> None:
+    user_id, blog_post_id = setup_user_and_blog_post
+    comment_crud = CommentCRUD(db)
+    comment_1 = comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_2 = comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 2"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1 reply", reply_to=comment_1.id),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+    comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 2 reply", reply_to=comment_2.id),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+
+    count, comments = comment_crud.read_comment_replies(comment_id=comment_1.id)
+    assert count == 1
+    assert len(comments) == 1
+
+    assert comments[0].content == "Comment 1 reply"
+
+
+def test_06_read_comments_for_user(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
     comment_crud.create_comment(
@@ -159,7 +200,7 @@ def test_05_read_comments_for_user(db: Session, setup_user_and_blog_post) -> Non
     assert len(comments) == 1
 
 
-def test_06_update_comment(db: Session, setup_user_and_blog_post) -> None:
+def test_07_update_comment(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
     comment = comment_crud.create_comment(
@@ -177,12 +218,12 @@ def test_06_update_comment(db: Session, setup_user_and_blog_post) -> None:
     assert comment_updated.id == comment.id
     assert comment_updated.comment_date.replace(
         tzinfo=None
-    ) == comment_update.comment_date.replace(tzinfo=None)
+    ) == comment.comment_date.replace(tzinfo=None)  # remains unchanged
     assert comment_updated.user_id == user_id
     assert comment_updated.blog_post_id == blog_post_id
 
 
-def test_07_delete_comment(db: Session, setup_user_and_blog_post) -> None:
+def test_08_delete_comment(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
     comment = comment_crud.create_comment(

@@ -1,4 +1,4 @@
-import { BLOGPOSTS_PER_PAGE, MAX_BLOGPOST_PAGES } from "../../types/blogposts";
+import { BLOGPOSTS_PER_PAGE, MAX_BLOGPOST_PAGES } from "../../types/blogpost";
 
 interface PaginationProps {
   currentPage: number;

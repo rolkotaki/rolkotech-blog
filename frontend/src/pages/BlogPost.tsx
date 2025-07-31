@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { blogpostService } from "../services/blogposts.service";
+import { useAuth } from "../hooks/useAuth";
+import { blogpostService } from "../services/blogpost.service";
 import BlogPost from "../components/BlogPost/BlogPost";
-import type { BlogPost as BlogPostType } from "../types/blogposts";
+import CommentsSection from "../components/Comment/CommentsSection";
+import type { BlogPost as BlogPostType } from "../types/blogpost";
 
 function BlogPostPage() {
+  const { user } = useAuth();
   const { url } = useParams<{ url: string }>();
   const [blogPost, setBlogPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -63,7 +66,15 @@ function BlogPostPage() {
     );
   }
 
-  return <BlogPost blogPost={blogPost} />;
+  return (
+    <div className="flex-grow">
+      <BlogPost blogPost={blogPost} />
+      <CommentsSection
+        blogPostUrl={blogPost.url}
+        currentUsername={user?.name}
+      />
+    </div>
+  );
 }
 
 export default BlogPostPage;

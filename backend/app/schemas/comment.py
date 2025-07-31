@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import UTC
+from datetime import datetime, UTC
 from pydantic import BaseModel, Field
 import uuid
 
@@ -14,24 +13,31 @@ class CommentBase(BaseModel):
 class CommentCreate(BaseModel):
     content: str = Field(min_length=1, max_length=1000)
     comment_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    reply_to: int | None = Field(default=None)
 
 
 class CommentPublic(CommentBase):
     id: int
-
-
-class CommentPrivate(CommentBase):
-    id: int
-    user_id: uuid.UUID
+    reply_to: int | None
 
 
 class CommentPublicWithUsername(CommentPublic):
     username: str
 
 
+class CommentPublicWithReplies(CommentPublicWithUsername):
+    replies: list[CommentPublicWithUsername] = Field(default_factory=list)
+
+
 class CommentsPublic(BaseModel):
-    data: list[CommentPublic | CommentPublicWithUsername]
+    data: list[CommentPublicWithReplies | CommentPublicWithUsername | CommentPublic]
     count: int
+
+
+class CommentPrivate(CommentBase):
+    id: int
+    user_id: uuid.UUID
+    reply_to: int | None
 
 
 class CommentsPrivate(BaseModel):

@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy import and_
 from sqlmodel import Session, select, func
 from typing import Any
 import uuid
@@ -232,6 +233,7 @@ class BlogPostCRUD(BaseCRUD):
         # Apply pagination
         statement = (
             base_query.options(selectinload(self.MODEL_CLASS.tags))
+            .order_by(self.MODEL_CLASS.publication_date.desc())
             .offset(skip)
             .limit(limit)
         )
@@ -239,15 +241,13 @@ class BlogPostCRUD(BaseCRUD):
 
         return count, blog_posts
 
-    def read_blog_post_with_comments_and_tags(self, blog_post_url: str) -> BlogPost:
+    def read_blog_post_with_tags(self, blog_post_url: str) -> BlogPost:
         """
         Read a blog post by its URL and include its associated comments and tags.
         """
         statement = (
             select(self.MODEL_CLASS)
-            .options(
-                joinedload(self.MODEL_CLASS.comments), joinedload(self.MODEL_CLASS.tags)
-            )
+            .options(joinedload(self.MODEL_CLASS.tags))
             .where(self.MODEL_CLASS.url == blog_post_url)
         )
         blog_post = self.session.exec(statement).first()
@@ -352,14 +352,49 @@ class CommentCRUD(BaseCRUD):
         """
         Read comments for a specific blog post with pagination.
         """
-        count_statement = select(func.count()).select_from(self.MODEL_CLASS)
+        count_statement = (
+            select(func.count())
+            .select_from(self.MODEL_CLASS)
+            .where(
+                and_(
+                    self.MODEL_CLASS.blog_post_id == blog_post_id,
+                    self.MODEL_CLASS.reply_to.is_(None),
+                )
+            )
+        )
         count = self.session.exec(count_statement).one()
 
         statement = (
             select(self.MODEL_CLASS)
-            .where(self.MODEL_CLASS.blog_post_id == blog_post_id)
+            .where(
+                and_(
+                    self.MODEL_CLASS.blog_post_id == blog_post_id,
+                    self.MODEL_CLASS.reply_to.is_(None),
+                )
+            )
+            .order_by(self.MODEL_CLASS.comment_date.desc())
             .offset(skip)
             .limit(limit)
+        )
+        objects = self.session.exec(statement).all()
+
+        return count, objects
+
+    def read_comment_replies(self, comment_id: int) -> tuple[int, list[Comment]]:
+        """
+        Read replies for a specific comment.
+        """
+        count_statement = (
+            select(func.count())
+            .select_from(self.MODEL_CLASS)
+            .where(self.MODEL_CLASS.reply_to == comment_id)
+        )
+        count = self.session.exec(count_statement).one()
+
+        statement = (
+            select(self.MODEL_CLASS)
+            .where(self.MODEL_CLASS.reply_to == comment_id)
+            .order_by(self.MODEL_CLASS.comment_date.asc())
         )
         objects = self.session.exec(statement).all()
 
@@ -389,7 +424,8 @@ class CommentCRUD(BaseCRUD):
         Update an existing comment in the database.
         """
         return self._update(
-            comment_db, comment_in, force_update_of_cols=["comment_date"]
+            comment_db,
+            comment_in,  # force_update_of_cols=["comment_date"]
         )
 
     def delete_comment(self, comment: Comment) -> None:

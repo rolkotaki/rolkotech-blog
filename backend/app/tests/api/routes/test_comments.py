@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, UTC
 from fastapi.testclient import TestClient
 import pytest
 from sqlmodel import Session, delete
@@ -150,7 +151,7 @@ def test_05_read_comments_for_blog_post_none(
     client: TestClient, setup_blog_post: BlogPost
 ) -> None:
     response = client.get(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_blog_post.id}/comments"
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments"
     )
     assert response.status_code == 200
     data = response.json()
@@ -167,12 +168,19 @@ def test_06_read_comments_for_blog_post(
         user_id=test_user.id,
     )
     comment_2 = CommentCRUD(db).create_comment(
-        comment=CommentCreate(content="Test comment 2"),
+        comment=CommentCreate(
+            content="Test comment 2", comment_date=datetime.now(UTC) - timedelta(days=1)
+        ),
+        blog_post_id=setup_blog_post.id,
+        user_id=test_user.id,
+    )
+    comment_2_reply = CommentCRUD(db).create_comment(
+        comment=CommentCreate(content="Test comment 2 reply", reply_to=comment_2.id),
         blog_post_id=setup_blog_post.id,
         user_id=test_user.id,
     )
     response = client.get(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_blog_post.id}/comments"
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments"
     )
     assert response.status_code == 200
     data = response.json()
@@ -182,16 +190,31 @@ def test_06_read_comments_for_blog_post(
     assert data["data"][0]["content"] == comment_1.content
     assert data["data"][0]["comment_date"] is not None
     assert data["data"][0]["blog_post_id"] == comment_1.blog_post_id
+    assert data["data"][0]["reply_to"] is None
+    assert data["data"][0]["username"] == test_user.name
+    assert data["data"][0]["replies"] == []
     assert data["data"][1]["id"] == comment_2.id
     assert data["data"][1]["content"] == comment_2.content
     assert data["data"][1]["comment_date"] is not None
     assert data["data"][1]["blog_post_id"] == comment_2.blog_post_id
+    assert data["data"][1]["reply_to"] is None
+    assert data["data"][1]["username"] == test_user.name
+    assert len(data["data"][1]["replies"]) == 1
+    assert data["data"][1]["replies"][0]["id"] == comment_2_reply.id
+    assert data["data"][1]["replies"][0]["content"] == comment_2_reply.content
+    assert data["data"][1]["replies"][0]["comment_date"] is not None
+    assert data["data"][1]["replies"][0]["blog_post_id"] == comment_2_reply.blog_post_id
+    assert data["data"][1]["replies"][0]["reply_to"] == comment_2_reply.reply_to
+    assert data["data"][1]["replies"][0]["username"] == test_user.name
     assert "user_id" not in data["data"][0]
     assert "user_id" not in data["data"][1]
+    assert "user_id" not in data["data"][1]["replies"][0]
 
 
 def test_07_read_comments_for_blog_post_not_found(client: TestClient) -> None:
-    response = client.get(f"{settings.API_VERSION_STR}/blogpost/999/comments")
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts/blog-post-url/comments"
+    )
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Blog post not found"
@@ -330,6 +353,7 @@ def test_15_read_comment(client: TestClient, setup_comment: Comment) -> None:
     assert data["comment_date"] is not None
     assert data["blog_post_id"] == setup_comment.blog_post_id
     assert data["username"] == setup_comment.user.name
+    assert data["reply_to"] is None
     assert "user_id" not in data
 
 
@@ -348,7 +372,7 @@ def test_17_create_comment(
 ) -> None:
     comment_data = {"content": "Test comment"}
     response = client.post(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_blog_post.id}/comments",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments",
         headers=normal_user_token_headers,
         json=comment_data,
     )
@@ -358,6 +382,24 @@ def test_17_create_comment(
     assert data["comment_date"] is not None
     assert data["blog_post_id"] == setup_blog_post.id
     assert data["username"] == test_user.name
+    assert data["reply_to"] is None
+    assert data["id"] is not None
+    assert "user_id" not in data
+
+    comment_id = data["id"]
+    comment_data = {"content": "Test comment reply", "reply_to": comment_id}
+    response = client.post(
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments",
+        headers=normal_user_token_headers,
+        json=comment_data,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["content"] == "Test comment reply"
+    assert data["comment_date"] is not None
+    assert data["blog_post_id"] == setup_blog_post.id
+    assert data["username"] == test_user.name
+    assert data["reply_to"] == comment_id
     assert data["id"] is not None
     assert "user_id" not in data
 
@@ -367,7 +409,7 @@ def test_18_create_comment_blogpost_not_found(
 ) -> None:
     comment_data = {"content": "Test comment"}
     response = client.post(
-        f"{settings.API_VERSION_STR}/blogpost/999/comments",
+        f"{settings.API_VERSION_STR}/blogposts/blog-post-url/comments",
         headers=normal_user_token_headers,
         json=comment_data,
     )
@@ -381,7 +423,7 @@ def test_19_create_comment_unauthorized(
 ) -> None:
     comment_data = {"content": "Test comment"}
     response = client.post(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_blog_post.id}/comments",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments",
         headers={"Authorization": "Bearer invalid_token"},
         json=comment_data,
     )
@@ -397,7 +439,7 @@ def test_20_create_comment_invalid_data(
 ) -> None:
     comment_data = {"content": ""}
     response = client.post(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_blog_post.id}/comments",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments",
         headers=normal_user_token_headers,
         json=comment_data,
     )
@@ -409,12 +451,13 @@ def test_20_create_comment_invalid_data(
 
 def test_21_update_comment_on_blog_post(
     client: TestClient,
+    setup_blog_post: BlogPost,
     setup_comment: Comment,
     normal_user_token_headers: dict[str, str],
 ) -> None:
     updated_comment_data = {"content": "Updated comment"}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
         json=updated_comment_data,
     )
@@ -424,7 +467,8 @@ def test_21_update_comment_on_blog_post(
     assert data["content"] == updated_comment_data["content"]
     assert data["comment_date"] is not None
     assert data["blog_post_id"] == setup_comment.blog_post_id
-    assert data["user_id"] == str(setup_comment.user.id)
+    assert data["reply_to"] == setup_comment.reply_to
+    assert data["username"] == str(setup_comment.user.name)
 
 
 def test_22_update_comment_on_blog_post_blogpost_not_found(
@@ -434,7 +478,7 @@ def test_22_update_comment_on_blog_post_blogpost_not_found(
 ) -> None:
     updated_comment_data = {"content": "Updated comment"}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/999/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/blog-post-url/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
         json=updated_comment_data,
     )
@@ -445,12 +489,13 @@ def test_22_update_comment_on_blog_post_blogpost_not_found(
 
 def test_23_update_comment_on_blog_post_comment_not_found(
     client: TestClient,
+    setup_blog_post: BlogPost,
     setup_comment: Comment,
     normal_user_token_headers: dict[str, str],
 ) -> None:
     updated_comment_data = {"content": "Updated comment"}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/999",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/999",
         headers=normal_user_token_headers,
         json=updated_comment_data,
     )
@@ -460,11 +505,11 @@ def test_23_update_comment_on_blog_post_comment_not_found(
 
 
 def test_24_update_comment_on_blog_post_unauthorized(
-    client: TestClient, setup_comment: Comment
+    client: TestClient, setup_blog_post: BlogPost, setup_comment: Comment
 ) -> None:
     updated_comment_data = {"content": "Updated comment"}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers={"Authorization": "Bearer invalid_token"},
         json=updated_comment_data,
     )
@@ -474,11 +519,14 @@ def test_24_update_comment_on_blog_post_unauthorized(
 
 
 def test_25_update_comment_on_blog_post_not_owner(
-    client: TestClient, setup_comment: Comment, other_user_auth_headers: dict[str, str]
+    client: TestClient,
+    setup_blog_post: BlogPost,
+    setup_comment: Comment,
+    other_user_auth_headers: dict[str, str],
 ) -> None:
     updated_comment_data = {"content": "Updated comment"}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers=other_user_auth_headers,
         json=updated_comment_data,
     )
@@ -504,7 +552,7 @@ def test_26_update_comment_on_blog_post_different_blog_post(
     )
     updated_comment_data = {"content": "Updated comment"}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/{other_blog_post.id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{other_blog_post.url}/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
         json=updated_comment_data,
     )
@@ -515,12 +563,13 @@ def test_26_update_comment_on_blog_post_different_blog_post(
 
 def test_27_update_comment_on_blog_post_invalid_data(
     client: TestClient,
+    setup_blog_post: BlogPost,
     setup_comment: Comment,
     normal_user_token_headers: dict[str, str],
 ) -> None:
     updated_comment_data = {"content": ""}
     response = client.patch(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
         json=updated_comment_data,
     )
@@ -532,11 +581,12 @@ def test_27_update_comment_on_blog_post_invalid_data(
 
 def test_28_delete_comment_on_blog_post(
     client: TestClient,
+    setup_blog_post: BlogPost,
     setup_comment: Comment,
     normal_user_token_headers: dict[str, str],
 ) -> None:
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 200
@@ -550,7 +600,7 @@ def test_29_delete_comment_on_blog_post_blogpost_not_found(
     normal_user_token_headers: dict[str, str],
 ) -> None:
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/999/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/blog-post-url/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 404
@@ -560,11 +610,12 @@ def test_29_delete_comment_on_blog_post_blogpost_not_found(
 
 def test_30_delete_comment_on_blog_post_comment_not_found(
     client: TestClient,
+    setup_blog_post: BlogPost,
     setup_comment: Comment,
     normal_user_token_headers: dict[str, str],
 ) -> None:
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/999",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/999",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 404
@@ -573,10 +624,10 @@ def test_30_delete_comment_on_blog_post_comment_not_found(
 
 
 def test_31_delete_comment_on_blog_post_unauthorized(
-    client: TestClient, setup_comment: Comment
+    client: TestClient, setup_blog_post: BlogPost, setup_comment: Comment
 ) -> None:
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers={"Authorization": "Bearer invalid_token"},
     )
     assert response.status_code == 401
@@ -585,10 +636,13 @@ def test_31_delete_comment_on_blog_post_unauthorized(
 
 
 def test_32_delete_comment_on_blog_post_not_owner(
-    client: TestClient, setup_comment: Comment, other_user_auth_headers: dict[str, str]
+    client: TestClient,
+    setup_blog_post: BlogPost,
+    setup_comment: Comment,
+    other_user_auth_headers: dict[str, str],
 ) -> None:
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers=other_user_auth_headers,
     )
     assert response.status_code == 403
@@ -612,7 +666,7 @@ def test_33_delete_comment_on_blog_post_different_blog_post(
         )
     )
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/{other_blog_post.id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{other_blog_post.url}/comments/{setup_comment.id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 400
@@ -621,10 +675,13 @@ def test_33_delete_comment_on_blog_post_different_blog_post(
 
 
 def test_34_delete_comment_on_blog_post_superuser(
-    client: TestClient, setup_comment: Comment, superuser_token_headers: dict[str, str]
+    client: TestClient,
+    setup_blog_post: BlogPost,
+    setup_comment: Comment,
+    superuser_token_headers: dict[str, str],
 ) -> None:
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogpost/{setup_comment.blog_post_id}/comments/{setup_comment.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{setup_blog_post.url}/comments/{setup_comment.id}",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200

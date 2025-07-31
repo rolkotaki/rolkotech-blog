@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { blogpostService } from "../services/blogposts.service";
+import { blogpostService } from "../services/blogpost.service.ts";
 import BlogPostBox from "../components/BlogPost/BlogPostBox";
 import BlogPostSearch from "../components/BlogPost/BlogPostSearch.tsx";
 import Pagination from "../components/BlogPost/Pagination";
-import { BLOGPOSTS_PER_PAGE } from "../types/blogposts";
-import type { BlogPost } from "../types/blogposts";
+import { BLOGPOSTS_PER_PAGE } from "../types/blogpost.ts";
+import type { BlogPost } from "../types/blogpost.ts";
 
 function BlogPosts() {
   const [searchParams, setSearchParams] = useSearchParams();

@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import UTC
+from datetime import datetime, timedelta, UTC
 from fastapi import HTTPException
 import pytest
 from sqlmodel import Session, select, func, delete
@@ -122,6 +121,7 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
         title="Blog Post 1",
         url="blog-post-1",
         content="Content of Blog Post 1",
+        publication_date=datetime.now(UTC) - timedelta(days=1),
         tags=[],
     )
     blog_post_crud.create_blog_post(blog_post=blog_post_create)
@@ -130,6 +130,7 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
         title="Blog Post 2",
         url="blog-post-2",
         content="Content of Blog Post 2",
+        publication_date=datetime.now(UTC),
         tags=[tag_1, tag_2],
     )
     blog_post_crud.create_blog_post(blog_post=blog_post_create)
@@ -139,6 +140,9 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
     )
     assert count == 2
     assert len(blog_posts) == 2
+
+    assert blog_posts[0].title == "Blog Post 2"
+    assert blog_posts[1].title == "Blog Post 1"
 
     count, blog_posts = blog_post_crud.read_blog_posts(
         skip=0, limit=1, search_by="", search_value=""
@@ -231,9 +235,7 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
     assert len(blog_posts) == 1
 
 
-def test_05_read_blog_post_with_comments_and_tags(
-    db: Session, setup_user, setup_tags
-) -> None:
+def test_05_read_blog_post_with_tags(db: Session, setup_user, setup_tags) -> None:
     user_id = setup_user
     tag_1, tag_2 = setup_tags
     blog_post_crud = BlogPostCRUD(db)
@@ -245,12 +247,11 @@ def test_05_read_blog_post_with_comments_and_tags(
     )
     blog_post = blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
-    blog_post_with_comments_and_tags = (
-        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.url)
-    )
-    assert blog_post_with_comments_and_tags.id == blog_post.id
-    assert len(blog_post_with_comments_and_tags.comments) == 0
-    assert len(blog_post_with_comments_and_tags.tags) == 0
+    blog_post_with_tags = blog_post_crud.read_blog_post_with_tags(blog_post.url)
+    assert blog_post_with_tags.id == blog_post.id
+    # comments are not joined in the query, but still loaded upon request, as part of the db object
+    assert len(blog_post_with_tags.comments) == 0
+    assert len(blog_post_with_tags.tags) == 0
 
     blog_post_create = BlogPostCreate(
         title="Blog Post 2",
@@ -260,12 +261,10 @@ def test_05_read_blog_post_with_comments_and_tags(
     )
     blog_post = blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
-    blog_post_with_comments_and_tags = (
-        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.url)
-    )
-    assert blog_post_with_comments_and_tags.id == blog_post.id
-    assert len(blog_post_with_comments_and_tags.comments) == 0
-    assert len(blog_post_with_comments_and_tags.tags) == 1
+    blog_post_with_tags = blog_post_crud.read_blog_post_with_tags(blog_post.url)
+    assert blog_post_with_tags.id == blog_post.id
+    assert len(blog_post_with_tags.comments) == 0
+    assert len(blog_post_with_tags.tags) == 1
 
     blog_post_create = BlogPostCreate(
         title="Blog Post 3",
@@ -287,16 +286,14 @@ def test_05_read_blog_post_with_comments_and_tags(
         blog_post_id=blog_post.id,
     )
 
-    blog_post_with_comments_and_tags = (
-        blog_post_crud.read_blog_post_with_comments_and_tags(blog_post.url)
-    )
+    blog_post_with_tags = blog_post_crud.read_blog_post_with_tags(blog_post.url)
 
-    assert blog_post_with_comments_and_tags.id == blog_post.id
-    assert len(blog_post_with_comments_and_tags.comments) == 2
-    assert len(blog_post_with_comments_and_tags.tags) == 2
-    assert blog_post_with_comments_and_tags.title == blog_post.title
-    assert blog_post_with_comments_and_tags.url == blog_post.url
-    assert blog_post_with_comments_and_tags.content == blog_post.content
+    assert blog_post_with_tags.id == blog_post.id
+    assert len(blog_post_with_tags.comments) == 2
+    assert len(blog_post_with_tags.tags) == 2
+    assert blog_post_with_tags.title == blog_post.title
+    assert blog_post_with_tags.url == blog_post.url
+    assert blog_post_with_tags.content == blog_post.content
 
 
 def test_06_read_blog_post_by_title(db: Session) -> None:

@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import UTC
+from datetime import datetime, UTC
 import json
 import logging
 from logging.config import dictConfig

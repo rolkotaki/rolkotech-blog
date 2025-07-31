@@ -1,5 +1,5 @@
-import type { BlogPost as BlogPostType } from "../../types/blogposts";
-import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogposts";
+import type { BlogPost as BlogPostType } from "../../types/blogpost";
+import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogpost";
 import MarkdownContentProps from "./MarkdownContent";
 
 interface BlogPostProps {

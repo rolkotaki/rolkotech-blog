@@ -8,9 +8,7 @@ from app.schemas.blog_post import (
     BlogPostCreate,
     BlogPostUpdate,
     BlogPostsPublic,
-    BlogPostPublicWithComments,
 )
-from app.schemas.comment import CommentPublicWithUsername
 from app.schemas.message import Message
 from app.schemas.tag import TagPublic
 
@@ -40,42 +38,28 @@ def read_blog_posts(
     return BlogPostsPublic(data=blog_posts, count=count)
 
 
-@router.get("/{url}", response_model=BlogPostPublicWithComments)
-def read_blog_post(session: SessionDep, url: str) -> BlogPostPublicWithComments:
+@router.get("/{url}", response_model=BlogPostPublic)
+def read_blog_post(session: SessionDep, url: str) -> BlogPostPublic:
     """
     Get blog post by ID with its tags and comments.
     """
-    blog_post = BlogPostCRUD(session).read_blog_post_with_comments_and_tags(
-        blog_post_url=url
-    )
+    blog_post = BlogPostCRUD(session).read_blog_post_with_tags(blog_post_url=url)
     if not blog_post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Blog post not found"
         )
 
-    comments = [
-        CommentPublicWithUsername(
-            id=comment.id,
-            content=comment.content,
-            comment_date=comment.comment_date,
-            user_id=comment.user_id,
-            blog_post_id=comment.blog_post_id,
-            username=comment.user.name,
-        )
-        for comment in blog_post.comments
-    ]
     tags = [
         TagPublic.model_validate(tag, from_attributes=True) for tag in blog_post.tags
     ]
 
-    return BlogPostPublicWithComments(
+    return BlogPostPublic(
         id=blog_post.id,
         title=blog_post.title,
         url=blog_post.url,
         content=blog_post.content,
         image_path=blog_post.image_path,
         publication_date=blog_post.publication_date,
-        comments=comments,
         tags=tags,
     )
 
