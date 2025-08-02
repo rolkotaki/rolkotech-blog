@@ -117,7 +117,7 @@ def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -
     count, comments = comment_crud.read_comments_for_blog_post(
         blog_post_id=blog_post_id, skip=0, limit=10
     )
-    assert count == 2
+    assert count == 3
     assert len(comments) == 2
 
     assert comments[0].content == "Comment 2"
@@ -126,13 +126,13 @@ def test_04_read_comments_for_blog_post(db: Session, setup_user_and_blog_post) -
     count, comments = comment_crud.read_comments_for_blog_post(
         blog_post_id=blog_post_id, skip=0, limit=1
     )
-    assert count == 2
+    assert count == 3
     assert len(comments) == 1
 
     count, comments = comment_crud.read_comments_for_blog_post(
         blog_post_id=blog_post_id, skip=1, limit=2
     )
-    assert count == 2
+    assert count == 3
     assert len(comments) == 1
 
 

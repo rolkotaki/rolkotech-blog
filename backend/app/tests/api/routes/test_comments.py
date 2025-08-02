@@ -184,7 +184,7 @@ def test_06_read_comments_for_blog_post(
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["count"] == 2
+    assert data["count"] == 3
     assert len(data["data"]) == 2
     assert data["data"][0]["id"] == comment_1.id
     assert data["data"][0]["content"] == comment_1.content

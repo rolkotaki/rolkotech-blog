@@ -13,7 +13,11 @@ function BlogPost({ blogPost }: BlogPostProps) {
         {blogPost.title}
       </h1>
       <p className="text-sm text-gray-500 mb-4">
-        {new Date(blogPost.publication_date).toLocaleDateString()}
+        {new Date(blogPost.publication_date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
       </p>
 
       <img

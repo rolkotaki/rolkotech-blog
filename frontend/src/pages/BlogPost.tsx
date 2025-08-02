@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { blogpostService } from "../services/blogpost.service";
 import BlogPost from "../components/BlogPost/BlogPost";
 import CommentsSection from "../components/Comment/CommentsSection";
+import LoadingSpinner from "../components/Common/LoadingSpinner";
 import type { BlogPost as BlogPostType } from "../types/blogpost";
 
 function BlogPostPage() {
@@ -44,15 +45,15 @@ function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="flex-grow flex flex-col container mx-auto px-4 py-8 justify-center items-center">
-        <div className="text-lg text-gray-600">Loading blog post...</div>
+      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
+        <LoadingSpinner text="Loading blog post..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex-grow flex flex-col container mx-auto px-4 py-8 justify-center items-center">
+      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
         <div className="text-lg text-red-600">{error}</div>
       </div>
     );
@@ -60,7 +61,7 @@ function BlogPostPage() {
 
   if (!blogPost) {
     return (
-      <div className="flex-grow flex flex-col container mx-auto px-4 py-8 justify-center items-center">
+      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
         <div className="text-lg text-gray-600">Blog post not found</div>
       </div>
     );

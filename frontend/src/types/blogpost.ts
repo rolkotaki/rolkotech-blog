@@ -1,6 +1,7 @@
 export const BLOGPOSTS_PER_PAGE = 6;
 export const MAX_BLOGPOST_PAGES = 5;
 export const BLOGPOSTS_IMAGE_PATH = "/images/blogposts";
+export const COMMENTS_PER_LOAD = 50;
 
 export interface Tag {
   id: number;

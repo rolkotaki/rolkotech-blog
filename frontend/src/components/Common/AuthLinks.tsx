@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../../hooks/useAuth";
-import UserDeleteConfirmationModal from "./UserDeleteConfirmationModal";
+import ConfirmDialog from "./ConfirmDialog";
 
 function AuthLinks() {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout, user, deleteUser } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -25,6 +27,19 @@ function AuthLinks() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteUser();
+      setShowDeleteModal(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error("Failed to delete account:", err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isAuthenticated) {
     return (
@@ -95,10 +110,19 @@ function AuthLinks() {
           )}
         </div>
 
-        <UserDeleteConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-        />
+        {createPortal(
+          <ConfirmDialog
+            isOpen={showDeleteModal}
+            title="Delete Account"
+            message="Are you sure you want to delete your account? This action cannot be undone and you will lose all your data."
+            confirmText={isDeleting ? "Deleting..." : "Delete Account"}
+            cancelText="Cancel"
+            onConfirm={handleDeleteAccount}
+            onCancel={() => setShowDeleteModal(false)}
+            variant="danger"
+          />,
+          document.body
+        )}
       </>
     );
   }

@@ -4,6 +4,7 @@ import { blogpostService } from "../services/blogpost.service.ts";
 import BlogPostBox from "../components/BlogPost/BlogPostBox";
 import BlogPostSearch from "../components/BlogPost/BlogPostSearch.tsx";
 import Pagination from "../components/BlogPost/Pagination";
+import LoadingSpinner from "../components/Common/LoadingSpinner";
 import { BLOGPOSTS_PER_PAGE } from "../types/blogpost.ts";
 import type { BlogPost } from "../types/blogpost.ts";
 
@@ -59,15 +60,15 @@ function BlogPosts() {
 
   if (loading) {
     return (
-      <div className="flex-grow flex flex-col container mx-auto px-4 py-8 justify-center items-center">
-        <div className="text-lg text-gray-600">Loading blog posts...</div>
+      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
+        <LoadingSpinner text="Loading blog posts..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex-grow flex flex-col container mx-auto px-4 py-8 justify-center items-center">
+      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
         <div className="text-lg text-red-600">{error}</div>
       </div>
     );
@@ -88,9 +89,14 @@ function BlogPosts() {
             url={post.url}
             title={post.title}
             imagePath={post.image_path}
-            publicationDate={new Date(
-              post.publication_date
-            ).toLocaleDateString()}
+            publicationDate={new Date(post.publication_date).toLocaleDateString(
+              "en-US",
+              {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              }
+            )}
             tags={post.tags.map((tag) => tag.name)}
             content={post.content}
           />

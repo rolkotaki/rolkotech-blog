@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
-import Comment from "./Comment";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { blogpostService } from "../../services/blogpost.service";
+import Comment from "./Comment";
+import LoadingSpinner from "../Common/LoadingSpinner";
+import ErrorMessageWithDismissProps from "../Common/ErrorMessageWithDismiss";
+import { COMMENTS_PER_LOAD } from "../../types/blogpost";
 import type { CommentWithReplies } from "../../types";
 
 interface CommentsSectionProps {
@@ -13,10 +16,18 @@ function CommentsSection({
   currentUsername,
 }: CommentsSectionProps) {
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
+  const [totalCommentsCount, setTotalCommentsCount] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [loadingMoreCommentsError, setLoadingMoreCommentsError] =
+    useState<string>("");
+  const [loadingMoreComments, setLoadingMoreComments] =
+    useState<boolean>(false);
+  const [currentCommentPage, setCurrentCommentPage] = useState<number>(1);
+  const [hasMoreComments, setHasMoreComments] = useState<boolean>(true);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Fetch comments on component mount
   useEffect(() => {
@@ -24,9 +35,12 @@ function CommentsSection({
       try {
         setLoading(true);
         const response = await blogpostService.getCommentsForBlogPost(
-          blogPostUrl
+          blogPostUrl,
+          1
         );
         setComments(response.data);
+        setTotalCommentsCount(response.count);
+        setHasMoreComments(response.data.length === COMMENTS_PER_LOAD);
       } catch (err) {
         setError("Failed to load comments");
         console.error("Error fetching comments:", err);
@@ -37,6 +51,65 @@ function CommentsSection({
 
     fetchComments();
   }, [blogPostUrl]);
+
+  // Load more comments
+  const loadMoreComments = useCallback(async () => {
+    if (!hasMoreComments || loadingMoreComments) return;
+
+    try {
+      setLoadingMoreComments(true);
+      const nextPage = currentCommentPage + 1;
+      const response = await blogpostService.getCommentsForBlogPost(
+        blogPostUrl,
+        nextPage
+      );
+
+      if (response.data.length > 0) {
+        setComments((prevComments) => [...prevComments, ...response.data]);
+        setCurrentCommentPage(nextPage);
+        setHasMoreComments(response.data.length === COMMENTS_PER_LOAD);
+      } else {
+        setHasMoreComments(false);
+      }
+    } catch (err) {
+      setLoadingMoreCommentsError("Failed to load more comments");
+      console.error("Error loading more comments:", err);
+    } finally {
+      setLoadingMoreComments(false);
+    }
+  }, [blogPostUrl, currentCommentPage, hasMoreComments, loadingMoreComments]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (
+          entry.isIntersecting &&
+          hasMoreComments &&
+          !loadingMoreComments &&
+          !loading
+        ) {
+          loadMoreComments();
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the element is visible
+        rootMargin: "100px", // Start detecting 100px before the element actually enters the viewport
+      }
+    );
+
+    const currentLoadMoreRef = loadMoreRef.current;
+    if (currentLoadMoreRef) {
+      observer.observe(currentLoadMoreRef);
+    }
+
+    return () => {
+      if (currentLoadMoreRef) {
+        observer.unobserve(currentLoadMoreRef);
+      }
+    };
+  }, [hasMoreComments, loadingMoreComments, loading, loadMoreComments]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +135,7 @@ function CommentsSection({
         },
         ...prevComments,
       ]);
+      setTotalCommentsCount((prevCount) => prevCount + 1);
       setNewComment("");
     } catch (err) {
       console.error("Error creating comment:", err);
@@ -100,7 +174,12 @@ function CommentsSection({
       await blogpostService.deleteComment(blogPostUrl, id);
 
       // Remove from local state
+      const numberOfReplies = comments.find((comment) => comment.id === id)
+        ?.replies.length;
       setComments(comments.filter((comment) => comment.id !== id));
+      setTotalCommentsCount(
+        (prevCount) => prevCount - 1 - (numberOfReplies || 0)
+      );
     } catch (err) {
       console.error("Error deleting comment:", err);
       setError("Failed to delete comment");
@@ -122,6 +201,7 @@ function CommentsSection({
             : comment
         )
       );
+      setTotalCommentsCount((prevCount) => prevCount + 1);
     } catch (err) {
       console.error("Error creating reply:", err);
       setError("Failed to post reply");
@@ -180,16 +260,12 @@ function CommentsSection({
             : comment
         )
       );
+      setTotalCommentsCount((prevCount) => prevCount - 1);
     } catch (err) {
       console.error("Error deleting reply:", err);
       setError("Failed to delete reply");
     }
   };
-
-  // Number of total comments including replies
-  const totalCommentsCount = comments.reduce((total, comment) => {
-    return total + 1 + comment.replies.length;
-  }, 0);
 
   return (
     <div className="max-w-3xl mx-auto mt-12 px-4">
@@ -203,15 +279,10 @@ function CommentsSection({
 
       {/* Error message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => setError("")}
-            className="text-red-600 hover:text-red-800 text-sm underline mt-1"
-          >
-            Dismiss
-          </button>
-        </div>
+        <ErrorMessageWithDismissProps
+          message={error}
+          onDismiss={() => setError("")}
+        />
       )}
 
       {/* Post Comment form */}
@@ -257,10 +328,7 @@ function CommentsSection({
 
       {/* During loading */}
       {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <p className="text-gray-500">Loading comments...</p>
-        </div>
+        <LoadingSpinner text="Loading comments..." />
       ) : (
         /* Comments */
         <div>
@@ -292,6 +360,34 @@ function CommentsSection({
                 onDeleteReply={handleDeleteReply}
               />
             ))
+          )}
+
+          {/* Loading more comments error message */}
+          {loadingMoreCommentsError && (
+            <ErrorMessageWithDismissProps
+              message={loadingMoreCommentsError}
+              onDismiss={() => setLoadingMoreCommentsError("")}
+            />
+          )}
+
+          {/* Loading more comments trigger element */}
+          {hasMoreComments && (
+            <div ref={loadMoreRef}>
+              {loadingMoreComments && (
+                <LoadingSpinner text="Loading more comments..." />
+              )}
+            </div>
+          )}
+
+          {/* No more comments message */}
+          {/* We only display it when there is at least COMMENTS_PER_LOAD comments.
+              If there is a few comments only, not worth showing it. */}
+          {!hasMoreComments && comments.length > COMMENTS_PER_LOAD && (
+            <div className="text-center py-8">
+              <p className="text-gray-500 text-sm">
+                You've reached the end of the comments.
+              </p>
+            </div>
           )}
         </div>
       )}

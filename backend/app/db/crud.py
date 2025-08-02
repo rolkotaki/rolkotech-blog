@@ -355,12 +355,7 @@ class CommentCRUD(BaseCRUD):
         count_statement = (
             select(func.count())
             .select_from(self.MODEL_CLASS)
-            .where(
-                and_(
-                    self.MODEL_CLASS.blog_post_id == blog_post_id,
-                    self.MODEL_CLASS.reply_to.is_(None),
-                )
-            )
+            .where(self.MODEL_CLASS.blog_post_id == blog_post_id)
         )
         count = self.session.exec(count_statement).one()
 

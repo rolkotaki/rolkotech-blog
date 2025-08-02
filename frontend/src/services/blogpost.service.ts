@@ -1,5 +1,5 @@
 import api from "./api";
-import { BLOGPOSTS_PER_PAGE } from "../types/blogpost";
+import { BLOGPOSTS_PER_PAGE, COMMENTS_PER_LOAD } from "../types/blogpost";
 import type {
   BlogPosts,
   BlogPost,
@@ -33,8 +33,15 @@ export const blogpostService = {
     return response.data;
   },
 
-  getCommentsForBlogPost: async (url: string): Promise<Comments> => {
-    const response = await api.get<Comments>(`/blogposts/${url}/comments`);
+  getCommentsForBlogPost: async (
+    url: string,
+    page: number
+  ): Promise<Comments> => {
+    const limit: number = COMMENTS_PER_LOAD;
+    const skip: number = (page - 1) * limit;
+    const response = await api.get<Comments>(
+      `/blogposts/${url}/comments?limit=${limit}&skip=${skip}`
+    );
     return response.data;
   },
 
