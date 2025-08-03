@@ -223,7 +223,36 @@ def test_07_update_comment(db: Session, setup_user_and_blog_post) -> None:
     assert comment_updated.blog_post_id == blog_post_id
 
 
-def test_08_delete_comment(db: Session, setup_user_and_blog_post) -> None:
+def test_08_update_comment_with_force_datetime_update(
+    db: Session, setup_user_and_blog_post
+) -> None:
+    # As per the latest update for comments, this test is only to have 100% coverage
+    user_id, blog_post_id = setup_user_and_blog_post
+    comment_crud = CommentCRUD(db)
+    comment = comment_crud.create_comment(
+        comment=CommentCreate(content="Comment 1"),
+        user_id=user_id,
+        blog_post_id=blog_post_id,
+    )
+
+    comment_update = CommentUpdate(content="Updated Comment")
+    comment_updated = comment_crud._update(
+        object_db=comment,
+        object_in=comment_update,
+        # We are testing the forced update of the comment_date
+        force_update_of_cols=["comment_date"],
+    )
+
+    assert comment_updated.content == comment_update.content
+    assert comment_updated.id == comment.id
+    assert comment_updated.comment_date.replace(
+        tzinfo=None
+    ) == comment_update.comment_date.replace(tzinfo=None)
+    assert comment_updated.user_id == user_id
+    assert comment_updated.blog_post_id == blog_post_id
+
+
+def test_09_delete_comment(db: Session, setup_user_and_blog_post) -> None:
     user_id, blog_post_id = setup_user_and_blog_post
     comment_crud = CommentCRUD(db)
     comment = comment_crud.create_comment(
