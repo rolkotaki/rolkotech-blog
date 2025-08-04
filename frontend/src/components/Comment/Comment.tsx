@@ -14,6 +14,7 @@ interface CommentProps {
   content: string;
   commentDate: string;
   currentUsername?: string;
+  isCurrentUserSuperUser?: boolean;
   replies: ReplyData[];
   onEdit: (id: number, newContent: string) => void;
   onDelete: (id: number) => void;
@@ -28,6 +29,7 @@ function Comment({
   content,
   commentDate,
   currentUsername,
+  isCurrentUserSuperUser = false,
   replies = [],
   onEdit,
   onDelete,
@@ -180,7 +182,7 @@ function Comment({
             </div>
           </div>
         ) : (
-          <div className="text-gray-800 leading-relaxed mb-4">{content}</div>
+          <div className="text-gray-800 leading-relaxed mb-3">{content}</div>
         )}
 
         {/* Comment action buttons */}
@@ -193,20 +195,20 @@ function Comment({
               Reply
             </button>
             {isOwner && (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="text-gray-500 hover:text-red-600 text-sm font-medium transition-colors"
-                >
-                  Delete
-                </button>
-              </>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
+              >
+                Edit
+              </button>
+            )}
+            {(isCurrentUserSuperUser || isOwner) && (
+              <button
+                onClick={handleDelete}
+                className="text-gray-500 hover:text-red-600 text-sm font-medium transition-colors"
+              >
+                Delete
+              </button>
             )}
           </div>
         )}
@@ -275,7 +277,9 @@ function Comment({
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">
-                    {isOwner ? "You" : reply.username}
+                    {reply.username === currentUsername
+                      ? "You"
+                      : reply.username}
                   </span>
                   <span className="text-gray-500 text-sm ml-2">
                     {new Date(reply.commentDate).toLocaleDateString("en-US", {
@@ -338,27 +342,30 @@ function Comment({
                 </div>
               ) : (
                 <>
-                  <div className="text-gray-800 leading-relaxed mb-1">
+                  <div className="text-gray-800 leading-relaxed mb-3">
                     {reply.content}
                   </div>
 
                   {/* Reply action buttons */}
-                  {reply.username === currentUsername && (
-                    <div className="flex space-x-4">
+                  <div className="flex space-x-4">
+                    {reply.username === currentUsername && (
                       <button
                         onClick={() => handleEditReply(reply.id, reply.content)}
                         className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
                       >
                         Edit
                       </button>
+                    )}
+                    {(isCurrentUserSuperUser ||
+                      reply.username === currentUsername) && (
                       <button
                         onClick={() => handleDeleteReply(reply.id)}
                         className="text-gray-500 hover:text-red-600 text-sm font-medium transition-colors"
                       >
                         Delete
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </>
               )}
             </div>

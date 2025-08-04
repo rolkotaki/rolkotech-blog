@@ -9,11 +9,13 @@ import type { CommentWithReplies } from "../../types";
 interface CommentsSectionProps {
   blogPostUrl: string;
   currentUsername?: string;
+  isCurrentUserSuperUser?: boolean;
 }
 
 function CommentsSection({
   blogPostUrl,
   currentUsername,
+  isCurrentUserSuperUser,
 }: CommentsSectionProps) {
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [totalCommentsCount, setTotalCommentsCount] = useState<number>(0);
@@ -347,6 +349,7 @@ function CommentsSection({
                 content={comment.content}
                 commentDate={comment.comment_date}
                 currentUsername={currentUsername}
+                isCurrentUserSuperUser={isCurrentUserSuperUser}
                 replies={comment.replies.map((reply) => ({
                   id: reply.id,
                   username: reply.username,

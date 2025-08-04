@@ -73,6 +73,7 @@ function BlogPostPage() {
       <CommentsSection
         blogPostUrl={blogPost.url}
         currentUsername={user?.name}
+        isCurrentUserSuperUser={user?.is_superuser}
       />
     </div>
   );
