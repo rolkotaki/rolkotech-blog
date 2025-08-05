@@ -46,31 +46,38 @@ function MobileMenu({ isOpen }: MobileMenuProps) {
         {isAuthenticated ? (
           <>
             {user && (
-              <span className="text-sm text-gray-600">Hello, {user.name}</span>
+              <>
+                <span className="text-sm text-gray-600">
+                  Hello, {user.name}
+                </span>
+                <Link
+                  to="/me"
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Update Profile
+                </Link>
+                <Link
+                  to="/me/password"
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Change Password
+                </Link>
+                {!user.is_superuser && (
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="text-sm text-red-600 hover:underline text-left"
+                  >
+                    Delete My Account
+                  </button>
+                )}
+                <button
+                  onClick={logout}
+                  className="text-sm text-gray-700 hover:underline text-left"
+                >
+                  Log Out
+                </button>
+              </>
             )}
-            <Link to="/me" className="text-sm text-blue-600 hover:underline">
-              Update Profile
-            </Link>
-            <Link
-              to="/me/password"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Change Password
-            </Link>
-
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="text-sm text-red-600 hover:underline text-left"
-            >
-              Delete My Account
-            </button>
-
-            <button
-              onClick={logout}
-              className="text-sm text-gray-700 hover:underline text-left"
-            >
-              Log Out
-            </button>
           </>
         ) : (
           <>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import { blogpostService } from "../../services/blogpost.service";
 import Comment from "./Comment";
 import LoadingSpinner from "../Common/LoadingSpinner";
@@ -288,46 +289,69 @@ function CommentsSection({
       )}
 
       {/* Post Comment form */}
-      <form className="mb-8" onSubmit={handleSubmitComment}>
-        <div>
-          <textarea
-            value={newComment}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value.length <= 1000) {
-                setNewComment(value);
-              }
-            }}
-            placeholder="Leave a comment..."
-            className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            rows={4}
-            maxLength={1000}
-            disabled={isSubmitting || loading}
-          />
-          <div className="flex justify-between items-center mt-1">
-            <span
-              className={`text-xs ${
-                newComment.length > 990 ? "text-red-500" : "text-gray-500"
-              }`}
+      {!currentUsername ? (
+        <div className="mt-3 mb-8 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-800 text-sm">
+            <span className="font-medium">Want to join the conversation?</span>{" "}
+            <Link
+              to="/login"
+              className="text-blue-600 hover:text-blue-800 underline"
             >
-              {newComment.length}/1000 characters
-            </span>
-          </div>
+              Log in
+            </Link>{" "}
+            or{" "}
+            <Link
+              to="/signup"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              sign up
+            </Link>{" "}
+            to leave a comment.
+          </p>
         </div>
-        <button
-          type="submit"
-          disabled={
-            !newComment.trim() ||
-            newComment.length > 1000 ||
-            isSubmitting ||
-            loading
-          }
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors mt-3"
-        >
-          {isSubmitting ? "Posting..." : "Post Comment"}
-        </button>
-      </form>
+      ) : (
+        <form className="mb-8" onSubmit={handleSubmitComment}>
+          <div>
+            <textarea
+              value={newComment}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 1000) {
+                  setNewComment(value);
+                }
+              }}
+              placeholder="Leave a comment..."
+              className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              rows={4}
+              maxLength={1000}
+              disabled={!currentUsername || isSubmitting || loading}
+            />
 
+            <div className="flex justify-between items-center mt-1">
+              <span
+                className={`text-xs ${
+                  newComment.length > 990 ? "text-red-500" : "text-gray-500"
+                }`}
+              >
+                {newComment.length}/1000 characters
+              </span>
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={
+              !currentUsername ||
+              !newComment.trim() ||
+              newComment.length > 1000 ||
+              isSubmitting ||
+              loading
+            }
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors mt-3"
+          >
+            {isSubmitting ? "Posting..." : "Post Comment"}
+          </button>
+        </form>
+      )}
       {/* During loading */}
       {loading ? (
         <LoadingSpinner text="Loading comments..." />

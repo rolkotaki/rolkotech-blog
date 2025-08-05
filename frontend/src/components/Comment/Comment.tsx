@@ -140,7 +140,7 @@ function Comment({
 
         {/* Comment content */}
         {isEditing ? (
-          <div className="space-y-3 mb-4">
+          <div className="space-y-3 mb-1">
             <div>
               <textarea
                 value={editContent}
@@ -182,41 +182,44 @@ function Comment({
             </div>
           </div>
         ) : (
-          <div className="text-gray-800 leading-relaxed mb-3">{content}</div>
+          <div className="text-gray-800 leading-relaxed">{content}</div>
         )}
 
         {/* Comment action buttons */}
-        {!isEditing && (
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setIsReplying(!isReplying)}
-              className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
-            >
-              Reply
-            </button>
-            {isOwner && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
-              >
-                Edit
-              </button>
-            )}
-            {(isCurrentUserSuperUser || isOwner) && (
-              <button
-                onClick={handleDelete}
-                className="text-gray-500 hover:text-red-600 text-sm font-medium transition-colors"
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        )}
+        {!isEditing &&
+          (currentUsername || isOwner || isCurrentUserSuperUser) && (
+            <div className="flex space-x-4 mt-3">
+              {currentUsername && (
+                <button
+                  onClick={() => setIsReplying(!isReplying)}
+                  className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
+                >
+                  Reply
+                </button>
+              )}
+              {isOwner && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors"
+                >
+                  Edit
+                </button>
+              )}
+              {(isCurrentUserSuperUser || isOwner) && (
+                <button
+                  onClick={handleDelete}
+                  className="text-gray-500 hover:text-red-600 text-sm font-medium transition-colors"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          )}
       </div>
 
       {/* Reply form */}
       {isReplying && (
-        <div className="ml-8 mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <div className="ml-8 mt-4 bg-[#fbfbfb] rounded-lg p-4 border border-gray-200">
           <div>
             <textarea
               value={replyContent}
@@ -268,7 +271,7 @@ function Comment({
           {replies.map((reply) => (
             <div
               key={reply.id}
-              className="bg-gray-50 rounded-lg border border-gray-200 p-4"
+              className="bg-[#fbfbfb] rounded-lg border border-gray-200 p-4"
             >
               {/* Reply header */}
               <div className="flex items-center space-x-2 mb-3">
@@ -342,12 +345,19 @@ function Comment({
                 </div>
               ) : (
                 <>
-                  <div className="text-gray-800 leading-relaxed mb-3">
+                  <div className="text-gray-800 leading-relaxed">
                     {reply.content}
                   </div>
 
                   {/* Reply action buttons */}
-                  <div className="flex space-x-4">
+                  <div
+                    className={
+                      reply.username === currentUsername ||
+                      isCurrentUserSuperUser
+                        ? "flex space-x-4 mt-3"
+                        : "hidden"
+                    }
+                  >
                     {reply.username === currentUsername && (
                       <button
                         onClick={() => handleEditReply(reply.id, reply.content)}
