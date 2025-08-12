@@ -64,7 +64,6 @@ def test_04_email_when_exception(test_mode_off):
 
 
 def test_05_get_client():
-    """Test that _get_client() creates a new client when none exists."""
     RolkoTechEmail._msc = None
     assert RolkoTechEmail._msc is None
 

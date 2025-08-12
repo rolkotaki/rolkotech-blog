@@ -33,7 +33,7 @@ function ResetPassword() {
     }
   }, [token, navigate]);
 
-  // Redirect if already authenticated
+  // Log out if authenticated
   if (isAuthenticated) {
     logout();
   }

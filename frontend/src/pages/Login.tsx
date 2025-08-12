@@ -12,9 +12,10 @@ function LogIn() {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState<boolean>(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] =
+    useState<boolean>(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { login, isAuthenticated } = useAuth();
@@ -27,16 +28,20 @@ function LogIn() {
     if (message) {
       switch (message) {
         case "signup_success":
-          setSuccessMessage("Account created successfully! We have sent you an email to verify your account.");
+          setSuccess(
+            "Account created successfully! We have sent you an email to verify your account."
+          );
           break;
         case "activation_success":
-          setSuccessMessage("Account activated successfully! You can now log in.");
+          setSuccess("Account activated successfully! You can now log in.");
           break;
         case "already_activated":
-          setSuccessMessage("Account is already activated. You can log in.");
+          setSuccess("Account is already activated. You can log in.");
           break;
         case "password_reset_success":
-          setSuccessMessage("Password reset successfully! You can now log in with your new password.");
+          setSuccess(
+            "Password reset successfully! You can now log in with your new password."
+          );
           break;
         default:
           break;
@@ -53,7 +58,9 @@ function LogIn() {
           setError("Account activation failed.");
           break;
         case "invalid_reset_link":
-          setError("Invalid or expired password reset link. Please request a new one.");
+          setError(
+            "Invalid or expired password reset link. Please request a new one."
+          );
           break;
         default:
           setError("An error occurred. Please try again.");
@@ -96,7 +103,7 @@ function LogIn() {
         </h2>
 
         {/* Success message from backend */}
-        <BackendSuccessMessage success={successMessage} />
+        <BackendSuccessMessage success={success} />
 
         {/* Error message from backend */}
         <BackendErrorMessage error={error} />
@@ -144,7 +151,7 @@ function LogIn() {
           </button>
         </form>
 
-        {/* Forgot Password Link */}
+        {/* Forgot password link */}
         <div className="mt-4 text-center">
           <button
             onClick={() => setShowForgotPasswordModal(true)}
@@ -156,7 +163,7 @@ function LogIn() {
 
         <GoToSignUpLink />
 
-        {/* Forgot Password Modal */}
+        {/* Forgot password modal */}
         <ForgotPasswordModal
           isOpen={showForgotPasswordModal}
           onClose={() => setShowForgotPasswordModal(false)}
