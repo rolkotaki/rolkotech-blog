@@ -1,5 +1,6 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, Request, HTTPException, status, BackgroundTasks
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
 from typing import Annotated
@@ -64,24 +65,46 @@ def login_access_token(
     )
 
 
-@router.get("/users/activate", response_model=Message)
-def activate_user(session: SessionDep, token: str) -> Message:
+@router.get("/users/activate")
+def activate_user(session: SessionDep, token: str) -> RedirectResponse:
     """
     Activate a user's account using the activation token.
+    Redirect to frontend login page with success/error message.
     """
-    user_email = verify_token(token)
-    user = UserCRUD(session).get_user_by_email(email=user_email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid activation link."
+    try:
+        user_email = verify_token(token)
+        user = UserCRUD(session).get_user_by_email(email=user_email)
+        if not user:
+            logger.info(
+                f"Activation attempted with invalid token for email: {user_email}"
+            )
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_HOST}/login?error=invalid_link",
+                status_code=status.HTTP_302_FOUND,
+            )
+
+        if user.is_active:
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_HOST}/login?message=already_activated",
+                status_code=status.HTTP_302_FOUND,
+            )
+
+        user.is_active = True
+        session.add(user)
+        session.commit()
+        logger.info(f"User {user.name} ({user.email}) has activated their account.")
+
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_HOST}/login?message=activation_success",
+            status_code=status.HTTP_302_FOUND,
         )
-    if user.is_active:
-        return Message(message="Account already activated.")
-    user.is_active = True
-    session.add(user)
-    session.commit()
-    logger.info(f"User {user.name} ({user.email}) activated their account.")
-    return Message(message="Account activated successfully.")
+
+    except Exception as e:
+        logger.error(f"Error during account activation: {str(e)}")
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_HOST}/login?error=activation_failed",
+            status_code=status.HTTP_302_FOUND,
+        )
 
 
 @router.post("/users/forgot-password", response_model=Message)
@@ -98,8 +121,7 @@ def forgot_password(
 
     # Generate a token and send the reset link
     token = generate_token(user.email)
-    # TODO: Possibly the URL should point to the frontend instead of backend
-    reset_link = f"{request.base_url}users/reset-password?token={token}"
+    reset_link = f"{settings.FRONTEND_HOST}/reset-password?token={token}"
     reset_email = EMAIL_GENERATOR.create_password_reset_email(
         email=user.email, username=user.name, reset_link=reset_link
     )

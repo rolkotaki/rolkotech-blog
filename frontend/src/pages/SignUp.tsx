@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import {
   validatePassword,
@@ -20,7 +20,7 @@ function SignUp() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-
+  const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
@@ -104,8 +104,8 @@ function SignUp() {
     setIsLoading(true);
 
     try {
-      // register function already navigates to /login on success
       await register(username, email, password);
+      navigate("/login?message=signup_success");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage =

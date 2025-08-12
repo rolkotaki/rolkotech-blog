@@ -92,10 +92,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week
 
-    EMAIL_HOST: str
-    EMAIL_PORT: int
-    EMAIL_HOST_USER: str
-    SENDGRID_API_KEY: str
+    MAILERSEND_API_KEY: str
     EMAIL_FROM: EmailStr
     EMAIL_FROM_NAME: str = "RolkoTech Blog"
     EMAIL_TOKEN_EXPIRE_HOURS: int = 24  # 1 day

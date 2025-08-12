@@ -1,18 +1,67 @@
-import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import BackendErrorMessage from "../components/Common/BackendErrorMessage";
+import BackendSuccessMessage from "../components/Common/BackendSuccessMessage";
 import PasswordToggleButton from "../components/Common/PasswordToggleButton";
 import GoToSignUpLink from "../components/Common/GoToSignUpLink";
+import ForgotPasswordModal from "../components/Common/ForgotPasswordModal";
 
 function LogIn() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState<boolean>(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { login, isAuthenticated } = useAuth();
+
+  // Handles activation and password reset messages from backend
+  useEffect(() => {
+    const message = searchParams.get("message");
+    const error = searchParams.get("error");
+
+    if (message) {
+      switch (message) {
+        case "signup_success":
+          setSuccessMessage("Account created successfully! We have sent you an email to verify your account.");
+          break;
+        case "activation_success":
+          setSuccessMessage("Account activated successfully! You can now log in.");
+          break;
+        case "already_activated":
+          setSuccessMessage("Account is already activated. You can log in.");
+          break;
+        case "password_reset_success":
+          setSuccessMessage("Password reset successfully! You can now log in with your new password.");
+          break;
+        default:
+          break;
+      }
+      setSearchParams({});
+    }
+
+    if (error) {
+      switch (error) {
+        case "invalid_link":
+          setError("Invalid or expired activation link.");
+          break;
+        case "activation_failed":
+          setError("Account activation failed.");
+          break;
+        case "invalid_reset_link":
+          setError("Invalid or expired password reset link. Please request a new one.");
+          break;
+        default:
+          setError("An error occurred. Please try again.");
+          break;
+      }
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -45,6 +94,9 @@ function LogIn() {
         <h2 className="text-2xl font-semibold text-blue-700 mb-6">
           Log in to your account
         </h2>
+
+        {/* Success message from backend */}
+        <BackendSuccessMessage success={successMessage} />
 
         {/* Error message from backend */}
         <BackendErrorMessage error={error} />
@@ -92,7 +144,23 @@ function LogIn() {
           </button>
         </form>
 
+        {/* Forgot Password Link */}
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setShowForgotPasswordModal(true)}
+            className="text-blue-600 hover:text-blue-800 underline text-sm"
+          >
+            Forgot your password?
+          </button>
+        </div>
+
         <GoToSignUpLink />
+
+        {/* Forgot Password Modal */}
+        <ForgotPasswordModal
+          isOpen={showForgotPasswordModal}
+          onClose={() => setShowForgotPasswordModal(false)}
+        />
       </div>
     </div>
   );

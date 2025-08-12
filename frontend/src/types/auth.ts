@@ -16,6 +16,11 @@ export interface LoginResponse {
   token_type: string;
 }
 
+export interface PasswordResetRequest {
+  token: string;
+  new_password: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;

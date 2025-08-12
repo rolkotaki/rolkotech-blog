@@ -14,11 +14,11 @@ def test_01_create_user_activation_email():
         email=email_to, username=username, activation_link=activation_link
     )
 
-    assert str(email.mail.subject) == USER_ACTIVATION_SUBJECT
-    assert email.mail.personalizations[0].tos[0].get("email") == email_to
-    assert email.mail.from_email._email == settings.EMAIL_FROM
-    assert username in email.mail.contents[0].content
-    assert activation_link in email.mail.contents[0].content
+    assert email.email.subject == USER_ACTIVATION_SUBJECT
+    assert email.email.to[0].email == email_to
+    assert email.email.from_email.email == settings.EMAIL_FROM
+    assert username in email.email.html
+    assert activation_link in email.email.html
 
 
 def test_02_create_password_reset_email():
@@ -29,8 +29,8 @@ def test_02_create_password_reset_email():
         email=email_to, username=username, reset_link=reset_link
     )
 
-    assert str(email.mail.subject) == PASSWORD_RESET_SUBJECT
-    assert email.mail.personalizations[0].tos[0].get("email") == email_to
-    assert email.mail.from_email._email == settings.EMAIL_FROM
-    assert username in email.mail.contents[0].content
-    assert reset_link in email.mail.contents[0].content
+    assert email.email.subject == PASSWORD_RESET_SUBJECT
+    assert email.email.to[0].email == email_to
+    assert email.email.from_email.email == settings.EMAIL_FROM
+    assert username in email.email.html
+    assert reset_link in email.email.html

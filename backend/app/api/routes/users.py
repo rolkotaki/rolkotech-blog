@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status, Backgrou
 import uuid
 
 from app.api.deps import SessionDep, CurrentUser, get_current_active_superuser
+from app.core.config import settings
 from app.core.security import get_password_hash, verify_password, generate_token
 from app.db.crud import UserCRUD
 from app.logger import logger
@@ -93,7 +94,7 @@ def register_user(
 
     # Generate activation token
     token = generate_token(user.email)
-    activation_link = f"{request.base_url}users/activate?token={token}"
+    activation_link = f"{request.base_url}{settings.API_VERSION_STR.strip('/')}/users/activate?token={token}"
     # Send activation email
     activation_email = EMAIL_GENERATOR.create_user_activation_email(
         email=user.email, username=user.name, activation_link=activation_link

@@ -199,13 +199,21 @@ def test_09_activate_user(
     # Generate activation token
     activation_token = generate_token(email)
 
-    # Activate the user
+    # Activate the user - should redirect with 302 status to the frontend login page
     response = client.get(
-        f"{settings.API_VERSION_STR}/users/activate?token={activation_token}"
+        f"{settings.API_VERSION_STR}/users/activate?token={activation_token}",
+        follow_redirects=False,
     )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["message"] == "Account activated successfully."
+
+    # Check redirect response
+    assert response.status_code == 302
+    assert "Location" in response.headers
+    assert (
+        response.headers["Location"]
+        == f"{settings.FRONTEND_HOST}/login?message=activation_success"
+    )
+
+    # Verify user is actually activated in the database
     db.refresh(user_db)
     assert user_db.is_active is True
 
@@ -215,26 +223,57 @@ def test_10_activate_user_already_active(
 ) -> None:
     email, _ = setup_user
     activation_token = generate_token(email)
+
+    # Try to activate an already active user - should redirect with 302 status to the frontend login page
     response = client.get(
-        f"{settings.API_VERSION_STR}/users/activate?token={activation_token}"
+        f"{settings.API_VERSION_STR}/users/activate?token={activation_token}",
+        follow_redirects=False,
     )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["message"] == "Account already activated."
+
+    # Check redirect response
+    assert response.status_code == 302
+    assert "Location" in response.headers
+    assert (
+        response.headers["Location"]
+        == f"{settings.FRONTEND_HOST}/login?message=already_activated"
+    )
 
 
 def test_11_activate_user_invalid_link(client: TestClient) -> None:
     activation_token = "invalid_token"
+
+    # Try to activate with invalid token - should redirect with 302 status to the frontend login page
     response = client.get(
-        f"{settings.API_VERSION_STR}/users/activate?token={activation_token}"
+        f"{settings.API_VERSION_STR}/users/activate?token={activation_token}",
+        follow_redirects=False,
     )
-    data = response.json()
-    assert response.status_code == 404
-    data = response.json()
-    assert data["detail"] == "Invalid activation link."
+
+    # Check redirect response
+    assert response.status_code == 302
+    assert "Location" in response.headers
+    assert (
+        response.headers["Location"]
+        == f"{settings.FRONTEND_HOST}/login?error=invalid_link"
+    )
 
 
-def test_12_forgot_password(client: TestClient, setup_user: tuple[str, str]) -> None:
+def test_12_activate_user_failed(client: TestClient) -> None:
+    with patch(
+        "app.api.routes.login.verify_token", side_effect=Exception("Test error")
+    ):
+        response = client.get(
+            f"{settings.API_VERSION_STR}/users/activate?token=invalid_token",
+            follow_redirects=False,
+        )
+        assert response.status_code == 302
+        assert "Location" in response.headers
+        assert (
+            response.headers["Location"]
+            == f"{settings.FRONTEND_HOST}/login?error=activation_failed"
+        )
+
+
+def test_13_forgot_password(client: TestClient, setup_user: tuple[str, str]) -> None:
     email, _ = setup_user
     with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
         response = client.post(
@@ -249,7 +288,7 @@ def test_12_forgot_password(client: TestClient, setup_user: tuple[str, str]) -> 
     )
 
 
-def test_13_forgot_password_inactive_user(
+def test_14_forgot_password_inactive_user(
     client: TestClient, db: Session, setup_user: tuple[str, str]
 ) -> None:
     email, _ = setup_user
@@ -273,7 +312,7 @@ def test_13_forgot_password_inactive_user(
     )
 
 
-def test_14_forgot_password_invalid_email(client: TestClient) -> None:
+def test_15_forgot_password_invalid_email(client: TestClient) -> None:
     with patch.object(RolkoTechEmail, "send", return_value=None) as mock_send:
         response = client.post(
             f"{settings.API_VERSION_STR}/users/forgot-password?email=invalid_email"
@@ -287,7 +326,7 @@ def test_14_forgot_password_invalid_email(client: TestClient) -> None:
     )
 
 
-def test_15_password_reset(client: TestClient, setup_user: tuple[str, str]) -> None:
+def test_16_password_reset(client: TestClient, setup_user: tuple[str, str]) -> None:
     email, _ = setup_user
     # Generate a token for the user
     token = generate_token(email)
@@ -316,7 +355,7 @@ def test_15_password_reset(client: TestClient, setup_user: tuple[str, str]) -> N
     assert tokens["access_token"]
 
 
-def test_16_password_reset_invalid_token(client: TestClient) -> None:
+def test_17_password_reset_invalid_token(client: TestClient) -> None:
     response = client.post(
         f"{settings.API_VERSION_STR}/users/reset-password",
         json={"token": "invalid_token", "new_password": "new_password"},
@@ -325,7 +364,7 @@ def test_16_password_reset_invalid_token(client: TestClient) -> None:
     assert response.json() == {"detail": "Invalid or expired token."}
 
 
-def test_17_password_reset_no_token(client: TestClient) -> None:
+def test_18_password_reset_no_token(client: TestClient) -> None:
     response = client.post(
         f"{settings.API_VERSION_STR}/users/reset-password",
         json={"new_password": "new_password"},
@@ -336,7 +375,7 @@ def test_17_password_reset_no_token(client: TestClient) -> None:
     assert data["message"] == "Token: Field required"
 
 
-def test_18_password_reset_no_new_password(client: TestClient) -> None:
+def test_19_password_reset_no_new_password(client: TestClient) -> None:
     token = generate_token("token")
     response = client.post(
         f"{settings.API_VERSION_STR}/users/reset-password", json={"token": token}
@@ -347,7 +386,7 @@ def test_18_password_reset_no_new_password(client: TestClient) -> None:
     assert data["message"] == "New_Password: Field required"
 
 
-def test_19_password_reset_invalid_new_password(
+def test_20_password_reset_invalid_new_password(
     client: TestClient, setup_user: tuple[str, str]
 ) -> None:
     email, _ = setup_user

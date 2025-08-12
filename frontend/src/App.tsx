@@ -9,6 +9,7 @@ import BlogPosts from "./pages/BlogPosts";
 import ChangePassword from "./pages/ChangePassword";
 import Home from "./pages/Home";
 import LogIn from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import SignUp from "./pages/SignUp";
 import UpdateMe from "./pages/UpdateMe";
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/me" element={<UpdateMe />} />
             <Route path="/me/password" element={<ChangePassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
         <Footer />

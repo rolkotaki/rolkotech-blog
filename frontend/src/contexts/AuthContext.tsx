@@ -55,7 +55,6 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const register = async (name: string, email: string, password: string) => {
     await authService.register({ name: name, email, password });
-    navigate("/login");
   };
 
   const deleteUser = async () => {

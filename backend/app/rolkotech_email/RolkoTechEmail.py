@@ -1,7 +1,6 @@
-from python_http_client.client import Response
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Email, To, Subject, HtmlContent, Mail
-from sendgrid.helpers.mail.exceptions import SendGridException
+from mailersend import MailerSendClient, EmailBuilder
+from mailersend.exceptions import MailerSendError
+from mailersend.resources.email import EmailRequest, APIResponse
 from threading import RLock
 
 from app.core.config import settings
@@ -10,51 +9,47 @@ from app.logger import logger
 
 class RolkoTechEmail:
     """
-    Represents an email to be sent via SendGrid. Use the `send()` method to send the message.
+    Represents an email to be sent via MailerSend.
     """
 
-    _sg: SendGridAPIClient = None
-    _sg_lock: RLock = RLock()
+    _msc: MailerSendClient = None
+    _msc_lock: RLock = RLock()
 
     def __init__(self, to: str, subject: str, message: str):
         self.to: str = to
         self.subject: str = subject
-        email_from: Email = Email(settings.EMAIL_FROM)
-        email_to: To = To(self.to)
-        subject: Subject = Subject(self.subject)
-        content: HtmlContent = HtmlContent(message)
-        self.mail: Mail = Mail(email_from, email_to, subject, content)
-        type(self)._create_api_client()
+        self.message: str = message
+        self.email: EmailRequest = (
+            EmailBuilder()
+            .from_email(settings.EMAIL_FROM, settings.EMAIL_FROM_NAME)
+            .to(self.to)
+            .subject(self.subject)
+            .html(self.message)
+            .build()
+        )
 
     @classmethod
-    def _create_api_client(cls) -> None:
-        """
-        Create the Sendgrid API client using the API key.
-        """
-        if cls._sg is None:
-            with cls._sg_lock:
-                if cls._sg is None:
-                    cls._sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+    def _get_client(cls) -> MailerSendClient:
+        """Get or create the MailerSend client."""
+        if cls._msc is None:
+            with cls._msc_lock:
+                if cls._msc is None:
+                    cls._msc = MailerSendClient(api_key=settings.MAILERSEND_API_KEY)
+        return cls._msc
 
-    def send(self) -> Response | None:
+    def send(self) -> APIResponse | None:
         """
         Send the email.
         """
-        if settings.ENVIRONMENT == "local":
-            # In local development, we might not want to verify SSL certificates
-            import ssl
-
-            ssl._create_default_https_context = ssl._create_unverified_context
-
         try:
             if settings.TEST_MODE:
                 # Do not send emails in test mode
                 return None
-            response = type(self)._sg.send(self.mail)
+            response = self._get_client().emails.send(self.email)
             return response
-        except SendGridException as se:
+        except MailerSendError as se:
             logger.error(
-                f"Failed to send email to {self.to} with subject {self.subject} due to SendGridException: {str(se)}",
+                f"Failed to send email to {self.to} with subject {self.subject} due to MailerSendError: {str(se)}",
                 exc_info=True,
             )
             return None
