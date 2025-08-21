@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { blogpostService } from "../services/blogpost.service.ts";
+import { formatDate } from "../utils/format.ts";
 import BlogPostBox from "../components/BlogPost/BlogPostBox";
 import BlogPostSearch from "../components/BlogPost/BlogPostSearch.tsx";
 import Pagination from "../components/BlogPost/Pagination";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
+import PageLoadingError from "../components/Common/PageLoadingError";
 import { BLOGPOSTS_PER_PAGE } from "../types/blogpost.ts";
 import type { BlogPost } from "../types/blogpost.ts";
 
@@ -31,7 +33,8 @@ function BlogPosts() {
         );
         setBlogPosts(response.data);
         setTotalCount(response.count);
-      } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
         setError("Failed to load blog posts");
         console.error("Error fetching blog posts:", err);
       } finally {
@@ -67,11 +70,7 @@ function BlogPosts() {
   }
 
   if (error) {
-    return (
-      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
-        <div className="text-lg text-red-600">{error}</div>
-      </div>
-    );
+    return <PageLoadingError error={error} />;
   }
 
   return (
@@ -86,19 +85,14 @@ function BlogPosts() {
         {blogPosts.map((post) => (
           <BlogPostBox
             key={post.id}
+            id={post.id}
             url={post.url}
             title={post.title}
             imagePath={post.image_path}
-            publicationDate={new Date(post.publication_date).toLocaleDateString(
-              "en-US",
-              {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }
-            )}
+            publicationDate={formatDate(post.publication_date)}
             tags={post.tags.map((tag) => tag.name)}
             content={post.content}
+            featured={post.featured}
           />
         ))}
       </div>

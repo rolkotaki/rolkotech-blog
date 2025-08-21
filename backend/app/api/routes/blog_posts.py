@@ -23,12 +23,17 @@ def read_blog_posts(
     limit: int = 100,
     search_by: str | None = None,
     search_value: str | None = None,
+    featured_only: bool = False,
 ) -> BlogPostsPublic:
     """
     Retrieve blog posts with optional filtering.
     """
     count, blog_posts = BlogPostCRUD(session).read_blog_posts(
-        skip=skip, limit=limit, search_by=search_by, search_value=search_value
+        skip=skip,
+        limit=limit,
+        search_by=search_by,
+        search_value=search_value,
+        featured_only=featured_only,
     )
     # Convert BlogPost models to BlogPostPublic models
     blog_posts = [
@@ -60,6 +65,7 @@ def read_blog_post(session: SessionDep, url: str) -> BlogPostPublic:
         content=blog_post.content,
         image_path=blog_post.image_path,
         publication_date=blog_post.publication_date,
+        featured=blog_post.featured,
         tags=tags,
     )
 

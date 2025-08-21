@@ -37,6 +37,7 @@ class BlogPost(SQLModel, table=True):
     content: str = Field(nullable=False)
     image_path: str | None = Field(nullable=True)
     publication_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    featured: bool = Field(default=False, nullable=False)
     comments: list["Comment"] | None = Relationship(
         back_populates="blog_post", sa_relationship_kwargs={"passive_deletes": True}
     )

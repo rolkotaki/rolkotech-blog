@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDateTime } from "../../utils/format.ts";
 import ConfirmDialog from "../Common/ConfirmDialog";
 
 interface ReplyData {
@@ -127,13 +128,7 @@ function Comment({
               {isOwner ? "You" : username}
             </span>
             <span className="text-gray-500 text-sm ml-2">
-              {new Date(commentDate).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatDateTime(commentDate)}
             </span>
           </div>
         </div>
@@ -285,13 +280,7 @@ function Comment({
                       : reply.username}
                   </span>
                   <span className="text-gray-500 text-sm ml-2">
-                    {new Date(reply.commentDate).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatDateTime(reply.commentDate)}
                   </span>
                 </div>
               </div>

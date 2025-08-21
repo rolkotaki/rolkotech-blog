@@ -1,12 +1,11 @@
+import type { Tag } from "./tag";
+
 export const BLOGPOSTS_PER_PAGE = 6;
 export const MAX_BLOGPOST_PAGES = 5;
+export const FEATURED_BLOGPOSTS = 3;
+export const RECENT_BLOGPOSTS = 3;
 export const BLOGPOSTS_IMAGE_PATH = "/images/blogposts";
 export const COMMENTS_PER_LOAD = 50;
-
-export interface Tag {
-  id: number;
-  name: string;
-}
 
 export interface BlogPost {
   id: number;
@@ -15,12 +14,17 @@ export interface BlogPost {
   content: string;
   image_path: string;
   publication_date: string;
+  featured: boolean;
   tags: Tag[];
 }
 
 export interface BlogPosts {
   data: BlogPost[];
   count: number;
+}
+
+export interface UpdateFeaturedRequest {
+  featured: boolean;
 }
 
 export interface Comment {

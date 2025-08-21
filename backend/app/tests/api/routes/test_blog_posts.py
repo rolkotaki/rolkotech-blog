@@ -88,6 +88,7 @@ def test_02_read_blog_posts(client: TestClient, setup_blog_post: BlogPost) -> No
     assert data["data"][0]["url"] == setup_blog_post.url
     assert data["data"][0]["content"] == setup_blog_post.content
     assert data["data"][0]["image_path"] == setup_blog_post.image_path
+    assert data["data"][0]["featured"] == setup_blog_post.featured
     assert data["data"][0]["tags"] == []
 
 
@@ -104,6 +105,7 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
             url="blog-post-2",
             content="Content of Blog Post 2",
             image_path="image.png",
+            featured=True,
             tags=[],
         )
     )
@@ -126,6 +128,7 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert data["data"][0]["url"] == blog_post_2.url
     assert data["data"][0]["content"] == blog_post_2.content
     assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["featured"] == blog_post_2.featured
     assert data["data"][0]["tags"] == []
 
     # Test searching by title
@@ -149,6 +152,7 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert data["data"][0]["url"] == blog_post_2.url
     assert data["data"][0]["content"] == blog_post_2.content
     assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["featured"] == blog_post_2.featured
     assert data["data"][0]["tags"] == []
 
     response = client.get(
@@ -163,6 +167,7 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert data["data"][0]["url"] == blog_post_2.url
     assert data["data"][0]["content"] == blog_post_2.content
     assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["featured"] == blog_post_2.featured
     assert data["data"][0]["tags"] == []
 
     response = client.get(
@@ -194,6 +199,7 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert data["data"][0]["url"] == blog_post_2.url
     assert data["data"][0]["content"] == blog_post_2.content
     assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["featured"] == blog_post_2.featured
     assert data["data"][0]["tags"] == []
 
     response = client.get(
@@ -208,6 +214,7 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert data["data"][0]["url"] == blog_post_2.url
     assert data["data"][0]["content"] == blog_post_2.content
     assert data["data"][0]["image_path"] == blog_post_2.image_path
+    assert data["data"][0]["featured"] == blog_post_2.featured
     assert data["data"][0]["tags"] == []
 
     response = client.get(
@@ -242,9 +249,39 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert (
         data["data"][0]["publication_date"] == blog_post_1.publication_date.isoformat()
     )
+    assert data["data"][0]["featured"] == blog_post_1.featured
     assert len(data["data"][0]["tags"]) == 1
     assert data["data"][0]["tags"][0]["id"] == tag.id
     assert data["data"][0]["tags"][0]["name"] == tag.name
+
+    # Test searching by featured flag
+    response = client.get(f"{settings.API_VERSION_STR}/blogposts?featured_only=false")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 3
+    assert len(data["data"]) == 3
+
+    response = client.get(f"{settings.API_VERSION_STR}/blogposts?featured_only=true")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=title&search_value=2&featured_only=true"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=title&search_value=2&featured_only=false"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
 
 
 def test_04_read_blog_post(client: TestClient, setup_blog_post: BlogPost) -> None:
@@ -257,6 +294,7 @@ def test_04_read_blog_post(client: TestClient, setup_blog_post: BlogPost) -> Non
     assert data["content"] == setup_blog_post.content
     assert data["image_path"] == setup_blog_post.image_path
     assert data["publication_date"] == setup_blog_post.publication_date.isoformat()
+    assert data["featured"] == setup_blog_post.featured
     assert data["tags"] == []
 
 
@@ -274,6 +312,7 @@ def test_05_read_blog_post_with_tags_and_comments(
     assert data["content"] == blog_post.content
     assert data["image_path"] == blog_post.image_path
     assert data["publication_date"] == blog_post.publication_date.isoformat()
+    assert data["featured"] == blog_post.featured
     assert len(data["tags"]) == 1
     assert data["tags"][0]["id"] == tag.id
     assert data["tags"][0]["name"] == tag.name
@@ -307,6 +346,7 @@ def test_07_create_blog_post(
     assert data["content"] == "Content of Blog Post 1"
     assert data["image_path"] is None
     assert data["publication_date"] is not None
+    assert data["featured"] is False
     assert data["tags"] == []
 
 
@@ -317,6 +357,7 @@ def test_08_create_blog_post_with_tags(
         "title": "Blog Post 1",
         "url": "blog-post-1",
         "content": "Content of Blog Post 1",
+        "featured": True,
         "tags": [setup_tag.id],
     }
     response = client.post(
@@ -332,6 +373,7 @@ def test_08_create_blog_post_with_tags(
     assert data["content"] == "Content of Blog Post 1"
     assert data["image_path"] is None
     assert data["publication_date"] is not None
+    assert data["featured"] is True
     assert len(data["tags"]) == 1
     assert data["tags"][0]["id"] == setup_tag.id
     assert data["tags"][0]["name"] == setup_tag.name
@@ -471,6 +513,7 @@ def test_15_update_blog_post_everything(
         "content": "Updated content of Blog Post",
         "image_path": "updated_image.png",
         "publication_date": "2023-10-01T00:00:00",
+        "featured": True,
         "tags": [setup_tag.id],
     }
     response = client.patch(
@@ -486,6 +529,7 @@ def test_15_update_blog_post_everything(
     assert data["content"] == blog_post_data["content"]
     assert data["image_path"] == blog_post_data["image_path"]
     assert data["publication_date"] == blog_post_data["publication_date"]
+    assert data["featured"] == blog_post_data["featured"]
     assert len(data["tags"]) == 1
     assert data["tags"][0]["id"] == setup_tag.id
     assert data["tags"][0]["name"] == setup_tag.name

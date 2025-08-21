@@ -5,6 +5,7 @@ import { blogpostService } from "../services/blogpost.service";
 import BlogPost from "../components/BlogPost/BlogPost";
 import CommentsSection from "../components/Comment/CommentsSection";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
+import PageLoadingError from "../components/Common/PageLoadingError";
 import type { BlogPost as BlogPostType } from "../types/blogpost";
 
 function BlogPostPage() {
@@ -52,11 +53,7 @@ function BlogPostPage() {
   }
 
   if (error) {
-    return (
-      <div className="flex-grow flex flex-col container mx-auto justify-center items-center">
-        <div className="text-lg text-red-600">{error}</div>
-      </div>
-    );
+    return <PageLoadingError error={error} />;
   }
 
   if (!blogPost) {

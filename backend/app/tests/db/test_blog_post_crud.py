@@ -55,6 +55,7 @@ def test_01_create_blog_post_with_no_tags(db: Session) -> None:
         blog_post.publication_date is not None
         and type(blog_post.publication_date) is datetime
     )
+    assert blog_post.featured is False
     assert len(blog_post.tags) == 0
 
     blog_post_create = BlogPostCreate(
@@ -62,6 +63,7 @@ def test_01_create_blog_post_with_no_tags(db: Session) -> None:
         url="blog-post-2",
         content="Content of Blog Post 2",
         image_path="image.png",
+        featured=True,
         tags=[],
     )
     blog_post = blog_post_crud.create_blog_post(blog_post=blog_post_create)
@@ -74,6 +76,7 @@ def test_01_create_blog_post_with_no_tags(db: Session) -> None:
     assert blog_post.publication_date.replace(
         tzinfo=None
     ) == blog_post_create.publication_date.replace(tzinfo=None)
+    assert blog_post.featured is True
     assert len(blog_post.tags) == 0
 
 
@@ -131,12 +134,13 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
         url="blog-post-2",
         content="Content of Blog Post 2",
         publication_date=datetime.now(UTC),
+        featured=True,
         tags=[tag_1, tag_2],
     )
     blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=10, search_by="", search_value=""
+        skip=0, limit=10, search_by="", search_value="", featured_only=False
     )
     assert count == 2
     assert len(blog_posts) == 2
@@ -145,91 +149,135 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
     assert blog_posts[1].title == "Blog Post 1"
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=1, search_by="", search_value=""
+        skip=0, limit=1, search_by="", search_value="", featured_only=False
     )
     assert count == 2
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=1, limit=10, search_by="", search_value=""
+        skip=1, limit=10, search_by="", search_value="", featured_only=False
     )
     assert count == 2
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=2, limit=10, search_by="", search_value=""
+        skip=2, limit=10, search_by="", search_value="", featured_only=False
     )
     assert count == 2
     assert len(blog_posts) == 0
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="tag", search_value="nonexistent"
+        skip=0,
+        limit=100,
+        search_by="tag",
+        search_value="nonexistent",
+        featured_only=False,
     )
     assert count == 0
     assert len(blog_posts) == 0
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="tag", search_value="tag1"
+        skip=0, limit=100, search_by="tag", search_value="tag1", featured_only=False
     )
     assert count == 1
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=1, limit=1, search_by="tag", search_value="tag1"
+        skip=1, limit=1, search_by="tag", search_value="tag1", featured_only=False
     )
     assert count == 1
     assert len(blog_posts) == 0
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=1, search_by="tag", search_value="tag1"
+        skip=0, limit=1, search_by="tag", search_value="tag1", featured_only=False
     )
     assert count == 1
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="title", search_value="nonexistent"
+        skip=0,
+        limit=100,
+        search_by="title",
+        search_value="nonexistent",
+        featured_only=False,
     )
     assert count == 0
     assert len(blog_posts) == 0
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="title", search_value="blog post"
+        skip=0,
+        limit=100,
+        search_by="title",
+        search_value="blog post",
+        featured_only=False,
     )
     assert count == 2
     assert len(blog_posts) == 2
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=1, limit=1, search_by="title", search_value="blog post"
+        skip=1,
+        limit=1,
+        search_by="title",
+        search_value="blog post",
+        featured_only=False,
     )
     assert count == 2
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="title", search_value="1"
+        skip=0, limit=100, search_by="title", search_value="1", featured_only=False
     )
     assert count == 1
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="content", search_value="nonexistent"
+        skip=0,
+        limit=100,
+        search_by="content",
+        search_value="nonexistent",
+        featured_only=False,
     )
     assert count == 0
     assert len(blog_posts) == 0
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="content", search_value="post"
+        skip=0, limit=100, search_by="content", search_value="post", featured_only=False
     )
     assert count == 2
     assert len(blog_posts) == 2
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=1, limit=1, search_by="content", search_value="post"
+        skip=1, limit=1, search_by="content", search_value="post", featured_only=False
     )
     assert count == 2
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
-        skip=0, limit=100, search_by="content", search_value="1"
+        skip=0, limit=100, search_by="content", search_value="1", featured_only=False
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="content", search_value="1", featured_only=True
+    )
+    assert count == 0
+    assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="content", search_value="2", featured_only=True
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="", search_value="", featured_only=False
+    )
+    assert count == 2
+    assert len(blog_posts) == 2
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="", search_value="", featured_only=True
     )
     assert count == 1
     assert len(blog_posts) == 1
@@ -316,12 +364,16 @@ def test_06_read_blog_post_by_title(db: Session) -> None:
     assert blog_post_from_db.title == blog_post.title
     assert blog_post_from_db.url == blog_post.url
     assert blog_post_from_db.content == blog_post.content
+    assert blog_post.featured is False
 
 
 def test_07_read_blog_post_by_url(db: Session) -> None:
     blog_post_crud = BlogPostCRUD(db)
     blog_post_create = BlogPostCreate(
-        title="Blog Post 1", url="blog-post-1", content="Content of Blog Post 1"
+        title="Blog Post 1",
+        url="blog-post-1",
+        content="Content of Blog Post 1",
+        featured=True,
     )
 
     blog_post_from_db = blog_post_crud.get_blog_post_by_url(
@@ -336,6 +388,7 @@ def test_07_read_blog_post_by_url(db: Session) -> None:
     assert blog_post_from_db.title == blog_post.title
     assert blog_post_from_db.url == blog_post.url
     assert blog_post_from_db.content == blog_post.content
+    assert blog_post_from_db.featured is True
 
 
 def test_08_update_blog_post(db: Session, setup_tags) -> None:
@@ -367,6 +420,7 @@ def test_08_update_blog_post(db: Session, setup_tags) -> None:
         content="Content of Blog Post 1 Updated Again",
         image_path="image.png",
         publication_date=datetime.now(UTC),
+        featured=True,
         tags=[tag_1, tag_2],
     )
     blog_post_updated_again = blog_post_crud.update_blog_post(
@@ -381,6 +435,7 @@ def test_08_update_blog_post(db: Session, setup_tags) -> None:
     assert blog_post_updated_again.publication_date.replace(
         tzinfo=None
     ) == blog_post_update.publication_date.replace(tzinfo=None)
+    assert blog_post_updated_again.featured == blog_post_update.featured
     assert len(blog_post_updated_again.tags) == 2
 
 

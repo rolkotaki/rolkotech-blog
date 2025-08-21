@@ -11,6 +11,7 @@ class BlogPostBase(BaseModel):
     content: str = Field()
     image_path: str | None = Field(default=None)
     publication_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    featured: bool = Field(default=False, nullable=False)
 
 
 class BlogPostCreate(BlogPostBase):
@@ -41,4 +42,5 @@ class BlogPostUpdate(BaseModel):
     content: str | None = Field(default=None)
     image_path: str | None = Field(default=None)
     publication_date: datetime | None = Field(default=None)
+    featured: bool | None = Field(default=None)
     tags: list[int] | None = Field(default=None)

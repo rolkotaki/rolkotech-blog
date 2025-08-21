@@ -202,14 +202,21 @@ class BlogPostCRUD(BaseCRUD):
         return self._create(blog_post)
 
     def read_blog_posts(
-        self, skip: int, limit: int, search_by: str, search_value: str
+        self,
+        skip: int,
+        limit: int,
+        search_by: str,
+        search_value: str,
+        featured_only: bool,
     ) -> tuple[int, list[BlogPost]]:
         """
         Read blog posts from the database with pagination and optional filtering.
         """
         base_query = select(self.MODEL_CLASS)
 
-        # Apply the search filter if specified
+        # Apply the search filters if specified
+        if featured_only:
+            base_query = base_query.where(self.MODEL_CLASS.featured.is_(True))
         if search_by and search_value:
             if search_by == "tag":
                 base_query = (

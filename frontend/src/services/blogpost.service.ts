@@ -1,5 +1,10 @@
 import api from "./api";
-import { BLOGPOSTS_PER_PAGE, COMMENTS_PER_LOAD } from "../types/blogpost";
+import {
+  BLOGPOSTS_PER_PAGE,
+  COMMENTS_PER_LOAD,
+  FEATURED_BLOGPOSTS,
+  RECENT_BLOGPOSTS,
+} from "../types/blogpost";
 import type {
   BlogPosts,
   BlogPost,
@@ -7,6 +12,7 @@ import type {
   Comment,
   CreateCommentRequest,
   UpdateCommentRequest,
+  UpdateFeaturedRequest,
 } from "../types";
 
 export const blogpostService = {
@@ -28,8 +34,30 @@ export const blogpostService = {
     return response.data;
   },
 
+  getRecentBlogPosts: async (tag?: string): Promise<BlogPosts> => {
+    let url = `/blogposts?limit=${RECENT_BLOGPOSTS}&skip=0`;
+    if (tag) url += `&search_by=tag&search_value=${encodeURIComponent(tag)}`;
+
+    const response = await api.get<BlogPosts>(url);
+    return response.data;
+  },
+
+  getFeaturedBlogPosts: async (): Promise<BlogPosts> => {
+    const url = `/blogposts?limit=${FEATURED_BLOGPOSTS}&skip=0&featured_only=true`;
+    const response = await api.get<BlogPosts>(url);
+    return response.data;
+  },
+
   getBlogPostByUrl: async (url: string): Promise<BlogPost> => {
     const response = await api.get<BlogPost>(`/blogposts/${url}`);
+    return response.data;
+  },
+
+  updateBlogPostFeatured: async (
+    id: number,
+    data: UpdateFeaturedRequest
+  ): Promise<BlogPost> => {
+    const response = await api.patch<BlogPost>(`/blogposts/${id}`, data);
     return response.data;
   },
 

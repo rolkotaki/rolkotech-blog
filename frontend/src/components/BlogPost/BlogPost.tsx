@@ -1,3 +1,4 @@
+import { formatDate } from "../../utils/format.ts";
 import type { BlogPost as BlogPostType } from "../../types/blogpost";
 import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogpost";
 import MarkdownContentProps from "./MarkdownContent";
@@ -13,12 +14,25 @@ function BlogPost({ blogPost }: BlogPostProps) {
         {blogPost.title}
       </h1>
       <p className="text-sm text-gray-500 mb-4">
-        {new Date(blogPost.publication_date).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })}
+        {formatDate(blogPost.publication_date)}
       </p>
+
+      {blogPost.tags && blogPost.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {blogPost.tags
+            .sort((a, b) =>
+              a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+            )
+            .map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-block bg-blue-100 text-blue-600 text-sm px-3 py-1 rounded"
+              >
+                {tag.name}
+              </span>
+            ))}
+        </div>
+      )}
 
       <img
         src={`${BLOGPOSTS_IMAGE_PATH}/${blogPost.image_path}`}
