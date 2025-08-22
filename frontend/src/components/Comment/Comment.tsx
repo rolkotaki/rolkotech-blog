@@ -266,7 +266,7 @@ function Comment({
           {replies.map((reply) => (
             <div
               key={reply.id}
-              className="bg-[#fbfbfb] rounded-lg border border-gray-200 p-4"
+              className="bg-[#eeeeee] rounded-lg border border-gray-200 p-4"
             >
               {/* Reply header */}
               <div className="flex items-center space-x-2 mb-3">

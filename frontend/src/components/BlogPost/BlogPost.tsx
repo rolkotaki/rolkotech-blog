@@ -26,7 +26,7 @@ function BlogPost({ blogPost }: BlogPostProps) {
             .map((tag) => (
               <span
                 key={tag.id}
-                className="inline-block bg-blue-100 text-blue-600 text-sm px-3 py-1 rounded"
+                className="inline-block bg-blue-100 text-blue-600 text-sm px-2 py-1 rounded"
               >
                 {tag.name}
               </span>

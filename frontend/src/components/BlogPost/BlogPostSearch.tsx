@@ -47,16 +47,33 @@ function BlogPostSearch({
         <label htmlFor="query" className="sr-only">
           Search
         </label>
-        <input
-          type="text"
-          name="query"
-          id="query"
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder="Search articles..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={isLoading}
-        />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            name="query"
+            id="query"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder="Search articles..."
+            className="w-full pl-10 pr-4 py-2 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-100 transition-all duration-200 shadow-sm hover:shadow-md"
+            disabled={isLoading}
+          />
+        </div>
       </div>
 
       <div>
@@ -64,7 +81,7 @@ function BlogPostSearch({
           name="searchBy"
           value={searchBy}
           onChange={(e) => setSearchBy(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+          className="px-4 py-2 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-100 transition-all duration-200 shadow-sm hover:shadow-md appearance-none cursor-pointer"
           disabled={isLoading}
         >
           <option value="title">Title</option>

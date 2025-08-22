@@ -14,6 +14,10 @@ function NavBar() {
     setMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <header
       className={`bg-white shadow fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
@@ -35,7 +39,7 @@ function NavBar() {
       </div>
 
       {/* Mobile menu */}
-      <MobileMenu isOpen={isMobileMenuOpen} />
+      <MobileMenu isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
     </header>
   );
 }

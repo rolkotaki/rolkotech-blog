@@ -74,7 +74,7 @@ function BlogPosts() {
   }
 
   return (
-    <div className="flex-grow flex flex-col container mx-auto px-4 py-8">
+    <div className="flex-grow flex flex-col container mx-auto px-4 py-5">
       <BlogPostSearch
         onSearch={handleSearch}
         isLoading={loading}

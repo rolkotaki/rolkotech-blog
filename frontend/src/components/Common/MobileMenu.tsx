@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -6,14 +6,23 @@ import ConfirmDialog from "./ConfirmDialog";
 
 interface MobileMenuProps {
   isOpen: boolean;
+  onClose: () => void;
 }
 
-function MobileMenu({ isOpen }: MobileMenuProps) {
+function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { isAuthenticated, logout, user, deleteUser } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const location = useLocation();
 
   if (!isOpen) return null;
+
+  const getLinkClassName = (path: string) => {
+    const isActive = location.pathname === path;
+    return `hover:text-blue-600 transition-colors duration-200 py-2 px-3 rounded-md ${
+      isActive ? "text-blue-600 font-semibold bg-blue-50" : "text-gray-600"
+    }`;
+  };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
@@ -30,14 +39,22 @@ function MobileMenu({ isOpen }: MobileMenuProps) {
 
   return (
     <div className="md:hidden px-4 pb-4 space-y-2">
-      <nav className="flex flex-col space-y-2 text-gray-700">
-        <Link to="/" className="hover:text-blue-600">
+      <nav className="flex flex-col space-y-1">
+        <Link to="/" className={getLinkClassName("/")} onClick={onClose}>
           Home
         </Link>
-        <Link to="/articles" className="hover:text-blue-600">
+        <Link
+          to="/articles"
+          className={getLinkClassName("/articles")}
+          onClick={onClose}
+        >
           Articles
         </Link>
-        <Link to="/about" className="hover:text-blue-600">
+        <Link
+          to="/about"
+          className={getLinkClassName("/about")}
+          onClick={onClose}
+        >
           About
         </Link>
       </nav>
@@ -84,10 +101,15 @@ function MobileMenu({ isOpen }: MobileMenuProps) {
             <Link
               to="/signup"
               className="text-sm text-blue-600 hover:underline"
+              onClick={onClose}
             >
               Sign Up
             </Link>
-            <Link to="/login" className="text-sm text-blue-600 hover:underline">
+            <Link
+              to="/login"
+              className="text-sm text-blue-600 hover:underline"
+              onClick={onClose}
+            >
               Log In
             </Link>
           </>
