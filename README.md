@@ -58,7 +58,8 @@ Backend docs: [backend/README.md](./backend/README.md).
 
 ## Frontend
 
-Coming soon ...
+Frontend docs: [frontend/README.md](./frontend/README.md).
+(Under construction ...)
 
 ## License
 

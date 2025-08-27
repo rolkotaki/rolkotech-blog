@@ -1,6 +1,6 @@
 # RolkoTech Blog - Backend
 
-FastAPI backend implementing the REST APIs and backend functionalities of this project.
+FastAPI project implementing the REST APIs and backend functionalities.
 
 ## Requirements
 
@@ -26,7 +26,7 @@ docker compose down
 
 ## Local Development
 
-Follow these steps to run the project locally.
+Follow these steps to run the backend locally.
 
 ### Create Database
 
