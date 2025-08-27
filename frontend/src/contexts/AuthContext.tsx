@@ -50,7 +50,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   const register = async (name: string, email: string, password: string) => {

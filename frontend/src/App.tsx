@@ -1,9 +1,10 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import NavBar from "./components/Common/NavBar";
+import NavBar from "./components/Nav/NavBar";
 import Footer from "./components/Common/Footer";
 import About from "./pages/About";
+import Admin from "./pages/Admin";
 import BlogPost from "./pages/BlogPost";
 import BlogPosts from "./pages/BlogPosts";
 import ChangePassword from "./pages/ChangePassword";
@@ -21,6 +22,7 @@ function App() {
         <main className="flex-1 flex flex-col pt-16">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/articles" element={<BlogPosts />} />
             <Route path="/articles/:url" element={<BlogPost />} />
             <Route path="/about" element={<About />} />

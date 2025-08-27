@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useScrollNavbar } from "../../hooks/useScrollNavbar";
+import Logo from "../Common/Logo";
 import AuthLinks from "./AuthLinks";
 import DesktopNav from "./DesktopNav";
-import Logo from "./Logo";
 import MobileMenu from "./MobileMenu";
 import MobileMenuButton from "./MobileMenuButton";
 

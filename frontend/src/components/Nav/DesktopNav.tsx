@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 function DesktopNav() {
   const location = useLocation();
+  const { user } = useAuth();
 
   const getLinkClassName = (path: string) => {
     const isActive = location.pathname === path;
@@ -23,6 +25,11 @@ function DesktopNav() {
       <Link to="/about" className={getLinkClassName("/about")}>
         About
       </Link>
+      {user?.is_superuser && (
+        <Link to="/admin" className={getLinkClassName("/admin")}>
+          Admin
+        </Link>
+      )}
     </nav>
   );
 }

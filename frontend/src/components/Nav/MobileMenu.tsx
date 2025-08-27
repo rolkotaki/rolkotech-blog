@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../hooks/useAuth";
-import ConfirmDialog from "./ConfirmDialog";
+import ConfirmDialog from "../Common/ConfirmDialog";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -57,6 +57,15 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         >
           About
         </Link>
+        {user?.is_superuser && (
+          <Link
+            to="/admin"
+            className={getLinkClassName("/admin")}
+            onClick={onClose}
+          >
+            Admin
+          </Link>
+        )}
       </nav>
 
       <div className="flex flex-col space-y-2 pt-2 border-t border-gray-200">
@@ -70,12 +79,14 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 <Link
                   to="/me"
                   className="text-sm text-blue-600 hover:underline"
+                  onClick={onClose}
                 >
                   Update Profile
                 </Link>
                 <Link
                   to="/me/password"
                   className="text-sm text-blue-600 hover:underline"
+                  onClick={onClose}
                 >
                   Change Password
                 </Link>
@@ -88,7 +99,10 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   </button>
                 )}
                 <button
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    onClose();
+                  }}
                   className="text-sm text-gray-700 hover:underline text-left"
                 >
                   Log Out

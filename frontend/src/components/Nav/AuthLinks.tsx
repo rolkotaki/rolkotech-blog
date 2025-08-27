@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../hooks/useAuth";
-import ConfirmDialog from "./ConfirmDialog";
+import ConfirmDialog from "../Common/ConfirmDialog";
 
 function AuthLinks() {
   const { isAuthenticated, logout, user, deleteUser } = useAuth();
