@@ -61,6 +61,10 @@ export const blogpostService = {
     return response.data;
   },
 
+  deleteBlogPost: async (id: number): Promise<void> => {
+    await api.delete(`/blogposts/${id}`);
+  },
+
   getCommentsForBlogPost: async (
     url: string,
     page: number
