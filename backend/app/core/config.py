@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic import EmailStr, AnyUrl, BeforeValidator, PostgresDsn, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,6 +33,7 @@ class Settings(BaseSettings):
     TEST_MODE: bool = False
 
     FRONTEND_HOST: str
+    BACKEND_HOST: str
 
     # CORS settings
     BACKEND_CORS_ORIGINS: Annotated[
@@ -96,6 +98,11 @@ class Settings(BaseSettings):
     EMAIL_FROM: EmailStr
     EMAIL_FROM_NAME: str = "RolkoTech Blog"
     EMAIL_TOKEN_EXPIRE_HOURS: int = 24  # 1 day
+
+    STATIC_UPLOAD_DIR: Path = Path(__file__).parent.parent.parent / "uploads"
+    BLOGPOST_IMAGE_UPLOAD_DIR: Path = Path("images/blogposts")
+    ALLOWED_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic"}
+    MAX_FILE_SIZE: int = 5 * 1024 * 1024  # 5MB
 
 
 settings = Settings()

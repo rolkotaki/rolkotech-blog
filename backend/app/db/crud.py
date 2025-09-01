@@ -87,11 +87,49 @@ class UserCRUD(BaseCRUD):
         self.session.refresh(user)
         return user
 
-    def read_users(self, skip: int, limit: int) -> tuple[int, list[User]]:
+    def read_users(
+        self,
+        skip: int,
+        limit: int,
+        search_by_name: str | None = None,
+        search_by_email: str | None = None,
+        search_by_active: bool | None = None,
+        search_by_superuser: bool | None = None,
+    ) -> tuple[int, list[User]]:
         """
-        Read users from the database with pagination.
+        Read users from the database with pagination and optional filtering.
         """
-        return self._read(skip, limit)
+        base_query = select(self.MODEL_CLASS)
+
+        # Apply the search filters if specified
+        if search_by_name:
+            base_query = base_query.where(
+                self.MODEL_CLASS.name.ilike(f"%{search_by_name}%")
+            )
+        if search_by_email:
+            base_query = base_query.where(
+                self.MODEL_CLASS.email.ilike(f"%{search_by_email}%")
+            )
+        if search_by_active is not None:
+            base_query = base_query.where(
+                self.MODEL_CLASS.is_active == search_by_active
+            )
+        if search_by_superuser is not None:
+            base_query = base_query.where(
+                self.MODEL_CLASS.is_superuser == search_by_superuser
+            )
+
+        # Count
+        count_statement = select(func.count()).select_from(base_query.subquery())
+        count = self.session.exec(count_statement).one()
+
+        # Apply pagination
+        statement = (
+            base_query.order_by(self.MODEL_CLASS.name.asc()).offset(skip).limit(limit)
+        )
+        users = self.session.exec(statement).all()
+
+        return count, users
 
     def get_user_by_email(self, email: str) -> User | None:
         """
@@ -205,9 +243,9 @@ class BlogPostCRUD(BaseCRUD):
         self,
         skip: int,
         limit: int,
-        search_by: str,
-        search_value: str,
-        featured_only: bool,
+        search_by: str | None = None,
+        search_value: str | None = None,
+        featured_only: bool = False,
     ) -> tuple[int, list[BlogPost]]:
         """
         Read blog posts from the database with pagination and optional filtering.
@@ -221,7 +259,7 @@ class BlogPostCRUD(BaseCRUD):
             if search_by == "tag":
                 base_query = (
                     base_query.join(self.MODEL_CLASS.tags)
-                    .where(Tag.name.ilike(f"%{search_value}%"))
+                    .where(Tag.name.ilike(f"{search_value}"))
                     .distinct()
                 )
             elif search_by == "title":

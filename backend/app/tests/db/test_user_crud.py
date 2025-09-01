@@ -73,17 +73,31 @@ def test_04_read_users(db: Session) -> None:
     assert len(users) == 0
 
     user_crud.create_user(
-        user=UserCreate(name="user1", email="user1@email.com", password="password")
+        user=UserCreate(
+            name="user1", email="user1@email.com", password="password", is_active=False
+        )
     )
     user_crud.create_user(
         user=UserCreate(
-            name="user2", email="user2@email.com", password="password", superuser=True
+            name="user2",
+            email="user2@email.com",
+            password="password",
+            is_superuser=True,
         )
     )
 
     count, users = user_crud.read_users(skip=0, limit=2)
     assert count == 2
     assert len(users) == 2
+
+    assert users[0].name == "user1"
+    assert users[0].email == "user1@email.com"
+    assert users[0].is_active is False
+    assert users[0].is_superuser is False
+    assert users[1].name == "user2"
+    assert users[1].email == "user2@email.com"
+    assert users[1].is_active is True
+    assert users[1].is_superuser is True
 
     count, users = user_crud.read_users(skip=0, limit=1)
     assert count == 2
@@ -96,6 +110,61 @@ def test_04_read_users(db: Session) -> None:
     count, users = user_crud.read_users(skip=2, limit=2)
     assert count == 2
     assert len(users) == 0
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_name="user")
+    assert count == 2
+    assert len(users) == 2
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_name="user1")
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_email="email")
+    assert count == 2
+    assert len(users) == 2
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_email="user1")
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_active=None)
+    assert count == 2
+    assert len(users) == 2
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_active=False)
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_active=True)
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_superuser=None)
+    assert count == 2
+    assert len(users) == 2
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_superuser=False)
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_superuser=True)
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(skip=0, limit=100, search_by_superuser=False)
+    assert count == 1
+    assert len(users) == 1
+
+    count, users = user_crud.read_users(
+        skip=0,
+        limit=100,
+        search_by_name="user",
+        search_by_email="user2",
+        search_by_active=True,
+        search_by_superuser=True,
+    )
+    assert count == 1
+    assert len(users) == 1
 
 
 def test_05_get_user_by_email(db: Session) -> None:

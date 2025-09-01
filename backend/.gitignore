@@ -9,3 +9,6 @@ __pycache__
 coverage
 *.log
 http_requests
+uploads/**
+!uploads/**/
+!uploads/**/.gitkeep

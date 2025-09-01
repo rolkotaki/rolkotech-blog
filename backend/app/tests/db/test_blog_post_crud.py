@@ -183,6 +183,18 @@ def test_04_read_blog_posts(db: Session, setup_tags) -> None:
     assert len(blog_posts) == 1
 
     count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="tag", search_value="tag", featured_only=False
+    )
+    assert count == 0
+    assert len(blog_posts) == 0
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
+        skip=0, limit=100, search_by="tag", search_value="%tag%", featured_only=False
+    )
+    assert count == 1
+    assert len(blog_posts) == 1
+
+    count, blog_posts = blog_post_crud.read_blog_posts(
         skip=1, limit=1, search_by="tag", search_value="tag1", featured_only=False
     )
     assert count == 1

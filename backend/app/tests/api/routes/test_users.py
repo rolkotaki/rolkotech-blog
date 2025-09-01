@@ -85,17 +85,24 @@ def test_01_read_users(
     assert "password" not in data["data"][0]
 
 
-def test_02_read_users_with_skip_and_limit(
+def test_02_read_users_with_skip_and_limit_and_search(
     client: TestClient, db: Session, superuser_token_headers: dict[str, str]
 ) -> None:
     UserCRUD(db).create_user(
         user=UserCreate(name="user1", email="user1@email.com", password="password")
     )
     user_2 = UserCRUD(db).create_user(
-        user=UserCreate(name="user2", email="user2@email.com", password="password")
+        user=UserCreate(
+            name="user2",
+            email="user2@email.com",
+            password="password",
+            is_superuser=True,
+        )
     )
     user_3 = UserCRUD(db).create_user(
-        user=UserCreate(name="user3", email="user3@email.com", password="password")
+        user=UserCreate(
+            name="user3", email="user3@email.com", password="password", is_active=False
+        )
     )
     UserCRUD(db).create_user(
         user=UserCreate(name="user4", email="user4@email.com", password="password")
@@ -122,6 +129,89 @@ def test_02_read_users_with_skip_and_limit(
     assert data["data"][1]["creation_date"] == user_3.creation_date.isoformat()
     assert "password" not in data["data"][0]
     assert "password" not in data["data"][1]
+
+    # Counts also include the superuser created in the setup
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_name=user",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 4
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_name=user2",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 1
+    assert data["data"][0]["id"] == str(user_2.id)
+    assert data["data"][0]["name"] == user_2.name
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_email=user",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 4
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_email=user2",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 1
+    assert data["data"][0]["id"] == str(user_2.id)
+    assert data["data"][0]["name"] == user_2.name
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_active=false",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 1
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_active=true",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 4
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_superuser=false",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 3
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_superuser=true",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 2
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_name=user&search_by_email=com&search_by_active=true&search_by_superuser=false",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 2
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_name=user3&search_by_email=com&search_by_active=false&search_by_superuser=false",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 1
+
+    response = client.get(
+        f"{settings.API_VERSION_STR}/users/?skip=0&limit=5&search_by_name=user&search_by_email=com&search_by_active=false&search_by_superuser=false",
+        headers=superuser_token_headers,
+    )
+    data = response.json()
+    assert data["count"] == 1
 
 
 def test_03_read_users_without_admin_privilege(

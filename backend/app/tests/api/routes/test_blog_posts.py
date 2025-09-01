@@ -254,6 +254,26 @@ def test_03_read_blog_posts_with_skip_and_limit_and_search(
     assert data["data"][0]["tags"][0]["id"] == tag.id
     assert data["data"][0]["tags"][0]["name"] == tag.name
 
+    response = client.get(
+        f"{settings.API_VERSION_STR}/blogposts?search_by=tag&search_value=%tag%"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 1
+    assert len(data["data"]) == 1
+    assert data["data"][0]["id"] == blog_post_1.id
+    assert data["data"][0]["title"] == blog_post_1.title
+    assert data["data"][0]["url"] == blog_post_1.url
+    assert data["data"][0]["content"] == blog_post_1.content
+    assert data["data"][0]["image_path"] == blog_post_1.image_path
+    assert (
+        data["data"][0]["publication_date"] == blog_post_1.publication_date.isoformat()
+    )
+    assert data["data"][0]["featured"] == blog_post_1.featured
+    assert len(data["data"][0]["tags"]) == 1
+    assert data["data"][0]["tags"][0]["id"] == tag.id
+    assert data["data"][0]["tags"][0]["name"] == tag.name
+
     # Test searching by featured flag
     response = client.get(f"{settings.API_VERSION_STR}/blogposts?featured_only=false")
     assert response.status_code == 200

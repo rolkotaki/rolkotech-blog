@@ -28,11 +28,26 @@ router = APIRouter(prefix="/users", tags=["users"])
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> UsersPublic:
+def read_users(
+    session: SessionDep,
+    skip: int = 0,
+    limit: int = 100,
+    search_by_name: str | None = None,
+    search_by_email: str | None = None,
+    search_by_active: bool | None = None,
+    search_by_superuser: bool | None = None,
+) -> UsersPublic:
     """
     Retrieve users.
     """
-    count, users = UserCRUD(session).read_users(skip=skip, limit=limit)
+    count, users = UserCRUD(session).read_users(
+        skip=skip,
+        limit=limit,
+        search_by_name=search_by_name,
+        search_by_email=search_by_email,
+        search_by_active=search_by_active,
+        search_by_superuser=search_by_superuser,
+    )
     # Convert User models to UserPublic models
     users = [UserPublic.model_validate(user, from_attributes=True) for user in users]
     return UsersPublic(data=users, count=count)

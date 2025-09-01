@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 
 from app.api.main import api_router
 from app.core.config import settings
@@ -30,6 +31,14 @@ if settings.all_cors_origins:
     )
 
 app.include_router(api_router, prefix=settings.API_VERSION_STR)
+
+# Create uploads directory if it doesn't exist and mount static files
+settings.STATIC_UPLOAD_DIR.mkdir(exist_ok=True)
+app.mount(
+    f"/{settings.STATIC_UPLOAD_DIR.name}",
+    StaticFiles(directory=settings.STATIC_UPLOAD_DIR.name),
+    name=settings.STATIC_UPLOAD_DIR.name,
+)
 
 
 @app.exception_handler(RequestValidationError)
