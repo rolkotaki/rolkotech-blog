@@ -7,3 +7,7 @@ export interface Tags {
   data: Tag[];
   count: number;
 }
+
+export interface CreateTagRequest {
+  name: string;
+}

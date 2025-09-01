@@ -1,6 +1,7 @@
 import React, { Fragment, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { BACKEND_URL } from "../../services/api.ts";
 import { blogpostService } from "../../services/blogpost.service";
 import MarkdownContentProps from "./MarkdownContent";
 import { BLOGPOSTS_IMAGE_PATH } from "../../types/blogpost";
@@ -86,7 +87,7 @@ function BlogPostBox({
       )}
 
       <img
-        src={`${BLOGPOSTS_IMAGE_PATH}/${imagePath}`}
+        src={`${BACKEND_URL}${BLOGPOSTS_IMAGE_PATH}/${imagePath}`}
         alt={title}
         className="w-full h-40 object-cover"
       />

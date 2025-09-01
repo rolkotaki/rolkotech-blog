@@ -8,11 +8,12 @@ import {
 import type {
   BlogPosts,
   BlogPost,
+  CreateBlogPostRequest,
+  UpdateFeaturedRequest,
   Comments,
   Comment,
   CreateCommentRequest,
   UpdateCommentRequest,
-  UpdateFeaturedRequest,
 } from "../types";
 
 export const blogpostService = {
@@ -50,6 +51,11 @@ export const blogpostService = {
 
   getBlogPostByUrl: async (url: string): Promise<BlogPost> => {
     const response = await api.get<BlogPost>(`/blogposts/${url}`);
+    return response.data;
+  },
+
+  createBlogPost: async (data: CreateBlogPostRequest): Promise<BlogPost> => {
+    const response = await api.post<BlogPost>("/blogposts", data);
     return response.data;
   },
 

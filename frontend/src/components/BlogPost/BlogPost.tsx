@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { BACKEND_URL } from "../../services/api.ts";
 import { blogpostService } from "../../services/blogpost.service";
 import { formatDate } from "../../utils/format.ts";
 import type { BlogPost as BlogPostType } from "../../types/blogpost";
@@ -119,7 +120,7 @@ function BlogPost({ blogPost }: BlogPostProps) {
       </div>
 
       <img
-        src={`${BLOGPOSTS_IMAGE_PATH}/${blogPost.image_path}`}
+        src={`${BACKEND_URL}${BLOGPOSTS_IMAGE_PATH}/${blogPost.image_path}`}
         alt={blogPost.title}
         className="w-full h-auto rounded-lg shadow-md mb-6"
       />

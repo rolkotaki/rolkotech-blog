@@ -101,7 +101,7 @@ class Settings(BaseSettings):
 
     STATIC_UPLOAD_DIR: Path = Path(__file__).parent.parent.parent / "uploads"
     BLOGPOST_IMAGE_UPLOAD_DIR: Path = Path("images/blogposts")
-    ALLOWED_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic"}
+    ALLOWED_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
     MAX_FILE_SIZE: int = 5 * 1024 * 1024  # 5MB
 
 

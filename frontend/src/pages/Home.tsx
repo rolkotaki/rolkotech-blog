@@ -65,8 +65,6 @@ function Home() {
     fetchRecentPostsData(selectedTag);
   }, [selectedTag]);
 
-  const allTags: Tag[] = [{ id: 0, name: "All" }, ...tags];
-
   const handleTagClick = (tagName: string) => {
     setSelectedTag(tagName);
   };
@@ -96,7 +94,10 @@ function Home() {
       {/* Title */}
       <div className="text-center mb-6">
         <h1 className="text-5xl font-bold text-blue-700 mb-3">RolkoTech</h1>
-        <p className="text-xl text-gray-600" style={{ fontFamily: "Caveat, Kalam, Handlee, Satisfy, cursive" }}>
+        <p
+          className="text-xl text-gray-600"
+          style={{ fontFamily: "Caveat, Kalam, Handlee, Satisfy, cursive" }}
+        >
           Real life solutions for real life problems.
         </p>
       </div>
@@ -106,23 +107,24 @@ function Home() {
         <LoadingSpinner text="Loading tags..." />
       ) : (
         <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {allTags
-            .sort((a, b) =>
+          {[
+            { id: 0, name: "All" },
+            ...tags.sort((a, b) =>
               a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-            )
-            .map((tag) => (
-              <button
-                key={tag.id}
-                onClick={() => handleTagClick(tag.name)}
-                className={`px-3 py-1 rounded uppercase text-xs font-medium transition-colors ${
-                  selectedTag === tag.name
-                    ? "bg-blue-600 text-white"
-                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                }`}
-              >
-                {tag.name}
-              </button>
-            ))}
+            ),
+          ].map((tag) => (
+            <button
+              key={tag.id}
+              onClick={() => handleTagClick(tag.name)}
+              className={`px-3 py-1 rounded uppercase text-xs font-medium transition-colors ${
+                selectedTag === tag.name
+                  ? "bg-blue-600 text-white"
+                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+              }`}
+            >
+              {tag.name}
+            </button>
+          ))}
         </div>
       )}
 

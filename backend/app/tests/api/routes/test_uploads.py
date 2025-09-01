@@ -117,7 +117,7 @@ def test_04_upload_image_not_allowed_extension(
     data = response.json()
     assert (
         data["detail"]
-        == "File extension .psd not allowed. Allowed: .gif, .heic, .jpeg, .jpg, .png, .webp"
+        == "File extension .psd not allowed. Allowed: .gif, .jpeg, .jpg, .png, .webp"
     )
 
 

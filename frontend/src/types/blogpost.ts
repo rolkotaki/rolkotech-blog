@@ -4,7 +4,7 @@ export const BLOGPOSTS_PER_PAGE = 6;
 export const MAX_BLOGPOST_PAGES = 5;
 export const FEATURED_BLOGPOSTS = 3;
 export const RECENT_BLOGPOSTS = 3;
-export const BLOGPOSTS_IMAGE_PATH = "/images/blogposts";
+export const BLOGPOSTS_IMAGE_PATH = "/uploads/images/blogposts";
 export const COMMENTS_PER_LOAD = 50;
 
 export interface BlogPost {
@@ -21,6 +21,15 @@ export interface BlogPost {
 export interface BlogPosts {
   data: BlogPost[];
   count: number;
+}
+
+export interface CreateBlogPostRequest {
+  title: string;
+  url: string;
+  content: string;
+  image_path: string;
+  featured: boolean;
+  tags: number[];
 }
 
 export interface UpdateFeaturedRequest {

@@ -5,9 +5,13 @@ import type {
   InternalAxiosRequestConfig,
 } from "axios";
 
+export const BACKEND_URL: string = import.meta.env.VITE_BACKEND_URL;
+export const API_VERSION_STR: string = import.meta.env.API_VERSION_STR;
+export const API_DOCS_URL: string = `${BACKEND_URL}/docs`;
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: "http://localhost:8000/api", // TODO: Change this
+  baseURL: `${BACKEND_URL}${API_VERSION_STR}`,
   headers: {
     "Content-Type": "application/json",
   },
