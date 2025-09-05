@@ -32,6 +32,10 @@ export interface CreateBlogPostRequest {
   tags: number[];
 }
 
+export interface UpdateBlogPostRequest extends CreateBlogPostRequest {
+  publication_date: string;
+}
+
 export interface UpdateFeaturedRequest {
   featured: boolean;
 }

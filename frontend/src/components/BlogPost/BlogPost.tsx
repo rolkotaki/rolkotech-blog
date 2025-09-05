@@ -95,8 +95,7 @@ function BlogPost({ blogPost }: BlogPostProps) {
               {isDeleting ? "Deleting..." : "Delete"}
             </button>
             <button
-              // TODO: Implement edit functionality
-              onClick={() => navigate(`/articles/edit/${blogPost.id}`)}
+              onClick={() => navigate(`/articles/${blogPost.url}/edit`)}
               className="flex items-center gap-2 px-3 py-1 text-sm text-blue-600 hover:bg-blue-600 hover:text-white rounded-md transition-colors"
               title="Edit blog post"
             >

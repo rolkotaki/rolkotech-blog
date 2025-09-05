@@ -9,6 +9,24 @@ import { USERS_PER_LOAD } from "../types";
 import type { User, Image } from "../types";
 import LoadingSpinner from "../components/Common/LoadingSpinner.tsx";
 
+// Image buttons click animation
+const animateButtonClick = (element: HTMLButtonElement) => {
+  // Shrink the button slightly
+  element.style.transform = "scale(0.95)";
+  element.style.transition = "all 150ms ease";
+  // Make buttons darker on click
+  if (element.classList.contains("bg-blue-100"))
+    element.style.backgroundColor = "#93c5fd";
+  else if (element.classList.contains("bg-red-100"))
+    element.style.backgroundColor = "#fca5a5";
+
+  // Reset after 150ms
+  setTimeout(() => {
+    element.style.transform = "scale(1)";
+    element.style.backgroundColor = "";
+  }, 150);
+};
+
 function Admin() {
   const tabs = [
     { id: "blog-posts", label: "Blog Posts", icon: "📝" },
@@ -599,28 +617,31 @@ function Admin() {
                             </div>
                             <div className="flex gap-2 mt-3">
                               <button
-                                onClick={() =>
-                                  navigator.clipboard.writeText(image.filename)
-                                }
-                                className="flex-1 bg-blue-100 text-blue-700 py-1 px-3 rounded text-sm hover:bg-blue-200 transition-colors"
+                                onClick={(e) => {
+                                  animateButtonClick(e.currentTarget);
+                                  navigator.clipboard.writeText(image.filename);
+                                }}
+                                className="flex-1 bg-blue-100 text-blue-700 py-1 px-3 rounded text-sm hover:bg-blue-200 active:bg-blue-300 active:scale-95 transform transition-all duration-150"
                               >
                                 Copy Name
                               </button>
                               <button
-                                onClick={() =>
+                                onClick={(e) => {
+                                  animateButtonClick(e.currentTarget);
                                   navigator.clipboard.writeText(
                                     `${BACKEND_URL}${image.url}`
-                                  )
-                                }
-                                className="flex-1 bg-blue-100 text-blue-700 py-1 px-3 rounded text-sm hover:bg-blue-200 transition-colors"
+                                  );
+                                }}
+                                className="flex-1 bg-blue-100 text-blue-700 py-1 px-3 rounded text-sm hover:bg-blue-200 active:bg-blue-300 active:scale-95 transform transition-all duration-150"
                               >
                                 Copy URL
                               </button>
                               <button
-                                onClick={() =>
-                                  handleDeleteImage(image.filename)
-                                }
-                                className="flex-1 bg-red-100 text-red-700 py-1 px-3 rounded text-sm hover:bg-red-200 transition-colors"
+                                onClick={(e) => {
+                                  animateButtonClick(e.currentTarget);
+                                  handleDeleteImage(image.filename);
+                                }}
+                                className="flex-1 bg-red-100 text-red-700 py-1 px-3 rounded text-sm hover:bg-red-200 active:bg-red-300 active:scale-95 transform transition-all duration-150"
                               >
                                 Delete
                               </button>

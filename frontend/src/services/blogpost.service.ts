@@ -9,6 +9,7 @@ import type {
   BlogPosts,
   BlogPost,
   CreateBlogPostRequest,
+  UpdateBlogPostRequest,
   UpdateFeaturedRequest,
   Comments,
   Comment,
@@ -56,6 +57,14 @@ export const blogpostService = {
 
   createBlogPost: async (data: CreateBlogPostRequest): Promise<BlogPost> => {
     const response = await api.post<BlogPost>("/blogposts", data);
+    return response.data;
+  },
+
+  updateBlogPost: async (
+    id: number,
+    data: UpdateBlogPostRequest
+  ): Promise<BlogPost> => {
+    const response = await api.patch<BlogPost>(`/blogposts/${id}`, data);
     return response.data;
   },
 
