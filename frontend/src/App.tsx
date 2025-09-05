@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import BlogPost from "./pages/BlogPost";
 import BlogPosts from "./pages/BlogPosts";
 import ChangePassword from "./pages/ChangePassword";
+import EditBlogPost from "./pages/EditBlogPost";
 import Home from "./pages/Home";
 import LogIn from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -25,6 +26,7 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/articles" element={<BlogPosts />} />
             <Route path="/articles/:url" element={<BlogPost />} />
+            <Route path="/articles/:url/edit" element={<EditBlogPost />} />
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<LogIn />} />
             <Route path="/signup" element={<SignUp />} />

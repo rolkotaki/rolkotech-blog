@@ -157,9 +157,9 @@ function Home() {
         <div className="text-center mb-8">
           <button
             onClick={handleMorePostsByTag}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+            className="text-blue-600 hover:text-blue-800 font-medium text-lg transition-colors hover:underline"
           >
-            More posts
+            View more posts →
           </button>
         </div>
       )}
@@ -193,9 +193,9 @@ function Home() {
         <div className="text-center">
           <button
             onClick={handleMorePosts}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+            className="text-blue-600 hover:text-blue-800 font-medium text-lg transition-colors hover:underline"
           >
-            More posts
+            View all posts →
           </button>
         </div>
       )}
