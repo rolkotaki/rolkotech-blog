@@ -8,9 +8,7 @@ from typing import Literal, Annotated, Any
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
-        if not v.strip():
-            return []
-        return [i.strip() for i in v.split(",")]
+        return [i.strip() for i in v.split(",") if i.strip()]
     elif isinstance(v, list | str):
         return v
     raise ValueError(v)
