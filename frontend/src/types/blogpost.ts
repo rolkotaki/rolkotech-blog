@@ -46,7 +46,7 @@ export interface Comment {
   comment_date: string;
   blog_post_id: number;
   reply_to: number | null;
-  username: string;
+  username: string | null;
 }
 
 export interface CommentWithReplies extends Comment {

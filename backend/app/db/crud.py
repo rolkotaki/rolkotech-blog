@@ -6,7 +6,7 @@ from typing import Any
 import uuid
 
 from app.core.security import get_password_hash
-from app.models.models import User, Tag, BlogPost, Comment
+from app.models.models import User, Tag, BlogPost, Comment, BlogPostTagLink
 from app.schemas.blog_post import BlogPostCreate, BlogPostUpdate
 from app.schemas.comment import CommentCreate, CommentUpdate
 from app.schemas.tag import TagCreate, TagUpdate
@@ -218,6 +218,24 @@ class TagCRUD(BaseCRUD):
         """
         self._delete(tag_db)
 
+    def delete_orphaned_tags(self) -> int:
+        """
+        Delete tags that have no associated blog posts.
+        """
+        # Tags with no blog posts
+        orphaned_tags_statement = (
+            select(self.MODEL_CLASS)
+            .outerjoin(BlogPostTagLink, self.MODEL_CLASS.id == BlogPostTagLink.tag_id)
+            .where(BlogPostTagLink.tag_id.is_(None))
+        )
+        orphaned_tags = self.session.exec(orphaned_tags_statement).all()
+
+        # Delete orphaned tags
+        for tag in orphaned_tags:
+            self._delete(tag)
+
+        return len(orphaned_tags)
+
 
 class BlogPostCRUD(BaseCRUD):
     MODEL_CLASS = BlogPost
@@ -340,13 +358,21 @@ class BlogPostCRUD(BaseCRUD):
         self.session.add(blog_post_db)
         self.session.commit()
         self.session.refresh(blog_post_db)
+
+        # Clean up orphaned tags after updating blog post tags
+        if blog_post_in.tags is not None:
+            _ = TagCRUD(self.session).delete_orphaned_tags()
+
         return blog_post_db
 
     def delete_blog_post(self, blog_post_db: BlogPost) -> None:
         """
-        Delete a blog post from the database.
+        Delete a blog post from the database and clean up orphaned tags if any.
         """
         self._delete(blog_post_db)
+
+        # Clean up orphaned tags after deleting the blog post
+        _ = TagCRUD(self.session).delete_orphaned_tags()
 
 
 class CommentCRUD(BaseCRUD):

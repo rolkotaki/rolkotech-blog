@@ -410,12 +410,12 @@ def test_08_update_blog_post(db: Session, setup_tags) -> None:
         title="Blog Post 1",
         url="blog-post-1",
         content="Content of Blog Post 1",
-        tags=[tag_1],
+        tags=[tag_1, tag_2],
     )
     blog_post = blog_post_crud.create_blog_post(blog_post=blog_post_create)
 
     assert blog_post.title == "Blog Post 1"
-    assert len(blog_post.tags) == 1
+    assert len(blog_post.tags) == 2
 
     blog_post_update = BlogPostUpdate(title="Blog Post 1 Updated", tags=[])
     blog_post_updated = blog_post_crud.update_blog_post(
@@ -426,6 +426,7 @@ def test_08_update_blog_post(db: Session, setup_tags) -> None:
     assert blog_post_updated.title == "Blog Post 1 Updated"
     assert len(blog_post_updated.tags) == 0
 
+    tag_3 = TagCRUD(db).create_tag(tag=TagCreate(name="tag3"))
     blog_post_update = BlogPostUpdate(
         title="Blog Post 1 Updated Again",
         url="blog-post-1-updated-again",
@@ -433,7 +434,7 @@ def test_08_update_blog_post(db: Session, setup_tags) -> None:
         image_path="image.png",
         publication_date=datetime.now(UTC),
         featured=True,
-        tags=[tag_1, tag_2],
+        tags=[tag_3.id],
     )
     blog_post_updated_again = blog_post_crud.update_blog_post(
         blog_post_db=blog_post, blog_post_in=blog_post_update
@@ -448,7 +449,7 @@ def test_08_update_blog_post(db: Session, setup_tags) -> None:
         tzinfo=None
     ) == blog_post_update.publication_date.replace(tzinfo=None)
     assert blog_post_updated_again.featured == blog_post_update.featured
-    assert len(blog_post_updated_again.tags) == 2
+    assert len(blog_post_updated_again.tags) == 1
 
 
 def test_09_update_blog_post_with_invalid_tags(db: Session) -> None:
@@ -481,3 +482,74 @@ def test_10_delete_blog_post(db: Session) -> None:
 
     count = db.exec(select(func.count()).select_from(BlogPost)).one()
     assert count == 0
+
+
+def test_11_delete_orphaned_tags_on_update(db: Session) -> None:
+    tag_crud = TagCRUD(db)
+    tag1 = tag_crud.create_tag(TagCreate(name="tag1"))
+    tag2 = tag_crud.create_tag(TagCreate(name="tag2"))
+    blog_post_crud = BlogPostCRUD(db)
+    blog_post = blog_post_crud.create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 1",
+            url="blog-post-1",
+            content="Content of Blog Post 1",
+            image_path="image.png",
+            tags=[tag1.id, tag2.id],
+        )
+    )
+
+    count = db.exec(select(func.count()).select_from(Tag)).one()
+    assert count == 2
+
+    blog_post_update = BlogPostUpdate(tags=[tag1.id])
+    blog_post_crud.update_blog_post(
+        blog_post_db=blog_post, blog_post_in=blog_post_update
+    )
+
+    count = db.exec(select(func.count()).select_from(Tag)).one()
+    assert count == 1
+
+    remaining_tags = db.exec(select(Tag)).all()
+    remaining_tag_ids = [tag.id for tag in remaining_tags]
+    assert remaining_tag_ids == [tag1.id]
+
+
+def test_12_delete_orphaned_tags_on_delete(db: Session) -> None:
+    tag_crud = TagCRUD(db)
+    tag1 = tag_crud.create_tag(TagCreate(name="tag1"))
+    tag2 = tag_crud.create_tag(TagCreate(name="tag2"))
+    _ = tag_crud.create_tag(TagCreate(name="tag3"))
+    tag4 = tag_crud.create_tag(TagCreate(name="tag4"))
+    blog_post_crud = BlogPostCRUD(db)
+    blog_post = blog_post_crud.create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 1",
+            url="blog-post-1",
+            content="Content of Blog Post 1",
+            image_path="image.png",
+            tags=[tag1.id, tag2.id],
+        )
+    )
+
+    blog_post_crud.create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 2",
+            url="blog-post-2",
+            content="Content of Blog Post 2",
+            image_path="image.png",
+            tags=[tag4.id],
+        )
+    )
+
+    count = db.exec(select(func.count()).select_from(Tag)).one()
+    assert count == 4
+
+    blog_post_crud.delete_blog_post(blog_post_db=blog_post)
+
+    count = db.exec(select(func.count()).select_from(Tag)).one()
+    assert count == 1  # only tag4 should remain
+
+    remaining_tags = db.exec(select(Tag)).all()
+    remaining_tag_ids = [tag.id for tag in remaining_tags]
+    assert remaining_tag_ids == [tag4.id]

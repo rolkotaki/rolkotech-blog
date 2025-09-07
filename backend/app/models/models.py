@@ -51,8 +51,8 @@ class Comment(SQLModel, table=True):
     content: str = Field(max_length=1000, nullable=False)
     comment_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
     # Foreign keys
-    user_id: uuid.UUID = Field(
-        sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"))
+    user_id: uuid.UUID | None = Field(
+        default=None, sa_column=Column(ForeignKey("user.id", ondelete="SET NULL"))
     )
     blog_post_id: int = Field(
         sa_column=Column(ForeignKey("blogpost.id", ondelete="CASCADE"))

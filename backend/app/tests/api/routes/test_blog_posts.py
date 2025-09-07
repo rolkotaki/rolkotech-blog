@@ -703,25 +703,29 @@ def test_23_delete_blog_post_with_comments(
     superuser_token_headers: dict[str, str],
 ) -> None:
     blog_post, tag, comment = setup_blog_post_with_tag_and_comment
+    blog_post_id = blog_post.id
+    tag_id = tag.id
+    comment_id = comment.id
+
     response = client.delete(
-        f"{settings.API_VERSION_STR}/blogposts/{blog_post.id}",
+        f"{settings.API_VERSION_STR}/blogposts/{blog_post_id}",
         headers=superuser_token_headers,
     )
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Blog post deleted successfully"
     # Check that the blog post is actually deleted
-    response = client.get(f"{settings.API_VERSION_STR}/blogposts/{blog_post.id}")
+    response = client.get(f"{settings.API_VERSION_STR}/blogposts/{blog_post_id}")
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Blog post not found"
     # Check that the comment is also deleted
-    response = client.get(f"{settings.API_VERSION_STR}/comments/{comment.id}")
+    response = client.get(f"{settings.API_VERSION_STR}/comments/{comment_id}")
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Comment not found"
-    # Check that the tag is not deleted
-    response = client.get(f"{settings.API_VERSION_STR}/tags/{tag.id}")
-    assert response.status_code == 200
+    # Check that the tag is deleted too
+    response = client.get(f"{settings.API_VERSION_STR}/tags/{tag_id}")
+    assert response.status_code == 404
     data = response.json()
-    assert data["id"] == tag.id
+    assert data["detail"] == "Tag not found"

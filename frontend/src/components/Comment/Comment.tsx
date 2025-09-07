@@ -4,14 +4,14 @@ import ConfirmDialog from "../Common/ConfirmDialog";
 
 interface ReplyData {
   id: number;
-  username: string;
+  username: string | null;
   content: string;
   commentDate: string;
 }
 
 interface CommentProps {
   id: number;
-  username: string;
+  username: string | null;
   content: string;
   commentDate: string;
   currentUsername?: string;
@@ -121,11 +121,11 @@ function Comment({
         {/* Avatar and username */}
         <div className="flex items-center space-x-2 mb-3">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-            {username.charAt(0).toUpperCase()}
+            {username?.charAt(0).toUpperCase() || "?"}
           </div>
           <div>
             <span className="font-medium text-gray-900">
-              {isOwner ? "You" : username}
+              {isOwner ? "You" : username || "Deleted User"}
             </span>
             <span className="text-gray-500 text-sm ml-2">
               {formatDateTime(commentDate)}
@@ -271,13 +271,13 @@ function Comment({
               {/* Reply header */}
               <div className="flex items-center space-x-2 mb-3">
                 <div className="w-7 h-7 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                  {reply.username.charAt(0).toUpperCase()}
+                  {reply.username?.charAt(0).toUpperCase() || "?"}
                 </div>
                 <div>
                   <span className="font-medium text-gray-900">
                     {reply.username === currentUsername
                       ? "You"
-                      : reply.username}
+                      : reply.username || "Deleted User"}
                   </span>
                   <span className="text-gray-500 text-sm ml-2">
                     {formatDateTime(reply.commentDate)}

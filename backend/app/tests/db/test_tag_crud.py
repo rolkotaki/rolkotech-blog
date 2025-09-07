@@ -112,3 +112,31 @@ def test_06_delete_tag(db: Session) -> None:
     tag_crud.delete_tag(tag_db=tag)
     count = db.exec(select(func.count()).select_from(Tag)).one()
     assert count == 0
+
+
+def test_07_delete_orphaned_tags(db: Session) -> None:
+    tag_crud = TagCRUD(db)
+    tag1 = tag_crud.create_tag(TagCreate(name="tag1"))
+    _ = tag_crud.create_tag(TagCreate(name="tag2"))
+    BlogPostCRUD(db).create_blog_post(
+        blog_post=BlogPostCreate(
+            title="Blog Post 1",
+            url="blog-post-1",
+            content="Content of Blog Post 1",
+            image_path="image.png",
+            tags=[tag1.id],
+        )
+    )
+
+    count = db.exec(select(func.count()).select_from(Tag)).one()
+    assert count == 2
+
+    deleted_count = tag_crud.delete_orphaned_tags()
+    assert deleted_count == 1  # tag2 should be deleted
+
+    count = db.exec(select(func.count()).select_from(Tag)).one()
+    assert count == 1
+
+    remaining_tags = db.exec(select(Tag)).all()
+    remaining_tag_ids = [tag.id for tag in remaining_tags]
+    assert remaining_tag_ids == [tag1.id]

@@ -68,7 +68,7 @@ def read_comments_for_blog_post(
                 reply_to=reply.reply_to,
                 user_id=reply.user_id,
                 blog_post_id=reply.blog_post_id,
-                username=reply.user.name,
+                username=reply.user.name if reply.user else None,
             )
             for reply in replies
         ]
@@ -81,7 +81,7 @@ def read_comments_for_blog_post(
                 reply_to=comment.reply_to,
                 user_id=comment.user_id,
                 blog_post_id=comment.blog_post_id,
-                username=comment.user.name,
+                username=comment.user.name if comment.user else None,
                 replies=comment_replies,
             )
         )
@@ -155,7 +155,7 @@ def read_comment(session: SessionDep, id: int) -> CommentPublicWithUsername:
         reply_to=comment.reply_to,
         user_id=comment.user_id,
         blog_post_id=comment.blog_post_id,
-        username=comment.user.name,
+        username=comment.user.name if comment.user else None,
     )
 
 
@@ -187,7 +187,7 @@ def create_comment(
         reply_to=comment.reply_to,
         user_id=comment.user_id,
         blog_post_id=comment.blog_post_id,
-        username=comment.user.name,
+        username=comment.user.name if comment.user else None,
     )
 
 
@@ -236,7 +236,7 @@ def update_comment_on_blog_post(
         reply_to=comment.reply_to,
         user_id=comment.user_id,
         blog_post_id=comment.blog_post_id,
-        username=comment.user.name,
+        username=comment.user.name if comment.user else None,
     )
 
 

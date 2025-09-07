@@ -6,7 +6,6 @@ import uuid
 class CommentBase(BaseModel):
     content: str = Field(max_length=1000)
     comment_date: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    # user_id: uuid.UUID
     blog_post_id: int
 
 
@@ -22,7 +21,7 @@ class CommentPublic(CommentBase):
 
 
 class CommentPublicWithUsername(CommentPublic):
-    username: str
+    username: str | None
 
 
 class CommentPublicWithReplies(CommentPublicWithUsername):
@@ -36,7 +35,7 @@ class CommentsPublic(BaseModel):
 
 class CommentPrivate(CommentBase):
     id: int
-    user_id: uuid.UUID
+    user_id: uuid.UUID | None
     reply_to: int | None
 
 

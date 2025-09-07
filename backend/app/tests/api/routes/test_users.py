@@ -1037,6 +1037,7 @@ def test_48_delete_user_with_comment(
 ) -> None:
     user_id = setup_user.id
     comment_id = setup_comment.id
+    assert setup_comment.user_id == user_id
     response = client.delete(
         f"{settings.API_VERSION_STR}/users/{user_id}", headers=superuser_token_headers
     )
@@ -1047,6 +1048,10 @@ def test_48_delete_user_with_comment(
     db.expire_all()
     user_db = db.get(User, user_id)
     assert not user_db
-    # Check that comment is deleted from DB
+    # Check that comment is not deleted from DB and the user_id is set to None
     comment_db = db.get(Comment, comment_id)
-    assert not comment_db
+    assert comment_db.user_id is None
+    assert comment_db.content == setup_comment.content
+    assert comment_db.comment_date == setup_comment.comment_date
+    assert comment_db.id == setup_comment.id
+    assert comment_db.blog_post_id == setup_comment.blog_post_id
