@@ -181,7 +181,7 @@ def test_07_get_images(
         f"{settings.API_VERSION_STR}/uploads/images/",
         files={
             "file": (
-                TEST_IMAGE_FILENAME,
+                TEST_IMAGE_FILENAME.upper(),
                 open(TEST_IMAGE_DIR / TEST_IMAGE_FILENAME, "rb"),
             )
         },
@@ -197,13 +197,19 @@ def test_07_get_images(
     data = response.json()
     assert data["count"] == prev_count + 1
     assert (
-        len(list(filter(lambda x: x["filename"] == TEST_IMAGE_FILENAME, data["data"])))
+        len(
+            list(
+                filter(
+                    lambda x: x["filename"] == TEST_IMAGE_FILENAME.upper(), data["data"]
+                )
+            )
+        )
         == 1
     )
     (
         settings.STATIC_UPLOAD_DIR
         / settings.BLOGPOST_IMAGE_UPLOAD_DIR
-        / TEST_IMAGE_FILENAME
+        / TEST_IMAGE_FILENAME.upper()
     ).unlink()
 
 

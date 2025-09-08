@@ -85,7 +85,7 @@ async def get_images() -> Images:
         for image in (
             settings.STATIC_UPLOAD_DIR / settings.BLOGPOST_IMAGE_UPLOAD_DIR
         ).iterdir():
-            if image.is_file() and image.suffix in settings.ALLOWED_EXTENSIONS:
+            if image.is_file() and image.suffix.lower() in settings.ALLOWED_EXTENSIONS:
                 file_stats = image.stat()
                 images.append(
                     Image(
