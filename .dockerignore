@@ -23,3 +23,5 @@
 **/.dockerignore
 **/Dockerfile
 **/.ruff_cache
+**/node_modules
+**/dist

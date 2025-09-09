@@ -31,6 +31,7 @@ jobs:
           DEBUG=True
           BACKEND_HOST=http://localhost:8000
           FRONTEND_HOST=http://localhost:5173
+          API_VERSION_STR=/api
           POSTGRES_SERVER=db
           POSTGRES_PORT=5432
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
@@ -47,13 +48,14 @@ jobs:
           EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}
           EMAIL_FROM_NAME=Rolkotech Blog
           DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
+          DOCKER_IMAGE_FRONTEND=rolkotech-blog-frontend
           EOF
       
       - name: Remove existing Docker Compose containers
         run: docker compose down -v --remove-orphans
 
-      - name: Start Docker Compose
-        run: docker compose up -d --build
+      - name: Start Docker Compose (backend services only)
+        run: docker compose up -d --build db backend_prestart backend
       
       - name: Run tests
         run: docker exec rolkotech-backend /app/backend/scripts/test.sh ${{ github.sha }}
