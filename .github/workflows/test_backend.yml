@@ -23,8 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v5
+
       - name: Create .env file
         run: |
           cat <<EOF > .env
@@ -50,13 +50,13 @@ jobs:
           DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
           DOCKER_IMAGE_FRONTEND=rolkotech-blog-frontend
           EOF
-      
+
       - name: Remove existing Docker Compose containers
         run: docker compose down -v --remove-orphans
 
       - name: Start Docker Compose (backend services only)
         run: docker compose up -d --build db backend_prestart backend
-      
+
       - name: Run tests
         run: docker exec rolkotech-backend /app/backend/scripts/test.sh ${{ github.sha }}
 
@@ -69,12 +69,12 @@ jobs:
           docker compose logs backend_prestart || true
           echo "Backend Logs:"
           docker compose logs backend || true
-      
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./docker/coverage/coverage.xml
-      
+
       - name: Stop Docker Compose
         run: docker compose down -v --remove-orphans
