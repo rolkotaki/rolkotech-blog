@@ -95,8 +95,11 @@ function Home() {
       <div className="text-center mb-6">
         <h1 className="text-5xl font-bold text-blue-700 mb-3">RolkoTech</h1>
         <p
-          className="text-xl text-gray-600"
-          style={{ fontFamily: "Caveat, Kalam, Handlee, Satisfy, cursive" }}
+          className="text-md text-gray-600"
+          style={{
+            fontFamily:
+              "Fira Code, JetBrains Mono, Menlo, Monaco, Consolas, monospace",
+          }}
         >
           Real life solutions for real life problems.
         </p>

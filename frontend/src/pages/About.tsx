@@ -1,37 +1,33 @@
-import meImage from "../assets/images/me.png";
+import meImage from "../assets/images/about_me.jpeg";
+import collageImage from "../assets/images/collage.jpg";
 
 function About() {
   return (
-    <main className="container mx-auto px-4 pt-8 max-w-3xl flex-grow">
+    <main className="container mx-auto px-4 pt-6 max-w-3xl flex-grow">
       <h1
         className="text-3xl text-blue-700 mb-6 text-center"
-        style={{ fontFamily: "Caveat, Kalam, Handlee, Satisfy, cursive" }}
+        style={{
+          fontFamily:
+            "Fira Mono, JetBrains Mono, IBM Plex Mono, Menlo, Consolas, monospace",
+        }}
       >
         Hey there, I'm Roland Takacs
       </h1>
 
-      <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mb-6">
-        {/* Image */}
-        <img
-          src={meImage}
-          alt="Roland Takacs"
-          className="w-32 h-32 rounded-full object-cover mb-4 md:mb-0"
-        />
+      <p className="text-base leading-relaxed">
+        I'm not a Python nor or Database Developer — I'm a Software Engineer, a
+        problem solver who happens to be using Python these days to achieve
+        business goals and user happiness.
+      </p>
 
-        {/* Intro paragraph */}
-        <p className="text-base leading-relaxed">
-          I’m not a Python nor or Database Developer — I’m a Software Engineer,
-          a problem solver who happens to be using Python these days to achieve
-          business goals and user happiness.
-        </p>
-      </div>
+      <img src={meImage} alt="Roland Takacs" className="rounded-md my-4" />
 
       <p className="mb-6 text-base leading-relaxed">
-        Over the years, I’ve worked with a wide range of technologies,
+        Over the years, I've worked with a wide range of technologies,
         including: Python, Docker, Oracle, PL/SQL, REST APIs, Django, FastAPI,
         React, TypeScript, Ansible, Jenkins, PostgreSQL, Linux Shell, Hive,
         HTML, CSS, JavaScript, Airflow, vSphere, Trino DB, and VB. <br />
-        Lately, I’ve been exploring Mojo with growing interest.
+        Lately, I've been exploring Mojo with growing interest.
       </p>
 
       <p className="mb-6 text-base leading-relaxed">
@@ -49,6 +45,8 @@ function About() {
         </a>
         .
       </p>
+
+      <img src={collageImage} alt="Roland Takacs" className="rounded-md my-4" />
 
       <p className="text-base leading-relaxed">
         Thanks for stopping by — I hope you find something valuable or inspiring
