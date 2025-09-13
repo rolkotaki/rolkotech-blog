@@ -29,7 +29,7 @@ function BlogPosts() {
         const response = await blogpostService.getBlogPosts(
           currentPage,
           searchBy || undefined,
-          searchBy === "tag" ? `%${searchValue}%` : searchValue || undefined
+          searchBy === "tag" ? `%${searchValue}%` : searchValue || undefined,
         );
         setBlogPosts(response.data);
         setTotalCount(response.count);

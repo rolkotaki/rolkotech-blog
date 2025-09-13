@@ -123,7 +123,7 @@ function AuthLinks() {
             onCancel={() => setShowDeleteModal(false)}
             variant="danger"
           />,
-          document.body
+          document.body,
         )}
       </>
     );

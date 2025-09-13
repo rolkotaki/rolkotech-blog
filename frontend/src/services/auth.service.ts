@@ -21,7 +21,7 @@ export const authService = {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      }
+      },
     );
     return response.data;
   },
@@ -33,7 +33,7 @@ export const authService = {
 
   forgotPassword: async (email: string): Promise<Message> => {
     const response = await api.post<Message>(
-      "/users/forgot-password?email=" + email
+      "/users/forgot-password?email=" + email,
     );
     return response.data;
   },

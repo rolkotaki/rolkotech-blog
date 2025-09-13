@@ -141,7 +141,7 @@ function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           onCancel={() => setShowDeleteModal(false)}
           variant="danger"
         />,
-        document.body
+        document.body,
       )}
     </div>
   );

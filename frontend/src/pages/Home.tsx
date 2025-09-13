@@ -52,7 +52,7 @@ function Home() {
     const fetchRecentPostsData = async (tagName: string) => {
       try {
         const recentResponse = await blogpostService.getRecentBlogPosts(
-          tagName === "All" ? undefined : tagName
+          tagName === "All" ? undefined : tagName,
         );
         setRecentPosts(recentResponse.data);
         setRecentPostsCount(recentResponse.count);
@@ -75,8 +75,8 @@ function Home() {
     } else {
       navigate(
         `/articles?search_by=tag&search_value=${encodeURIComponent(
-          selectedTag
-        )}`
+          selectedTag,
+        )}`,
       );
     }
   };
@@ -113,7 +113,7 @@ function Home() {
           {[
             { id: 0, name: "All" },
             ...tags.sort((a, b) =>
-              a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+              a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
             ),
           ].map((tag) => (
             <button

@@ -29,7 +29,7 @@ function LogIn() {
       switch (message) {
         case "signup_success":
           setSuccess(
-            "Account created successfully! We have sent you an email to verify your account."
+            "Account created successfully! We have sent you an email to verify your account.",
           );
           break;
         case "activation_success":
@@ -40,7 +40,7 @@ function LogIn() {
           break;
         case "password_reset_success":
           setSuccess(
-            "Password reset successfully! You can now log in with your new password."
+            "Password reset successfully! You can now log in with your new password.",
           );
           break;
         default:
@@ -59,7 +59,7 @@ function LogIn() {
           break;
         case "invalid_reset_link":
           setError(
-            "Invalid or expired password reset link. Please request a new one."
+            "Invalid or expired password reset link. Please request a new one.",
           );
           break;
         default:

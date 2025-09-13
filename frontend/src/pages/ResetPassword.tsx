@@ -84,12 +84,15 @@ function ResetPassword() {
     errors.confirmPassword = validateConfirmPasswordField(confirmPassword);
 
     // Filter out empty error messages
-    const validationErrors = Object.keys(errors).reduce((acc, key) => {
-      if (errors[key]) {
-        acc[key] = errors[key];
-      }
-      return acc;
-    }, {} as { [key: string]: string });
+    const validationErrors = Object.keys(errors).reduce(
+      (acc, key) => {
+        if (errors[key]) {
+          acc[key] = errors[key];
+        }
+        return acc;
+      },
+      {} as { [key: string]: string },
+    );
 
     setFieldErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;

@@ -20,7 +20,7 @@ export const validatePassword = (value: string): string => {
 
 export const validatePasswordConfirmation = (
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
 ): string => {
   if (!confirmPassword) return "Please confirm your password";
   if (confirmPassword !== password) return "Passwords do not match";
@@ -38,7 +38,9 @@ export const validateEmail = (email: string): string => {
 
 export const validateUsername = (username: string): string => {
   if (!username) return "Username is required";
-  if (username.trim().length < 1) return "Username must be at least 1 character";
-  if (username.trim().length > 255) return "Username must be less than 256 characters";
+  if (username.trim().length < 1)
+    return "Username must be at least 1 character";
+  if (username.trim().length > 255)
+    return "Username must be less than 256 characters";
   return "";
 };

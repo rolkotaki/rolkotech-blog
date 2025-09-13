@@ -13,7 +13,7 @@ export const imageService = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return response.data;
   },

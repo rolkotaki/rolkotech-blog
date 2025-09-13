@@ -71,7 +71,7 @@ function EditBlogPost() {
         const formattedDate = publicationDate.toISOString().split("T")[0];
         setBlogPostPublicationDate(formattedDate);
         const currentImage = imagesResponse.data.find(
-          (img) => img.filename === post.image_path
+          (img) => img.filename === post.image_path,
         );
         setBlogPostImage(currentImage || null);
 
@@ -100,7 +100,7 @@ function EditBlogPost() {
       !blogPostPublicationDate
     ) {
       alert(
-        "Please fill in all required fields (title, URL slug, content, tags, publication date)."
+        "Please fill in all required fields (title, URL slug, content, tags, publication date).",
       );
       return;
     }
@@ -126,7 +126,7 @@ function EditBlogPost() {
       // Check if tags already exist, if not we create them
       for (const tagName of tagNames) {
         const existingTag = existingTags.data.find(
-          (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
+          (tag) => tag.name.toLowerCase() === tagName.toLowerCase(),
         );
 
         if (existingTag) {
@@ -231,7 +231,9 @@ function EditBlogPost() {
 
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg py-6 px-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Edit Blog Post</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+          Edit Blog Post
+        </h1>
 
         {/* Edit form */}
         <form className="space-y-6" onSubmit={handleUpdateBlogPost}>

@@ -83,7 +83,7 @@ function Admin() {
       !blogPostTags
     ) {
       alert(
-        "Please fill in all required fields (title, URL slug, content, tags)."
+        "Please fill in all required fields (title, URL slug, content, tags).",
       );
       return;
     }
@@ -109,7 +109,7 @@ function Admin() {
       // Check if tags already exist, if not we create them
       for (const tagName of tagNames) {
         const existingTag = existingTags.data.find(
-          (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
+          (tag) => tag.name.toLowerCase() === tagName.toLowerCase(),
         );
 
         if (existingTag) {
@@ -171,7 +171,7 @@ function Admin() {
       if (node) observerRef.current.observe(node);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loading, loadingMoreUsers, hasMoreUsers]
+    [loading, loadingMoreUsers, hasMoreUsers],
   );
 
   // Load users when the users tab is active or filters change
@@ -222,21 +222,21 @@ function Admin() {
         userStatusFilter === "active"
           ? true
           : userStatusFilter === "inactive"
-          ? false
-          : undefined;
+            ? false
+            : undefined;
       const searchBySuperuser =
         userRoleFilter === "admin"
           ? true
           : userRoleFilter === "user"
-          ? false
-          : undefined;
+            ? false
+            : undefined;
 
       const response = await userService.getUsers(
         page,
         searchByName,
         searchByEmail,
         searchByActive,
-        searchBySuperuser
+        searchBySuperuser,
       );
 
       if (reset) setUsers(response.data);
@@ -263,14 +263,14 @@ function Admin() {
 
   const handleUpdateUser = async (
     userId: string,
-    data: { is_active?: boolean; is_superuser?: boolean }
+    data: { is_active?: boolean; is_superuser?: boolean },
   ) => {
     try {
       await userService.updateUser(userId, data);
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.id === userId ? { ...user, ...data } : user
-        )
+          user.id === userId ? { ...user, ...data } : user,
+        ),
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -282,7 +282,7 @@ function Admin() {
   const handleDeleteUser = async (userId: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone."
+        "Are you sure you want to delete this user? This action cannot be undone.",
       )
     ) {
       return;
@@ -354,7 +354,7 @@ function Admin() {
   const handleDeleteImage = async (filename: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this image? This action cannot be undone."
+        "Are you sure you want to delete this image? This action cannot be undone.",
       )
     ) {
       return;
@@ -477,7 +477,7 @@ function Admin() {
                     onChange={(e) => {
                       const image =
                         images?.find(
-                          (img) => img.filename === e.target.value
+                          (img) => img.filename === e.target.value,
                         ) || null;
                       setBlogPostImage(image);
                     }}
@@ -629,7 +629,7 @@ function Admin() {
                                 onClick={(e) => {
                                   animateButtonClick(e.currentTarget);
                                   navigator.clipboard.writeText(
-                                    `${BACKEND_URL}${image.url}`
+                                    `${BACKEND_URL}${image.url}`,
                                   );
                                 }}
                                 className="flex-1 bg-blue-100 text-blue-700 py-1 px-3 rounded text-sm hover:bg-blue-200 active:bg-blue-300 active:scale-95 transform transition-all duration-150"
