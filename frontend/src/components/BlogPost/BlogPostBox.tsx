@@ -102,7 +102,7 @@ function BlogPostBox({
             content={
               (content + "\n\n")
                 .split("\n\n")
-                .filter((s) => s.trim().length > 0)[0]
+                .filter((s) => s.trim().length > 0 && !s.startsWith("#"))[0] // first non-empty paragraph that is not a title
             }
           />
         </div>
