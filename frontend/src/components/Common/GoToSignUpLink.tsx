@@ -6,7 +6,7 @@ function GoToSignUpLink() {
       <p className="mt-4 text-sm text-center">
         Don't have an account?{" "}
         <Link to="/signup" className="text-blue-600 hover:underline">
-          Sign up
+          Sign Up
         </Link>
       </p>
     </>

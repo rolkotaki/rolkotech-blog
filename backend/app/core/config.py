@@ -87,6 +87,9 @@ class Settings(BaseSettings):
     TEST_USER: str
     TEST_USER_EMAIL: EmailStr
     TEST_USER_PASSWORD: str
+    TEST_PLAYWRIGHT_USER: str
+    TEST_PLAYWRIGHT_USER_EMAIL: EmailStr
+    TEST_PLAYWRIGHT_USER_PASSWORD: str
 
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ALGORITHM: str = "HS256"

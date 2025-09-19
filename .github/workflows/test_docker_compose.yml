@@ -50,6 +50,9 @@ jobs:
           TEST_USER=${{ secrets.TEST_USER }}
           TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          TEST_PLAYWRIGHT_USER=${{ secrets.TEST_PLAYWRIGHT_USER }}
+          TEST_PLAYWRIGHT_USER_EMAIL=${{ secrets.TEST_PLAYWRIGHT_USER_EMAIL }}
+          TEST_PLAYWRIGHT_USER_PASSWORD=${{ secrets.TEST_PLAYWRIGHT_USER_PASSWORD }}
           SECRET_KEY=${{ secrets.SECRET_KEY }}
           MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
           EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}
@@ -109,6 +112,9 @@ jobs:
           TEST_USER=${{ secrets.TEST_USER }}
           TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          TEST_PLAYWRIGHT_USER=${{ secrets.TEST_PLAYWRIGHT_USER }}
+          TEST_PLAYWRIGHT_USER_EMAIL=${{ secrets.TEST_PLAYWRIGHT_USER_EMAIL }}
+          TEST_PLAYWRIGHT_USER_PASSWORD=${{ secrets.TEST_PLAYWRIGHT_USER_PASSWORD }}
           SECRET_KEY=${{ secrets.SECRET_KEY }}
           MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
           EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}

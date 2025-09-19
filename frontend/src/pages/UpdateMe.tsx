@@ -114,7 +114,7 @@ function UpdateMe() {
     try {
       const updatedUser = await userService.updateMe({ name: username, email });
       setUser(updatedUser);
-      setSuccess("Profile updated successfully!");
+      setSuccess("Profile updated successfully");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("Update profile error:", err);
