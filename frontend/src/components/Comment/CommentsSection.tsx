@@ -16,7 +16,7 @@ interface CommentsSectionProps {
 function CommentsSection({
   blogPostUrl,
   currentUsername,
-  isCurrentUserSuperUser,
+  isCurrentUserSuperUser
 }: CommentsSectionProps) {
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [totalCommentsCount, setTotalCommentsCount] = useState<number>(0);
@@ -39,7 +39,7 @@ function CommentsSection({
         setLoading(true);
         const response = await blogpostService.getCommentsForBlogPost(
           blogPostUrl,
-          1,
+          1
         );
         setComments(response.data);
         setTotalCommentsCount(response.count);
@@ -64,7 +64,7 @@ function CommentsSection({
       const nextPage = currentCommentPage + 1;
       const response = await blogpostService.getCommentsForBlogPost(
         blogPostUrl,
-        nextPage,
+        nextPage
       );
 
       if (response.data.length > 0) {
@@ -98,8 +98,8 @@ function CommentsSection({
       },
       {
         threshold: 0.1, // Trigger when 10% of the element is visible
-        rootMargin: "100px", // Start detecting 100px before the element actually enters the viewport
-      },
+        rootMargin: "100px" // Start detecting 100px before the element actually enters the viewport
+      }
     );
 
     const currentLoadMoreRef = loadMoreRef.current;
@@ -122,7 +122,7 @@ function CommentsSection({
     try {
       const new_comment = await blogpostService.createComment(blogPostUrl, {
         content: newComment.trim(),
-        reply_to: null,
+        reply_to: null
       });
 
       // Add new comment to local state
@@ -134,9 +134,9 @@ function CommentsSection({
           blog_post_id: new_comment.blog_post_id,
           reply_to: new_comment.reply_to,
           username: new_comment.username,
-          replies: [],
+          replies: []
         },
-        ...prevComments,
+        ...prevComments
       ]);
       setTotalCommentsCount((prevCount) => prevCount + 1);
       setNewComment("");
@@ -154,8 +154,8 @@ function CommentsSection({
         blogPostUrl,
         id,
         {
-          content: newContent,
-        },
+          content: newContent
+        }
       );
 
       // Update local state
@@ -163,8 +163,8 @@ function CommentsSection({
         comments.map((comment) =>
           comment.id === id
             ? { ...comment, content: updated_comment.content }
-            : comment,
-        ),
+            : comment
+        )
       );
     } catch (err) {
       console.error("Error updating comment:", err);
@@ -181,7 +181,7 @@ function CommentsSection({
         ?.replies.length;
       setComments(comments.filter((comment) => comment.id !== id));
       setTotalCommentsCount(
-        (prevCount) => prevCount - 1 - (numberOfReplies || 0),
+        (prevCount) => prevCount - 1 - (numberOfReplies || 0)
       );
     } catch (err) {
       console.error("Error deleting comment:", err);
@@ -193,7 +193,7 @@ function CommentsSection({
     try {
       const new_comment = await blogpostService.createComment(blogPostUrl, {
         content: content,
-        reply_to: parentId,
+        reply_to: parentId
       });
 
       // Add new reply to local state
@@ -201,8 +201,8 @@ function CommentsSection({
         comments.map((comment) =>
           comment.id === parentId
             ? { ...comment, replies: [...comment.replies, new_comment] }
-            : comment,
-        ),
+            : comment
+        )
       );
       setTotalCommentsCount((prevCount) => prevCount + 1);
     } catch (err) {
@@ -214,15 +214,15 @@ function CommentsSection({
   const handleEditReply = async (
     parentId: number,
     replyId: number,
-    newContent: string,
+    newContent: string
   ) => {
     try {
       const updated_comment = await blogpostService.updateComment(
         blogPostUrl,
         replyId,
         {
-          content: newContent,
-        },
+          content: newContent
+        }
       );
 
       // Update local state
@@ -234,11 +234,11 @@ function CommentsSection({
                 replies: comment.replies.map((reply) =>
                   reply.id === replyId
                     ? { ...reply, content: updated_comment.content }
-                    : reply,
-                ),
+                    : reply
+                )
               }
-            : comment,
-        ),
+            : comment
+        )
       );
     } catch (err) {
       console.error("Error updating reply:", err);
@@ -256,12 +256,10 @@ function CommentsSection({
           comment.id === parentId
             ? {
                 ...comment,
-                replies: comment.replies.filter(
-                  (reply) => reply.id !== replyId,
-                ),
+                replies: comment.replies.filter((reply) => reply.id !== replyId)
               }
-            : comment,
-        ),
+            : comment
+        )
       );
       setTotalCommentsCount((prevCount) => prevCount - 1);
     } catch (err) {
@@ -378,7 +376,7 @@ function CommentsSection({
                   id: reply.id,
                   username: reply.username,
                   content: reply.content,
-                  commentDate: reply.comment_date,
+                  commentDate: reply.comment_date
                 }))}
                 onEdit={handleEditComment}
                 onDelete={handleDeleteComment}

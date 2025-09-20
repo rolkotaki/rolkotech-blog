@@ -12,5 +12,5 @@ export const tagService = {
   createTag: async (data: CreateTagRequest): Promise<Tag> => {
     const response = await api.post<Tag>("/tags", data);
     return response.data;
-  },
+  }
 };

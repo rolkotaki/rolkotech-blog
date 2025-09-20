@@ -3,7 +3,7 @@ import {
   BLOGPOSTS_PER_PAGE,
   COMMENTS_PER_LOAD,
   FEATURED_BLOGPOSTS,
-  RECENT_BLOGPOSTS,
+  RECENT_BLOGPOSTS
 } from "../types/blogpost";
 import type {
   BlogPosts,
@@ -14,14 +14,14 @@ import type {
   Comments,
   Comment,
   CreateCommentRequest,
-  UpdateCommentRequest,
+  UpdateCommentRequest
 } from "../types";
 
 export const blogpostService = {
   getBlogPosts: async (
     page: number,
     searchBy?: string,
-    searchValue?: string,
+    searchValue?: string
   ): Promise<BlogPosts> => {
     const limit: number = BLOGPOSTS_PER_PAGE;
     const skip: number = (page - 1) * limit;
@@ -62,7 +62,7 @@ export const blogpostService = {
 
   updateBlogPost: async (
     id: number,
-    data: UpdateBlogPostRequest,
+    data: UpdateBlogPostRequest
   ): Promise<BlogPost> => {
     const response = await api.patch<BlogPost>(`/blogposts/${id}`, data);
     return response.data;
@@ -70,7 +70,7 @@ export const blogpostService = {
 
   updateBlogPostFeatured: async (
     id: number,
-    data: UpdateFeaturedRequest,
+    data: UpdateFeaturedRequest
   ): Promise<BlogPost> => {
     const response = await api.patch<BlogPost>(`/blogposts/${id}`, data);
     return response.data;
@@ -82,23 +82,23 @@ export const blogpostService = {
 
   getCommentsForBlogPost: async (
     url: string,
-    page: number,
+    page: number
   ): Promise<Comments> => {
     const limit: number = COMMENTS_PER_LOAD;
     const skip: number = (page - 1) * limit;
     const response = await api.get<Comments>(
-      `/blogposts/${url}/comments?limit=${limit}&skip=${skip}`,
+      `/blogposts/${url}/comments?limit=${limit}&skip=${skip}`
     );
     return response.data;
   },
 
   createComment: async (
     url: string,
-    data: CreateCommentRequest,
+    data: CreateCommentRequest
   ): Promise<Comment> => {
     const response = await api.post<Comment>(
       `/blogposts/${url}/comments`,
-      data,
+      data
     );
     return response.data;
   },
@@ -106,16 +106,16 @@ export const blogpostService = {
   updateComment: async (
     url: string,
     commentId: number,
-    data: UpdateCommentRequest,
+    data: UpdateCommentRequest
   ): Promise<Comment> => {
     const response = await api.patch<Comment>(
       `/blogposts/${url}/comments/${commentId}`,
-      data,
+      data
     );
     return response.data;
   },
 
   deleteComment: async (url: string, commentId: number): Promise<void> => {
     await api.delete(`/blogposts/${url}/comments/${commentId}`);
-  },
+  }
 };

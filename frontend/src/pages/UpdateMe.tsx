@@ -64,7 +64,7 @@ function UpdateMe() {
 
     setFieldErrors((prev) => ({
       ...prev,
-      [field]: errorMessage,
+      [field]: errorMessage
     }));
   };
 
@@ -73,7 +73,7 @@ function UpdateMe() {
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: ""
       }));
     }
   };
@@ -93,7 +93,7 @@ function UpdateMe() {
         }
         return acc;
       },
-      {} as { [key: string]: string },
+      {} as { [key: string]: string }
     );
 
     setFieldErrors(validationErrors);

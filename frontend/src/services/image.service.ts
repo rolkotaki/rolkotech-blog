@@ -11,9 +11,9 @@ export const imageService = {
       formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
+          "Content-Type": "multipart/form-data"
+        }
+      }
     );
     return response.data;
   },
@@ -25,5 +25,5 @@ export const imageService = {
 
   deleteImage: async (filename: string): Promise<void> => {
     await api.delete(`/uploads/images/${filename}`);
-  },
+  }
 };

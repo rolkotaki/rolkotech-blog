@@ -25,7 +25,7 @@ function BlogPostBox({
   publicationDate,
   tags,
   content,
-  featured,
+  featured
 }: BlogPostBoxProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -53,7 +53,7 @@ function BlogPostBox({
     setIsUpdating(true);
     try {
       await blogpostService.updateBlogPostFeatured(id, {
-        featured: !isFeatured,
+        featured: !isFeatured
       });
       setIsFeatured(!isFeatured);
     } catch (error) {

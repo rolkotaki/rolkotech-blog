@@ -5,7 +5,7 @@ import type {
   RegisterRequest,
   LoginResponse,
   PasswordResetRequest,
-  Message,
+  Message
 } from "../types";
 
 export const authService = {
@@ -19,9 +19,9 @@ export const authService = {
       formData,
       {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      },
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
     );
     return response.data;
   },
@@ -33,7 +33,7 @@ export const authService = {
 
   forgotPassword: async (email: string): Promise<Message> => {
     const response = await api.post<Message>(
-      "/users/forgot-password?email=" + email,
+      "/users/forgot-password?email=" + email
     );
     return response.data;
   },
@@ -41,5 +41,5 @@ export const authService = {
   resetPassword: async (data: PasswordResetRequest): Promise<Message> => {
     const response = await api.post<Message>("/users/reset-password", data);
     return response.data;
-  },
+  }
 };

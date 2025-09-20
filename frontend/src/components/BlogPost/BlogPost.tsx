@@ -20,7 +20,7 @@ function BlogPost({ blogPost }: BlogPostProps) {
   const handleDelete = async () => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this blog post? This action cannot be undone.",
+        "Are you sure you want to delete this blog post? This action cannot be undone."
       )
     ) {
       return;
@@ -56,7 +56,7 @@ function BlogPost({ blogPost }: BlogPostProps) {
             <div className="flex flex-wrap gap-2">
               {blogPost.tags
                 .sort((a, b) =>
-                  a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+                  a.name.toLowerCase().localeCompare(b.name.toLowerCase())
                 )
                 .map((tag) => (
                   <span

@@ -11,7 +11,7 @@ function BlogPostSearch({
   onSearch,
   isLoading = false,
   currentSearchBy = "",
-  currentSearchValue = "",
+  currentSearchValue = ""
 }: BlogPostSearchProps) {
   const [searchValue, setSearchValue] = useState<string>(currentSearchValue);
   const [searchBy, setSearchBy] = useState<string>(currentSearchBy || "title");

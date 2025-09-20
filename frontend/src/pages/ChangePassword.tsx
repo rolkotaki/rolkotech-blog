@@ -5,7 +5,7 @@ import { userService } from "../services/user.service";
 import {
   validatePassword,
   validatePasswordConfirmation,
-  validateRequired,
+  validateRequired
 } from "../utils/validation";
 import BackendErrorMessage from "../components/Common/BackendErrorMessage";
 import BackendSuccessMessage from "../components/Common/BackendSuccessMessage";
@@ -71,7 +71,7 @@ function ChangePassword() {
           const confirmError = validateConfirmPassword(newPasswordConf);
           setFieldErrors((prev) => ({
             ...prev,
-            newPasswordConf: confirmError,
+            newPasswordConf: confirmError
           }));
         }
         break;
@@ -84,7 +84,7 @@ function ChangePassword() {
 
     setFieldErrors((prev) => ({
       ...prev,
-      [field]: errorMessage,
+      [field]: errorMessage
     }));
   };
 
@@ -93,7 +93,7 @@ function ChangePassword() {
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: ""
       }));
     }
   };
@@ -114,7 +114,7 @@ function ChangePassword() {
         }
         return acc;
       },
-      {} as { [key: string]: string },
+      {} as { [key: string]: string }
     );
 
     setFieldErrors(validationErrors);
@@ -135,7 +135,7 @@ function ChangePassword() {
     try {
       const response = await userService.changePassword({
         current_password: currentPassword,
-        new_password: newPassword,
+        new_password: newPassword
       });
       setSuccess(response.message);
       setCurrentPassword("");

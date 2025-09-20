@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import {
   validatePassword,
   validateEmail,
-  validateUsername,
+  validateUsername
 } from "../utils/validation";
 import BackendErrorMessage from "../components/Common/BackendErrorMessage";
 import PasswordToggleButton from "../components/Common/PasswordToggleButton";
@@ -59,7 +59,7 @@ function SignUp() {
 
     setFieldErrors((prev) => ({
       ...prev,
-      [field]: errorMessage,
+      [field]: errorMessage
     }));
   };
 
@@ -68,7 +68,7 @@ function SignUp() {
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: ""
       }));
     }
   };
@@ -89,7 +89,7 @@ function SignUp() {
         }
         return acc;
       },
-      {} as { [key: string]: string },
+      {} as { [key: string]: string }
     );
 
     setFieldErrors(validationErrors);

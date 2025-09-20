@@ -36,7 +36,7 @@ function Comment({
   onDelete,
   onReply,
   onEditReply,
-  onDeleteReply,
+  onDeleteReply
 }: CommentProps) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editContent, setEditContent] = useState<string>(content);

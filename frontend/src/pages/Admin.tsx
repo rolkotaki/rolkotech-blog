@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { BACKEND_URL, API_DOCS_URL } from "../services/api.ts";
 import { blogpostService } from "../services/blogpost.service";
 import { imageService } from "../services/image.service";
@@ -28,11 +30,13 @@ const animateButtonClick = (element: HTMLButtonElement) => {
 };
 
 function Admin() {
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
+
   const tabs = [
     { id: "blog-posts", label: "Blog Posts", icon: "📝" },
     { id: "images", label: "Images", icon: "🖼️" },
     { id: "users", label: "Users", icon: "👥" },
-    { id: "api-docs", label: "API Docs", icon: "📚" },
+    { id: "api-docs", label: "API Docs", icon: "📚" }
   ];
 
   const [activeTab, setActiveTab] = useState<string>("blog-posts");
@@ -83,13 +87,13 @@ function Admin() {
       !blogPostTags
     ) {
       alert(
-        "Please fill in all required fields (title, URL slug, content, tags).",
+        "Please fill in all required fields (title, URL slug, content, tags)!"
       );
       return;
     }
 
     if (!blogPostImage) {
-      alert("Please select an image for the blog post.");
+      alert("Please select an image for the blog post!");
       return;
     }
 
@@ -109,7 +113,7 @@ function Admin() {
       // Check if tags already exist, if not we create them
       for (const tagName of tagNames) {
         const existingTag = existingTags.data.find(
-          (tag) => tag.name.toLowerCase() === tagName.toLowerCase(),
+          (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
         );
 
         if (existingTag) {
@@ -127,7 +131,7 @@ function Admin() {
         content: blogPostContent,
         image_path: blogPostImage.filename,
         featured: blogPostFeatured,
-        tags: tagIds,
+        tags: tagIds
       };
 
       await blogpostService.createBlogPost(blogPostData);
@@ -171,12 +175,12 @@ function Admin() {
       if (node) observerRef.current.observe(node);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loading, loadingMoreUsers, hasMoreUsers],
+    [loading, loadingMoreUsers, hasMoreUsers]
   );
 
   // Load users when the users tab is active or filters change
   useEffect(() => {
-    if (activeTab === "users") {
+    if (activeTab === "users" && isAuthenticated && user?.is_superuser) {
       resetAndLoadUsers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -186,6 +190,8 @@ function Admin() {
     debouncedUserEmailFilter,
     userRoleFilter,
     userStatusFilter,
+    isAuthenticated,
+    user?.is_superuser
   ]);
 
   // Debounce user name filter
@@ -236,7 +242,7 @@ function Admin() {
         searchByName,
         searchByEmail,
         searchByActive,
-        searchBySuperuser,
+        searchBySuperuser
       );
 
       if (reset) setUsers(response.data);
@@ -263,14 +269,14 @@ function Admin() {
 
   const handleUpdateUser = async (
     userId: string,
-    data: { is_active?: boolean; is_superuser?: boolean },
+    data: { is_active?: boolean; is_superuser?: boolean }
   ) => {
     try {
       await userService.updateUser(userId, data);
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.id === userId ? { ...user, ...data } : user,
-        ),
+          user.id === userId ? { ...user, ...data } : user
+        )
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -282,7 +288,7 @@ function Admin() {
   const handleDeleteUser = async (userId: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone.",
+        "Are you sure you want to delete this user? This action cannot be undone."
       )
     ) {
       return;
@@ -302,11 +308,15 @@ function Admin() {
 
   // Load images when Images or Blog Posts tab is active
   useEffect(() => {
-    if (["images", "blog-posts"].includes(activeTab)) {
+    if (
+      ["images", "blog-posts"].includes(activeTab) &&
+      isAuthenticated &&
+      user?.is_superuser
+    ) {
       if (images.length === 0) loadImages();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab, isAuthenticated, user?.is_superuser]);
 
   // TODO: implement infinite scroll and maybe filtering
   const loadImages = async () => {
@@ -333,9 +343,9 @@ function Admin() {
           filename: uploadedImage.filename,
           url: uploadedImage.url,
           size: uploadedImage.size,
-          upload_date: formatDate(new Date().toDateString()),
+          upload_date: formatDate(new Date().toDateString())
         },
-        ...prevImages,
+        ...prevImages
       ]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -354,7 +364,7 @@ function Admin() {
   const handleDeleteImage = async (filename: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this image? This action cannot be undone.",
+        "Are you sure you want to delete this image? This action cannot be undone."
       )
     ) {
       return;
@@ -369,6 +379,20 @@ function Admin() {
       alert("Failed to delete image.");
     }
   };
+
+  // Show loading spinner while authentication is being determined
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <LoadingSpinner text="Loading..." />
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated or not superuser
+  if (!isAuthenticated || !user?.is_superuser) {
+    return <Navigate to="/login" replace />;
+  }
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -477,7 +501,7 @@ function Admin() {
                     onChange={(e) => {
                       const image =
                         images?.find(
-                          (img) => img.filename === e.target.value,
+                          (img) => img.filename === e.target.value
                         ) || null;
                       setBlogPostImage(image);
                     }}
@@ -629,7 +653,7 @@ function Admin() {
                                 onClick={(e) => {
                                   animateButtonClick(e.currentTarget);
                                   navigator.clipboard.writeText(
-                                    `${BACKEND_URL}${image.url}`,
+                                    `${BACKEND_URL}${image.url}`
                                   );
                                 }}
                                 className="flex-1 bg-blue-100 text-blue-700 py-1 px-3 rounded text-sm hover:bg-blue-200 active:bg-blue-300 active:scale-95 transform transition-all duration-150"
@@ -790,7 +814,7 @@ function Admin() {
                                   checked={user.is_superuser}
                                   onChange={(e) =>
                                     handleUpdateUser(user.id, {
-                                      is_superuser: e.target.checked,
+                                      is_superuser: e.target.checked
                                     })
                                   }
                                   className="sr-only peer"
@@ -810,7 +834,7 @@ function Admin() {
                                   checked={user.is_active}
                                   onChange={(e) =>
                                     handleUpdateUser(user.id, {
-                                      is_active: e.target.checked,
+                                      is_active: e.target.checked
                                     })
                                   }
                                   className="sr-only peer"

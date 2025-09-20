@@ -5,7 +5,7 @@ import type {
   UpdateUserRequest,
   UpdateMeRequest,
   ChangePasswordRequest,
-  Message,
+  Message
 } from "../types";
 import { USERS_PER_LOAD } from "../types/user";
 
@@ -15,7 +15,7 @@ export const userService = {
     searchByName?: string,
     searchByEmail?: string,
     searchByActive?: boolean,
-    searchBySuperuser?: boolean,
+    searchBySuperuser?: boolean
   ): Promise<Users> => {
     const limit: number = USERS_PER_LOAD;
     const skip: number = (page - 1) * limit;
@@ -41,7 +41,7 @@ export const userService = {
 
   updateUser: async (
     id: string,
-    userData: UpdateUserRequest,
+    userData: UpdateUserRequest
   ): Promise<User> => {
     const response = await api.patch<User>(`/users/${id}`, userData);
     return response.data;
@@ -53,11 +53,11 @@ export const userService = {
   },
 
   changePassword: async (
-    passwordData: ChangePasswordRequest,
+    passwordData: ChangePasswordRequest
   ): Promise<Message> => {
     const response = await api.patch<Message>(
       "/users/me/password",
-      passwordData,
+      passwordData
     );
     return response.data;
   },
@@ -68,5 +68,5 @@ export const userService = {
 
   deleteMe: async (): Promise<void> => {
     await api.delete("/users/me");
-  },
+  }
 };

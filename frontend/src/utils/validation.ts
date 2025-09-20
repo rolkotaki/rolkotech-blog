@@ -20,7 +20,7 @@ export const validatePassword = (value: string): string => {
 
 export const validatePasswordConfirmation = (
   password: string,
-  confirmPassword: string,
+  confirmPassword: string
 ): string => {
   if (!confirmPassword) return "Please confirm your password";
   if (confirmPassword !== password) return "Passwords do not match";

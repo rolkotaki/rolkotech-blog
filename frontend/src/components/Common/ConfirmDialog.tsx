@@ -24,7 +24,7 @@ function ConfirmDialog({
   cancelText = "Cancel",
   onConfirm,
   onCancel,
-  variant = "info",
+  variant = "info"
 }: ConfirmDialogProps) {
   // Handle escape key
   useEffect(() => {
@@ -53,18 +53,18 @@ function ConfirmDialog({
       case "danger":
         return {
           icon: "⚠️",
-          confirmButton: "bg-red-600 hover:bg-red-700 focus:ring-red-500",
+          confirmButton: "bg-red-600 hover:bg-red-700 focus:ring-red-500"
         };
       case "warning":
         return {
           icon: "⚠️",
           confirmButton:
-            "bg-orange-600 hover:bg-orange-700 focus:ring-orange-500",
+            "bg-orange-600 hover:bg-orange-700 focus:ring-orange-500"
         };
       case "info":
         return {
           icon: "ℹ️",
-          confirmButton: "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+          confirmButton: "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
         };
     }
   };

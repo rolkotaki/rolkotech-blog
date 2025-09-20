@@ -3,7 +3,7 @@ export const formatDate = (dateString: string): string => {
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
-    day: "numeric",
+    day: "numeric"
   });
 };
 
@@ -14,6 +14,6 @@ export const formatDateTime = (dateString: string): string => {
     month: "short",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit",
+    minute: "2-digit"
   });
 };

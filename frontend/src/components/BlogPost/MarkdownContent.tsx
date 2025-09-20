@@ -33,7 +33,7 @@ function MarkdownContent({ content }: MarkdownContentProps) {
               {children}
             </code>
           );
-        },
+        }
       }}
     >
       {content}

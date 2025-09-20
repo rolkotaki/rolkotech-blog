@@ -4,19 +4,19 @@ import { loginTestUser, loginSuperuser, logout } from "./helpers/helper";
 test("Login page loads with required elements", async ({ page }) => {
   await page.goto("/login");
   await expect(
-    page.getByRole("heading", { name: "Log In to your account", level: 2 }),
+    page.getByRole("heading", { name: "Log In to your account", level: 2 })
   ).toBeVisible();
   await expect(page.getByPlaceholder("Email")).toBeVisible();
   await expect(page.getByPlaceholder("Email")).toBeEditable();
   await expect(
-    page.getByPlaceholder("Password", { exact: true }),
+    page.getByPlaceholder("Password", { exact: true })
   ).toBeVisible();
   await expect(
-    page.getByPlaceholder("Password", { exact: true }),
+    page.getByPlaceholder("Password", { exact: true })
   ).toBeEditable();
   await expect(page.getByRole("button", { name: "Log In" })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Forgot your password?" }),
+    page.getByRole("button", { name: "Forgot your password?" })
   ).toBeVisible();
   const signUpLinkCount = await page
     .getByRole("link", { name: "Sign Up" })
@@ -30,10 +30,10 @@ test("User can log in successfully", async ({ page }) => {
   await loginTestUser(page);
   await page.waitForURL("/");
   await expect(
-    page.getByRole("heading", { name: "Recent Posts", level: 2 }),
+    page.getByRole("heading", { name: "Recent Posts", level: 2 })
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Featured Posts", level: 2 }),
+    page.getByRole("heading", { name: "Featured Posts", level: 2 })
   ).toBeVisible();
   await expect(page.getByText(/Hello/)).toBeVisible();
   await expect(page.getByRole("link", { name: "Admin" })).toBeHidden();
@@ -64,14 +64,14 @@ test("Reset Password page loads with required elements", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Forgot your password?" }).click();
   await expect(
-    page.getByRole("heading", { name: "Reset Password", level: 3 }),
+    page.getByRole("heading", { name: "Reset Password", level: 3 })
   ).toBeVisible();
   await expect(page.getByPlaceholder("Enter your email address")).toBeVisible();
   await expect(
-    page.getByPlaceholder("Enter your email address"),
+    page.getByPlaceholder("Enter your email address")
   ).toBeEditable();
   await expect(
-    page.getByRole("button", { name: "Send Reset Link" }),
+    page.getByRole("button", { name: "Send Reset Link" })
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
   await expect(page.getByText(/Hello/)).toBeHidden();
@@ -81,7 +81,7 @@ test("Reset Password page validation works", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Forgot your password?" }).click();
   await expect(
-    page.getByRole("heading", { name: "Reset Password", level: 3 }),
+    page.getByRole("heading", { name: "Reset Password", level: 3 })
   ).toBeVisible();
 
   // Empty email
@@ -94,7 +94,7 @@ test("Reset Password page validation works", async ({ page }) => {
     .fill("invalid@invalid");
   await page.getByRole("button", { name: "Send Reset Link" }).click();
   await expect(
-    page.getByText("Please enter a valid email address"),
+    page.getByText("Please enter a valid email address")
   ).toBeVisible();
 });
 
@@ -102,21 +102,21 @@ test("Reset Password works", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Forgot your password?" }).click();
   await expect(
-    page.getByRole("heading", { name: "Reset Password", level: 3 }),
+    page.getByRole("heading", { name: "Reset Password", level: 3 })
   ).toBeVisible();
   await page.getByPlaceholder("Enter your email address").fill("any@email.com");
   await page.getByRole("button", { name: "Send Reset Link" }).click();
   await expect(
     page.getByText(
-      "If the email exists and is active, a reset link has been sent.",
-    ),
+      "If the email exists and is active, a reset link has been sent."
+    )
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Send Reset Link" }),
+    page.getByRole("button", { name: "Send Reset Link" })
   ).toBeHidden();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Reset Password", level: 3 }),
+    page.getByRole("heading", { name: "Reset Password", level: 3 })
   ).toBeHidden();
 });
 
@@ -124,11 +124,11 @@ test("Reset Password page closes", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Forgot your password?" }).click();
   await expect(
-    page.getByRole("heading", { name: "Reset Password", level: 3 }),
+    page.getByRole("heading", { name: "Reset Password", level: 3 })
   ).toBeVisible();
   await page.getByRole("button", { name: "×", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Reset Password", level: 3 }),
+    page.getByRole("heading", { name: "Reset Password", level: 3 })
   ).toBeHidden();
 });
 

@@ -27,7 +27,7 @@ function Home() {
 
         const [tagsResponse, featuredResponse] = await Promise.all([
           tagService.getTags(),
-          blogpostService.getFeaturedBlogPosts(),
+          blogpostService.getFeaturedBlogPosts()
         ]);
         setTags(tagsResponse.data);
         setFeaturedPosts(featuredResponse.data);
@@ -52,7 +52,7 @@ function Home() {
     const fetchRecentPostsData = async (tagName: string) => {
       try {
         const recentResponse = await blogpostService.getRecentBlogPosts(
-          tagName === "All" ? undefined : tagName,
+          tagName === "All" ? undefined : tagName
         );
         setRecentPosts(recentResponse.data);
         setRecentPostsCount(recentResponse.count);
@@ -75,8 +75,8 @@ function Home() {
     } else {
       navigate(
         `/articles?search_by=tag&search_value=${encodeURIComponent(
-          selectedTag,
-        )}`,
+          selectedTag
+        )}`
       );
     }
   };
@@ -98,7 +98,7 @@ function Home() {
           className="text-md text-gray-600"
           style={{
             fontFamily:
-              "Fira Code, JetBrains Mono, Menlo, Monaco, Consolas, monospace",
+              "Fira Code, JetBrains Mono, Menlo, Monaco, Consolas, monospace"
           }}
         >
           Real life solutions for real life problems.
@@ -113,8 +113,8 @@ function Home() {
           {[
             { id: 0, name: "All" },
             ...tags.sort((a, b) =>
-              a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
-            ),
+              a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+            )
           ].map((tag) => (
             <button
               key={tag.id}

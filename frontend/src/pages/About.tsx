@@ -8,7 +8,7 @@ function About() {
         className="text-3xl text-blue-700 mb-6 text-center"
         style={{
           fontFamily:
-            "Fira Mono, JetBrains Mono, IBM Plex Mono, Menlo, Consolas, monospace",
+            "Fira Mono, JetBrains Mono, IBM Plex Mono, Menlo, Consolas, monospace"
         }}
       >
         Hey there, I'm Roland Takacs

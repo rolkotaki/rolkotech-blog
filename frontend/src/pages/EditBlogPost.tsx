@@ -54,7 +54,7 @@ function EditBlogPost() {
         // Fetch blog post and images in parallel
         const [blogPostResponse, imagesResponse] = await Promise.all([
           blogpostService.getBlogPostByUrl(url),
-          imageService.getImages(),
+          imageService.getImages()
         ]);
 
         const post = blogPostResponse;
@@ -71,7 +71,7 @@ function EditBlogPost() {
         const formattedDate = publicationDate.toISOString().split("T")[0];
         setBlogPostPublicationDate(formattedDate);
         const currentImage = imagesResponse.data.find(
-          (img) => img.filename === post.image_path,
+          (img) => img.filename === post.image_path
         );
         setBlogPostImage(currentImage || null);
 
@@ -100,7 +100,7 @@ function EditBlogPost() {
       !blogPostPublicationDate
     ) {
       alert(
-        "Please fill in all required fields (title, URL slug, content, tags, publication date).",
+        "Please fill in all required fields (title, URL slug, content, tags, publication date)."
       );
       return;
     }
@@ -126,7 +126,7 @@ function EditBlogPost() {
       // Check if tags already exist, if not we create them
       for (const tagName of tagNames) {
         const existingTag = existingTags.data.find(
-          (tag) => tag.name.toLowerCase() === tagName.toLowerCase(),
+          (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
         );
 
         if (existingTag) {
@@ -145,7 +145,7 @@ function EditBlogPost() {
         image_path: blogPostImage.filename,
         featured: blogPostFeatured,
         tags: tagIds,
-        publication_date: blogPostPublicationDate,
+        publication_date: blogPostPublicationDate
       };
 
       await blogpostService.updateBlogPost(blogPost.id, blogPostData);

@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { authService } from "../services/auth.service";
 import {
   validatePassword,
-  validatePasswordConfirmation,
+  validatePasswordConfirmation
 } from "../utils/validation";
 import BackendErrorMessage from "../components/Common/BackendErrorMessage";
 import PasswordToggleButton from "../components/Common/PasswordToggleButton";
@@ -62,7 +62,7 @@ function ResetPassword() {
 
     setFieldErrors((prev) => ({
       ...prev,
-      [field]: errorMessage,
+      [field]: errorMessage
     }));
   };
 
@@ -71,7 +71,7 @@ function ResetPassword() {
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: ""
       }));
     }
   };
@@ -91,7 +91,7 @@ function ResetPassword() {
         }
         return acc;
       },
-      {} as { [key: string]: string },
+      {} as { [key: string]: string }
     );
 
     setFieldErrors(validationErrors);
@@ -116,7 +116,7 @@ function ResetPassword() {
     try {
       await authService.resetPassword({
         token: token,
-        new_password: newPassword,
+        new_password: newPassword
       });
 
       // Redirect to login with success message
