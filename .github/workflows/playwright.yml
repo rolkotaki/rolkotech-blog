@@ -1,0 +1,126 @@
+name: Playwright Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - "frontend/src/**"
+      - "frontend/tests/**"
+      - ".github/workflows/playwright.yml"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - "frontend/src/**"
+      - "frontend/tests/**"
+      - ".github/workflows/playwright.yml"
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Create .env file
+      run: |
+        cat <<EOF > .env
+        TEST_MODE=True
+        DEBUG=True
+        BACKEND_HOST=http://localhost:8000
+        FRONTEND_HOST=http://localhost:5173
+        API_VERSION_STR=/api
+        POSTGRES_SERVER=localhost
+        POSTGRES_PORT=5432
+        POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+        POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+        POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+        FIRST_SUPERUSER_EMAIL=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+        FIRST_SUPERUSER=${{ secrets.FIRST_SUPERUSER }}
+        FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
+        TEST_USER=${{ secrets.TEST_USER }}
+        TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
+        TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+        TEST_PLAYWRIGHT_USER=${{ secrets.TEST_PLAYWRIGHT_USER }}
+        TEST_PLAYWRIGHT_USER_EMAIL=${{ secrets.TEST_PLAYWRIGHT_USER_EMAIL }}
+        TEST_PLAYWRIGHT_USER_PASSWORD=${{ secrets.TEST_PLAYWRIGHT_USER_PASSWORD }}
+        SECRET_KEY=${{ secrets.SECRET_KEY }}
+        MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
+        EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+        EMAIL_FROM_NAME=Rolkotech Blog
+        DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
+        DOCKER_IMAGE_FRONTEND=rolkotech-blog-frontend
+        EOF
+    
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: "0.7.13"
+        enable-cache: true
+
+    - name: Install dependencies
+      run: uv sync --locked --group dev
+      working-directory: backend
+
+    - name: Setup test database
+      run: uv run bash scripts/create_test_data.sh
+      working-directory: backend
+
+    - name: Start backend server
+      run: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+      working-directory: backend
+
+    - name: Wait for backend
+      run: |
+        curl --retry 10 --retry-delay 3 --retry-connrefused http://localhost:8000/api/tags/
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v5
+      with:
+        node-version: "22.16.0"
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
+
+    - name: Install frontend dependencies
+      run: npm ci
+      working-directory: frontend
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+      working-directory: frontend
+
+    - name: Run Playwright tests
+      run: npx playwright test
+      working-directory: frontend
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: frontend/playwright-report/
+        retention-days: 30
