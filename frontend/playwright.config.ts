@@ -35,7 +35,13 @@ export default defineConfig({
     baseURL: FRONTEND_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry"
+    trace: "on-first-retry",
+
+    /* Take screenshot on failure */
+    screenshot: "only-on-failure"
+
+    /* Record video on failure */
+    // video: "retain-on-failure"
   },
 
   /* Configure projects for major browsers */
@@ -46,17 +52,15 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         permissions: ["clipboard-read", "clipboard-write"]
       }
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] }
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] }
     }
-
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
 
     /* Test against mobile viewports. */
     // {

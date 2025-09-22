@@ -21,30 +21,41 @@ export const testConfig = {
   playwrightUserName: process.env.TEST_PLAYWRIGHT_USER || ""
 };
 
-export const loginTestUser = async (page: Page) => {
-  await page.goto("/login");
-  await page.getByPlaceholder("Email").fill(testConfig.testUserEmail);
-  await page.getByPlaceholder("Password").fill(testConfig.testUserPassword);
-  await page.getByRole("button", { name: "Log In" }).click();
-  await page.waitForURL("/");
+export const getPlaywrightUser = (
+  num: number
+): { username: string; email: string; password: string } => {
+  const username: string = `${testConfig.playwrightUserName}${num}`;
+  const email: string = `${testConfig.playwrightUserEmail.replace("@", `${num}@`)}`;
+  const password: string = testConfig.playwrightUserPassword;
+  return { username, email, password };
 };
 
-export const loginPlaywrightUser = async (page: Page) => {
+const login = async (page: Page, email: string, password: string) => {
   await page.goto("/login");
-  await page.getByPlaceholder("Email").fill(testConfig.playwrightUserEmail);
-  await page
-    .getByPlaceholder("Password")
-    .fill(testConfig.playwrightUserPassword);
+  await page.waitForURL("/login", { timeout: 5000 });
+  await page.getByPlaceholder("Email").fill(email);
+  await page.getByPlaceholder("Password").fill(password);
   await page.getByRole("button", { name: "Log In" }).click();
-  await page.waitForURL("/");
+  await page.waitForURL("/", { timeout: 5000 });
+  await expect(page.getByText(/Hello/)).toBeVisible();
+  // Wait for any potential JS redirects or state changes
+  await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => {
+    console.log(`Network not idle after login for: ${email}`);
+  });
+};
+
+export const loginTestUser = async (page: Page) => {
+  await login(page, testConfig.testUserEmail, testConfig.testUserPassword);
+};
+
+export const loginPlaywrightUser = async (page: Page, num: number) => {
+  const user = getPlaywrightUser(num);
+  await login(page, user.email, user.password);
+  return user;
 };
 
 export const loginSuperuser = async (page: Page) => {
-  await page.goto("/login");
-  await page.getByPlaceholder("Email").fill(testConfig.superuserEmail);
-  await page.getByPlaceholder("Password").fill(testConfig.superuserPassword);
-  await page.getByRole("button", { name: "Log In" }).click();
-  await page.waitForURL("/");
+  await login(page, testConfig.superuserEmail, testConfig.superuserPassword);
 };
 
 export const logout = async (page: Page) => {

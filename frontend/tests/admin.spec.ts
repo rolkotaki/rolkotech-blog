@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import {
   loginTestUser,
   loginSuperuser,
+  getPlaywrightUser,
   TEST_IMAGE,
   WRONG_TEST_IMAGES,
   testConfig
@@ -29,6 +30,7 @@ test("Admin Dashboard - Images loads with required elements", async ({
 }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Images" }).click();
 
   await expect(
@@ -37,9 +39,10 @@ test("Admin Dashboard - Images loads with required elements", async ({
   await expect(page.getByText("Upload Image")).toBeVisible();
 });
 
-test("Superuser can upload an image", async ({ page }) => {
+test("Superuser can upload an image", async ({ page, browserName }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Images" }).click();
 
   await page.locator('input[id="imageUpload"]').setInputFiles(TEST_IMAGE);
@@ -61,22 +64,27 @@ test("Superuser can upload an image", async ({ page }) => {
   expect(buttonCount).toBeGreaterThan(0);
 
   await page.getByRole("button", { name: "Copy Name" }).last().click();
-  const copiedName = await page.evaluate(() =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (navigator as any).clipboard.readText()
-  );
-  expect(copiedName).toBe(image_filename);
+  if (browserName === "chromium") {
+    const copiedName = await page.evaluate(() =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (navigator as any).clipboard.readText()
+    );
+    expect(copiedName).toBe(image_filename);
+  }
   await page.getByRole("button", { name: "Copy URL" }).last().click();
-  const copiedURL = await page.evaluate(() =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (navigator as any).clipboard.readText()
-  );
-  expect(copiedURL).toContain(image_filename);
+  if (browserName === "chromium") {
+    const copiedURL = await page.evaluate(() =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (navigator as any).clipboard.readText()
+    );
+    expect(copiedURL).toContain(image_filename);
+  }
 });
 
 test("Superuser cannot upload wrong image", async ({ page }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Images" }).click();
 
   for (const img of WRONG_TEST_IMAGES) {
@@ -93,7 +101,7 @@ test("Admin Dashboard - Add New Blog Post loads with required elements", async (
 }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
-
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Blog Posts" }).click();
 
   await expect(
@@ -133,6 +141,7 @@ test("Superuser can upload an image and add a new blog post successfully", async
 }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
 
   await page.getByRole("button", { name: "Images" }).click();
   await page.locator('input[id="imageUpload"]').setInputFiles(TEST_IMAGE);
@@ -165,7 +174,7 @@ test("Admin Dashboard - Users loads with required elements", async ({
 }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
-
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Users" }).click();
 
   await expect(
@@ -218,7 +227,7 @@ test("Admin Dashboard - Users loads with required elements", async ({
 test("Superuser can refresh, filter and manage users", async ({ page }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
-
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Users" }).click();
 
   await page.getByRole("button", { name: "Refresh Users" }).click();
@@ -350,9 +359,8 @@ test("Superuser can refresh, filter and manage users", async ({ page }) => {
   ).toBeVisible();
 
   // Make test user an admin
-  const userRow = page
-    .locator("tr")
-    .filter({ hasText: testConfig.testUserEmail });
+  const admin_user = getPlaywrightUser(3);
+  let userRow = page.locator("tr").filter({ hasText: admin_user.email });
   await userRow.locator("td").nth(2).locator("label").click(); // Role toggle
   await expect(userRow.getByText("Admin", { exact: true })).toBeVisible();
 
@@ -361,51 +369,48 @@ test("Superuser can refresh, filter and manage users", async ({ page }) => {
     page.getByRole("cell", { name: testConfig.superuserEmail, exact: true })
   ).toBeVisible();
   await expect(
-    page.getByRole("cell", { name: testConfig.testUserEmail, exact: true })
+    page.getByRole("cell", { name: admin_user.email, exact: true })
   ).toBeVisible();
   await page.locator('select[id="roleFilter"]').selectOption("user");
   await expect(
     page.getByRole("cell", { name: testConfig.superuserEmail, exact: true })
   ).toBeHidden();
   await expect(
-    page.getByRole("cell", { name: testConfig.testUserEmail, exact: true })
+    page.getByRole("cell", { name: admin_user.email, exact: true })
   ).toBeHidden();
   await page.locator('select[id="roleFilter"]').selectOption("all");
-  // Revert test user to normal user
-  await userRow.locator("td").nth(2).locator("label").click();
 
-  // TODO: Maybe add a new user for testing inactive user filtering
-  //   // Make test user inactive
-  //   userRow = page.locator("tr").filter({ hasText: testConfig.testUserEmail });
-  //   await userRow.locator("td").nth(3).locator("label").click(); // Status toggle
-  //   await expect(userRow.getByText("Inactive", { exact: true })).toBeVisible();
+  // Make test user inactive
+  const inactive_user = getPlaywrightUser(4);
+  userRow = page.locator("tr").filter({ hasText: inactive_user.email });
+  await userRow.locator("td").nth(3).locator("label").click(); // Status toggle
+  await expect(userRow.getByText("Inactive", { exact: true })).toBeVisible();
 
-  //   await page.locator('select[id="statusFilter"]').selectOption("active");
-  //   await expect(
-  //     page.getByRole("cell", { name: testConfig.superuserEmail, exact: true })
-  //   ).toBeVisible();
-  //   await expect(
-  //     page.getByRole("cell", { name: testConfig.testUserEmail, exact: true })
-  //   ).toBeHidden();
-  //   await page.locator('select[id="statusFilter"]').selectOption("inactive");
-  //   await expect(
-  //     page.getByRole("cell", { name: testConfig.superuserEmail, exact: true })
-  //   ).toBeHidden();
-  //   await expect(
-  //     page.getByRole("cell", { name: testConfig.testUserEmail, exact: true })
-  //   ).toBeVisible();
-  //   // Revert test user to active user
-  //   await userRow.locator("td").nth(3).locator("label").click();
+  await page.locator('select[id="statusFilter"]').selectOption("active");
+  await expect(
+    page.getByRole("cell", { name: testConfig.superuserEmail, exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: inactive_user.email, exact: true })
+  ).toBeHidden();
+  await page.locator('select[id="statusFilter"]').selectOption("inactive");
+  await expect(
+    page.getByRole("cell", { name: testConfig.superuserEmail, exact: true })
+  ).toBeHidden();
+  await expect(
+    page.getByRole("cell", { name: inactive_user.email, exact: true })
+  ).toBeVisible();
 });
 
 test("Superuser can delete users", async ({ page }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "Users" }).click();
 
-  const userRow = page
-    .locator("tr")
-    .filter({ hasText: testConfig.testUserEmail });
+  const user_to_delete = getPlaywrightUser(5);
+  const userRow = page.locator("tr").filter({ hasText: user_to_delete.email });
+  await expect(userRow.getByText(user_to_delete.email)).toBeVisible();
   await expect(
     userRow.getByRole("button", { name: "Delete", exact: true })
   ).toBeVisible();
@@ -417,7 +422,7 @@ test("Superuser can delete users", async ({ page }) => {
     expect(dialog.message()).toBe(
       "Are you sure you want to delete this user? This action cannot be undone."
     );
-    await dialog.dismiss();
+    await dialog.accept();
     dialogHandled = true;
   });
 
@@ -428,6 +433,7 @@ test("Superuser can delete users", async ({ page }) => {
   await expect(() => expect(dialogHandled).toBe(true)).toPass({
     timeout: 5000
   });
+  await expect(userRow.getByText(user_to_delete.email)).toBeHidden();
 });
 
 test("Admin Dashboard - API Docs loads with required elements", async ({
@@ -435,6 +441,7 @@ test("Admin Dashboard - API Docs loads with required elements", async ({
 }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "API Docs" }).click();
 
   await expect(
@@ -446,6 +453,7 @@ test("Admin Dashboard - API Docs loads with required elements", async ({
 test("Superuser can open API Docs", async ({ page }) => {
   await loginSuperuser(page);
   await page.goto("/admin");
+  await page.waitForURL("/admin");
   await page.getByRole("button", { name: "API Docs" }).click();
   await page.getByRole("link", { name: "Open API Docs" }).click();
 

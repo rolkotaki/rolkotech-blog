@@ -51,7 +51,9 @@ test("User menu loads with required elements for superuser", async ({
   await expect(page.getByRole("button", { name: "Log Out" })).toBeVisible();
 });
 
-test("Update Profile loads with required elements", async ({ page }) => {
+test("Update Profile loads with required elements for normal user", async ({
+  page
+}) => {
   await loginTestUser(page);
   await page.getByText(/Hello/).click();
   await page.getByRole("link", { name: "Update Profile" }).click();
@@ -75,6 +77,7 @@ test("Update Profile loads with required elements", async ({ page }) => {
 test("Update Profile validation works", async ({ page }) => {
   await loginTestUser(page);
   await page.goto("/me");
+  await page.waitForURL("/me");
 
   // Empty fields
   await page.getByPlaceholder("Username").fill("");
@@ -101,18 +104,19 @@ test("Update Profile validation works", async ({ page }) => {
 });
 
 test("Update Profile works successfully", async ({ page }) => {
-  await loginTestUser(page);
+  const user = await loginPlaywrightUser(page, 1);
   await page.goto("/me");
+  await page.waitForURL("/me");
 
-  await page
-    .getByPlaceholder("Username")
-    .fill(testConfig.testUserName + "updated");
-  await page.getByPlaceholder("Email").fill(testConfig.testUserEmail);
+  await page.getByPlaceholder("Username").fill(user.username + "updated");
+  await page.getByPlaceholder("Email").fill(user.email);
+  await page.getByRole("heading", { name: "Update Profile", level: 2 }).click();
   await page.getByRole("button", { name: "Update", exact: true }).click();
   await expect(page.getByText("Profile updated successfully")).toBeVisible();
 
   // Revert changes
-  await page.getByPlaceholder("Username").fill(testConfig.testUserName);
+  await page.getByPlaceholder("Username").fill(user.username);
+  await page.getByRole("heading", { name: "Update Profile", level: 2 }).click();
   await page.getByRole("button", { name: "Update", exact: true }).click();
   await expect(page.getByText("Profile updated successfully")).toBeVisible();
 });
@@ -122,9 +126,11 @@ test("Update Profile error when account with email already exists", async ({
 }) => {
   await loginTestUser(page);
   await page.goto("/me");
+  await page.waitForURL("/me");
 
   await page.getByPlaceholder("Username").fill(testConfig.testUserName);
   await page.getByPlaceholder("Email").fill(testConfig.superuserEmail);
+  await page.getByRole("heading", { name: "Update Profile", level: 2 }).click();
   await page.getByRole("button", { name: "Update", exact: true }).click();
   await expect(
     page.getByText("User with this email already exists")
@@ -136,9 +142,11 @@ test("Update Profile error when account with username already exists", async ({
 }) => {
   await loginTestUser(page);
   await page.goto("/me");
+  await page.waitForURL("/me");
 
   await page.getByPlaceholder("Username").fill(testConfig.superuserName);
   await page.getByPlaceholder("Email").fill(testConfig.testUserEmail);
+  await page.getByRole("heading", { name: "Update Profile", level: 2 }).click();
   await page.getByRole("button", { name: "Update", exact: true }).click();
   await expect(
     page.getByText("User with this name already exists")
@@ -187,6 +195,7 @@ test("Change Password loads with required elements", async ({ page }) => {
 test("Change Password validation works", async ({ page }) => {
   await loginTestUser(page);
   await page.goto("/me/password");
+  await page.waitForURL("/me/password");
 
   // Empty fields
   await page.getByPlaceholder("Current Password").click();
@@ -266,12 +275,11 @@ test("Change Password validation works", async ({ page }) => {
 
 test("Change Password and delete user works successfully", async ({ page }) => {
   // Change password
-  await loginPlaywrightUser(page);
+  const user = await loginPlaywrightUser(page, 2);
   await page.goto("/me/password");
+  await page.waitForURL("/me/password");
 
-  await page
-    .getByPlaceholder("Current Password")
-    .fill(testConfig.playwrightUserPassword);
+  await page.getByPlaceholder("Current Password").fill(user.password);
   await page
     .getByPlaceholder("New Password", { exact: true })
     .fill("NewPassword123!");
@@ -301,6 +309,7 @@ test("Change Password and delete user works successfully", async ({ page }) => {
 test("Change Password fails with incorrect password", async ({ page }) => {
   await loginTestUser(page);
   await page.goto("/me/password");
+  await page.waitForURL("/me/password");
 
   await page.getByPlaceholder("Current Password").fill("WrongPassword123!");
   await page
@@ -316,6 +325,7 @@ test("Change Password fails with incorrect password", async ({ page }) => {
 test("Change Password fails with same password", async ({ page }) => {
   await loginTestUser(page);
   await page.goto("/me/password");
+  await page.waitForURL("/me/password");
 
   await page
     .getByPlaceholder("Current Password")

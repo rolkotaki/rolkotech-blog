@@ -52,26 +52,26 @@ def init_test_user(session: Session) -> None:
         logger.error(f"Error creating the test user: {e}", exc_info=True)
 
 
-def init_test_playwright_user(session: Session) -> None:
+def init_test_playwright_users(session: Session) -> None:
     """
     Create the test playwright user in the database.
     """
     try:
-        user = session.exec(
-            select(User).where(User.email == settings.TEST_PLAYWRIGHT_USER_EMAIL)
-        ).first()
-        user_crud = UserCRUD(session)
-        if user:
-            user_crud.delete_user(user)
-        user_in = UserCreate(
-            name=settings.TEST_PLAYWRIGHT_USER,
-            email=settings.TEST_PLAYWRIGHT_USER_EMAIL,
-            password=settings.TEST_PLAYWRIGHT_USER_PASSWORD,
-        )
-        user = user_crud.create_user(user=user_in)
+        for i in range(1, 6):
+            user_email = settings.TEST_PLAYWRIGHT_USER_EMAIL.replace("@", f"{i}@")
+            user = session.exec(select(User).where(User.email == user_email)).first()
+            user_crud = UserCRUD(session)
+            if user:
+                user_crud.delete_user(user)
+            user_in = UserCreate(
+                name=f"{settings.TEST_PLAYWRIGHT_USER}{i}",
+                email=user_email,
+                password=settings.TEST_PLAYWRIGHT_USER_PASSWORD,
+            )
+            user = user_crud.create_user(user=user_in)
     except Exception as e:
         session.rollback()
-        logger.error(f"Error creating the test playwright user: {e}", exc_info=True)
+        logger.error(f"Error creating the test playwright users: {e}", exc_info=True)
 
 
 def main():
@@ -80,7 +80,7 @@ def main():
         init_db(session)
         clean_tables(session)
         init_test_user(session)
-        init_test_playwright_user(session)
+        init_test_playwright_users(session)
     logger.info("Database initialized with test data successfully.")
 
 

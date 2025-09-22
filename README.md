@@ -5,6 +5,7 @@
 [![Lint Backend](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/lint_backend.yml/badge.svg)](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/lint_backend.yml)
 [![Test Docker Compose](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/test_docker_compose.yml/badge.svg)](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/test_docker_compose.yml)
 [![Lint Frontend](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/lint_frontend.yml/badge.svg)](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/lint_frontend.yml)
+[![Playwright Tests](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/playwright.yml/badge.svg)](https://github.com/rolkotaki/rolkotech-blog/actions/workflows/playwright.yml)
 
 Full stack project with [FastAPI](https://fastapi.tiangolo.com/) and [React](https://react.dev/).
 

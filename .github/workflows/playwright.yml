@@ -8,6 +8,9 @@ on:
     paths:
       - "frontend/src/**"
       - "frontend/tests/**"
+      - "frontend/playwright.config.ts"
+      - "backend/app/**"
+      - "backend/scripts/create_test_data.sh"
       - ".github/workflows/playwright.yml"
   pull_request:
     types:
@@ -16,18 +19,25 @@ on:
     paths:
       - "frontend/src/**"
       - "frontend/tests/**"
+      - "frontend/playwright.config.ts"
+      - "backend/app/**"
+      - "backend/scripts/create_test_data.sh"
       - ".github/workflows/playwright.yml"
 
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+      fail-fast: false
     
     services:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}_${{ matrix.browser }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
@@ -52,7 +62,7 @@ jobs:
         API_VERSION_STR=/api
         POSTGRES_SERVER=localhost
         POSTGRES_PORT=5432
-        POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+        POSTGRES_DB=${{ secrets.POSTGRES_DB }}_${{ matrix.browser }}
         POSTGRES_USER=${{ secrets.POSTGRES_USER }}
         POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
         FIRST_SUPERUSER_EMAIL=${{ secrets.FIRST_SUPERUSER_EMAIL }}
@@ -87,7 +97,7 @@ jobs:
       run: uv sync --locked --group dev
       working-directory: backend
 
-    - name: Setup test database
+    - name: Setup test database for ${{ matrix.browser }}
       run: uv run bash scripts/create_test_data.sh
       working-directory: backend
 
@@ -111,16 +121,17 @@ jobs:
       working-directory: frontend
 
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install --with-deps ${{ matrix.browser }}
       working-directory: frontend
 
-    - name: Run Playwright tests
-      run: npx playwright test
+    - name: Run Playwright tests for ${{ matrix.browser }}
+      run: npx playwright test --project=${{ matrix.browser }}
       working-directory: frontend
 
-    - uses: actions/upload-artifact@v4
-      if: always()
+    - name: Upload test results for ${{ matrix.browser }}
+      if: failure()
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
+        name: playwright-report-${{ matrix.browser }}
         path: frontend/playwright-report/
         retention-days: 30
