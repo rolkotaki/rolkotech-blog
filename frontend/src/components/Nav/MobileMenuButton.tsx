@@ -6,7 +6,11 @@ interface MobileMenuButtonProps {
 function MobileMenuButton({ isOpen, toggleMenu }: MobileMenuButtonProps) {
   return (
     <div className="md:hidden">
-      <button onClick={toggleMenu} className="focus:outline-none">
+      <button
+        onClick={toggleMenu}
+        className="focus:outline-none"
+        data-testid="mobile-menu-button"
+      >
         <svg
           className="w-6 h-6 text-blue-700"
           fill="none"

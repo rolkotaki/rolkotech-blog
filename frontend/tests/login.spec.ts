@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { loginTestUser, loginSuperuser, logout } from "./helpers/helper";
+import {
+  isMobile,
+  loginSuperuser,
+  loginTestUser,
+  logout
+} from "./helpers/helper";
 
 test("Login page loads with required elements", async ({ page }) => {
   await page.goto("/login");
@@ -18,12 +23,15 @@ test("Login page loads with required elements", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Forgot your password?" })
   ).toBeVisible();
+  if (!isMobile(page)) {
+    await expect(page.getByRole("link", { name: "Log In" })).toBeVisible();
+    await expect(page.getByText(/Hello/)).toBeHidden();
+  }
   const signUpLinkCount = await page
     .getByRole("link", { name: "Sign Up" })
     .count();
-  expect(signUpLinkCount).toBe(2);
-  await expect(page.getByRole("link", { name: "Log In" })).toBeVisible();
-  await expect(page.getByText(/Hello/)).toBeHidden();
+  if (isMobile(page)) expect(signUpLinkCount).toBe(1);
+  else expect(signUpLinkCount).toBe(2);
 });
 
 test("User can log in successfully", async ({ page }) => {
@@ -35,12 +43,13 @@ test("User can log in successfully", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Featured Posts", level: 2 })
   ).toBeVisible();
-  await expect(page.getByText(/Hello/)).toBeVisible();
+  if (!isMobile(page)) await expect(page.getByText(/Hello/)).toBeVisible();
   await expect(page.getByRole("link", { name: "Admin" })).toBeHidden();
 });
 
 test("Superuser can log in successfully", async ({ page }) => {
   await loginSuperuser(page);
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
   await expect(page.getByRole("link", { name: "Admin" })).toBeVisible();
 });
 
@@ -56,8 +65,9 @@ test("User can log out", async ({ page }) => {
   await loginTestUser(page);
   await logout(page);
   await page.waitForURL("/");
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
+  else await expect(page.getByText(/Hello/)).toBeHidden();
   await expect(page.getByRole("link", { name: "Log In" })).toBeVisible();
-  await expect(page.getByText(/Hello/)).toBeHidden();
 });
 
 test("Reset Password page loads with required elements", async ({ page }) => {
@@ -74,7 +84,7 @@ test("Reset Password page loads with required elements", async ({ page }) => {
     page.getByRole("button", { name: "Send Reset Link" })
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
-  await expect(page.getByText(/Hello/)).toBeHidden();
+  if (!isMobile(page)) await expect(page.getByText(/Hello/)).toBeHidden();
 });
 
 test("Reset Password page validation works", async ({ page }) => {

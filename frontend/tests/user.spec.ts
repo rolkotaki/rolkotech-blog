@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 import {
+  isMobile,
   loginPlaywrightUser,
-  loginTestUser,
   loginSuperuser,
+  loginTestUser,
   testConfig
 } from "./helpers/helper";
 
@@ -19,7 +20,8 @@ test("User menu loads with required elements for normal user", async ({
     page.getByRole("button", { name: "Delete My Account" })
   ).toBeHidden();
 
-  await page.getByText(`Hello, ${testConfig.testUserName}`).click();
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
+  else await page.getByText(`Hello, ${testConfig.testUserName}`).click();
 
   await expect(
     page.getByRole("link", { name: "Update Profile" })
@@ -37,7 +39,8 @@ test("User menu loads with required elements for superuser", async ({
   page
 }) => {
   await loginSuperuser(page);
-  await page.getByText(/Hello/).click();
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
+  else await page.getByText(/Hello/).click();
 
   await expect(
     page.getByRole("link", { name: "Update Profile" })
@@ -55,7 +58,8 @@ test("Update Profile loads with required elements for normal user", async ({
   page
 }) => {
   await loginTestUser(page);
-  await page.getByText(/Hello/).click();
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
+  else await page.getByText(/Hello/).click();
   await page.getByRole("link", { name: "Update Profile" }).click();
   await page.waitForURL("/me");
 
@@ -162,7 +166,8 @@ test("Update Profile link to home works", async ({ page }) => {
 
 test("Change Password loads with required elements", async ({ page }) => {
   await loginTestUser(page);
-  await page.getByText(/Hello/).click();
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
+  else await page.getByText(/Hello/).click();
   await page.getByRole("link", { name: "Change Password" }).click();
   await page.waitForURL("/me/password");
 
@@ -290,7 +295,8 @@ test("Change Password and delete user works successfully", async ({ page }) => {
   await expect(page.getByText("Password updated successfully")).toBeVisible();
 
   // Delete user
-  await page.getByText(/Hello/).click();
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
+  else await page.getByText(/Hello/).click();
   await page.getByRole("button", { name: "Delete My Account" }).click();
   await expect(
     page.getByText(

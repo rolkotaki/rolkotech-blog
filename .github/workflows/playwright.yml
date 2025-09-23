@@ -30,14 +30,31 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [chromium, firefox, webkit]
+        include:
+          # Desktop
+          - browser: chromium
+            viewport: desktop
+            project: chromium
+          - browser: firefox
+            viewport: desktop
+            project: firefox
+          - browser: webkit
+            viewport: desktop
+            project: webkit
+          # Mobile
+          - browser: chromium
+            viewport: mobile
+            project: "Mobile Chrome"
+          - browser: webkit
+            viewport: mobile
+            project: "Mobile Safari"
       fail-fast: false
-    
+
     services:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}_${{ matrix.browser }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}_${{ matrix.browser }}_${{ matrix.viewport }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
@@ -47,91 +64,91 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-    - name: Create .env file
-      run: |
-        cat <<EOF > .env
-        TEST_MODE=True
-        DEBUG=True
-        BACKEND_HOST=http://localhost:8000
-        FRONTEND_HOST=http://localhost:5173
-        API_VERSION_STR=/api
-        POSTGRES_SERVER=localhost
-        POSTGRES_PORT=5432
-        POSTGRES_DB=${{ secrets.POSTGRES_DB }}_${{ matrix.browser }}
-        POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-        POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-        FIRST_SUPERUSER_EMAIL=${{ secrets.FIRST_SUPERUSER_EMAIL }}
-        FIRST_SUPERUSER=${{ secrets.FIRST_SUPERUSER }}
-        FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
-        TEST_USER=${{ secrets.TEST_USER }}
-        TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
-        TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
-        TEST_PLAYWRIGHT_USER=${{ secrets.TEST_PLAYWRIGHT_USER }}
-        TEST_PLAYWRIGHT_USER_EMAIL=${{ secrets.TEST_PLAYWRIGHT_USER_EMAIL }}
-        TEST_PLAYWRIGHT_USER_PASSWORD=${{ secrets.TEST_PLAYWRIGHT_USER_PASSWORD }}
-        SECRET_KEY=${{ secrets.SECRET_KEY }}
-        MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
-        EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}
-        EMAIL_FROM_NAME=Rolkotech Blog
-        DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
-        DOCKER_IMAGE_FRONTEND=rolkotech-blog-frontend
-        EOF
-    
-    - name: Setup Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: "3.13"
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          TEST_MODE=True
+          DEBUG=True
+          BACKEND_HOST=http://localhost:8000
+          FRONTEND_HOST=http://localhost:5173
+          API_VERSION_STR=/api
+          POSTGRES_SERVER=localhost
+          POSTGRES_PORT=5432
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}_${{ matrix.browser }}_${{ matrix.viewport }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          FIRST_SUPERUSER_EMAIL=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+          FIRST_SUPERUSER=${{ secrets.FIRST_SUPERUSER }}
+          FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
+          TEST_USER=${{ secrets.TEST_USER }}
+          TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          TEST_PLAYWRIGHT_USER=${{ secrets.TEST_PLAYWRIGHT_USER }}
+          TEST_PLAYWRIGHT_USER_EMAIL=${{ secrets.TEST_PLAYWRIGHT_USER_EMAIL }}
+          TEST_PLAYWRIGHT_USER_PASSWORD=${{ secrets.TEST_PLAYWRIGHT_USER_PASSWORD }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
+          EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+          EMAIL_FROM_NAME=Rolkotech Blog
+          DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
+          DOCKER_IMAGE_FRONTEND=rolkotech-blog-frontend
+          EOF
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        version: "0.7.13"
-        enable-cache: true
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
 
-    - name: Install dependencies
-      run: uv sync --locked --group dev
-      working-directory: backend
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.7.13"
+          enable-cache: true
 
-    - name: Setup test database for ${{ matrix.browser }}
-      run: uv run bash scripts/create_test_data.sh
-      working-directory: backend
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+        working-directory: backend
 
-    - name: Start backend server
-      run: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-      working-directory: backend
+      - name: Setup test database for ${{ matrix.browser }} ${{ matrix.viewport }}
+        run: uv run bash scripts/create_test_data.sh
+        working-directory: backend
 
-    - name: Wait for backend
-      run: |
-        curl --retry 10 --retry-delay 3 --retry-connrefused http://localhost:8000/api/tags/
+      - name: Start backend server
+        run: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        working-directory: backend
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v5
-      with:
-        node-version: "22.16.0"
-        cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
+      - name: Wait for backend
+        run: |
+          curl --retry 10 --retry-delay 3 --retry-connrefused http://localhost:8000/api/tags/
 
-    - name: Install frontend dependencies
-      run: npm ci
-      working-directory: frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.16.0"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps ${{ matrix.browser }}
-      working-directory: frontend
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
 
-    - name: Run Playwright tests for ${{ matrix.browser }}
-      run: npx playwright test --project=${{ matrix.browser }}
-      working-directory: frontend
+      - name: Install Playwright Browser ({{ matrix.browser }})
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+        working-directory: frontend
 
-    - name: Upload test results for ${{ matrix.browser }}
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report-${{ matrix.browser }}
-        path: frontend/playwright-report/
-        retention-days: 30
+      - name: Run Playwright tests for ${{ matrix.project }}
+        run: npx playwright test --project="${{ matrix.project }}"
+        working-directory: frontend
+
+      - name: Upload test results for ${{ matrix.project }}
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.viewport }}
+          path: frontend/playwright-report/
+          retention-days: 30

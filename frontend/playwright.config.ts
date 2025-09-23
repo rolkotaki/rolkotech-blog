@@ -38,10 +38,13 @@ export default defineConfig({
     trace: "on-first-retry",
 
     /* Take screenshot on failure */
-    screenshot: "only-on-failure"
+    screenshot: "only-on-failure",
 
     /* Record video on failure */
-    // video: "retain-on-failure"
+    // video: "retain-on-failure",
+
+    /* Global test isolation - start each test with clean storage state */
+    storageState: { cookies: [], origins: [] }
   },
 
   /* Configure projects for major browsers */
@@ -60,17 +63,17 @@ export default defineConfig({
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] }
-    }
+    },
 
     /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
+    {
+      name: "Mobile Chrome",
+      use: { ...devices["Pixel 5"] }
+    },
+    {
+      name: "Mobile Safari",
+      use: { ...devices["iPhone 12"] }
+    }
 
     /* Test against branded browsers. */
     // {

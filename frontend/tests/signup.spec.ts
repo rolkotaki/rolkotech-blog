@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { isMobile } from "./helpers/helper";
 
 test("Signup page loads with required elements", async ({ page }) => {
   await page.goto("/signup");
@@ -16,17 +17,18 @@ test("Signup page loads with required elements", async ({ page }) => {
     page.getByPlaceholder("Password", { exact: true })
   ).toBeEditable();
   await expect(page.getByRole("button", { name: "Sign Up" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
-  const logInLinkCount = await page
-    .getByRole("link", { name: "Log In" })
-    .count();
-  expect(logInLinkCount).toBe(2);
-  await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
+  if (!isMobile(page))
+    await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
   await expect(
     page.getByText(
       "Password must be at least 8 characters with uppercase, lowercase, number, and special character"
     )
   ).toBeVisible();
+  const logInLinkCount = await page
+    .getByRole("link", { name: "Log In" })
+    .count();
+  if (isMobile(page)) expect(logInLinkCount).toBe(1);
+  else expect(logInLinkCount).toBe(2);
 });
 
 test("User can sign up successfully", async ({ page }) => {

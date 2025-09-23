@@ -21,6 +21,11 @@ export const testConfig = {
   playwrightUserName: process.env.TEST_PLAYWRIGHT_USER || ""
 };
 
+export const isMobile = (page: Page): boolean => {
+  const viewportSize = page.viewportSize();
+  return viewportSize ? viewportSize.width < 768 : false;
+};
+
 export const getPlaywrightUser = (
   num: number
 ): { username: string; email: string; password: string } => {
@@ -37,7 +42,11 @@ const login = async (page: Page, email: string, password: string) => {
   await page.getByPlaceholder("Password").fill(password);
   await page.getByRole("button", { name: "Log In" }).click();
   await page.waitForURL("/", { timeout: 5000 });
-  await expect(page.getByText(/Hello/)).toBeVisible();
+  if (isMobile(page)) {
+    await expect(page.getByTestId("mobile-menu-button")).toBeVisible();
+  } else {
+    await expect(page.getByText(/Hello/)).toBeVisible();
+  }
   // Wait for any potential JS redirects or state changes
   await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => {
     console.log(`Network not idle after login for: ${email}`);
@@ -59,7 +68,11 @@ export const loginSuperuser = async (page: Page) => {
 };
 
 export const logout = async (page: Page) => {
-  await page.getByText(/Hello/).click();
+  if (isMobile(page)) {
+    await page.getByTestId("mobile-menu-button").click();
+  } else {
+    await page.getByText(/Hello/).click();
+  }
   await page.getByRole("button", { name: "Log Out" }).click();
   await page.waitForURL("/");
 };

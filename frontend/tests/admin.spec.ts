@@ -1,15 +1,17 @@
 import { test, expect } from "@playwright/test";
 import {
-  loginTestUser,
-  loginSuperuser,
   getPlaywrightUser,
+  isMobile,
+  loginSuperuser,
+  loginTestUser,
+  testConfig,
   TEST_IMAGE,
-  WRONG_TEST_IMAGES,
-  testConfig
+  WRONG_TEST_IMAGES
 } from "./helpers/helper";
 
 test("Admin menu is not available for normal user", async ({ page }) => {
   await loginTestUser(page);
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
   await expect(page.getByRole("link", { name: "Admin" })).toBeHidden();
   await page.goto("/admin");
   await page.waitForURL("/login");
@@ -17,6 +19,7 @@ test("Admin menu is not available for normal user", async ({ page }) => {
 
 test("Admin menu is available for superuser", async ({ page }) => {
   await loginSuperuser(page);
+  if (isMobile(page)) await page.getByTestId("mobile-menu-button").click();
   await expect(page.getByRole("link", { name: "Admin" })).toBeVisible();
   await page.getByRole("link", { name: "Admin" }).click();
   await page.waitForURL("/admin");
@@ -64,7 +67,7 @@ test("Superuser can upload an image", async ({ page, browserName }) => {
   expect(buttonCount).toBeGreaterThan(0);
 
   await page.getByRole("button", { name: "Copy Name" }).last().click();
-  if (browserName === "chromium") {
+  if (browserName === "chromium" && !isMobile(page)) {
     const copiedName = await page.evaluate(() =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (navigator as any).clipboard.readText()
@@ -72,7 +75,7 @@ test("Superuser can upload an image", async ({ page, browserName }) => {
     expect(copiedName).toBe(image_filename);
   }
   await page.getByRole("button", { name: "Copy URL" }).last().click();
-  if (browserName === "chromium") {
+  if (browserName === "chromium" && !isMobile(page)) {
     const copiedURL = await page.evaluate(() =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (navigator as any).clipboard.readText()
