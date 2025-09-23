@@ -83,9 +83,46 @@ npm run preview
 Open in the browser: [localhost:4173](http://localhost:4173/)<br>
 (Make sure you have it added to the CORS setting.)
 
-## Tests
+## End-to-end Tests
 
-...
+The frontend implements end-to-end tests using [Playwright](https://playwright.dev/). In the `playwright.config.ts` there are several projects defined with different browsers for desktop and mobile as well. If you want to run the tests locally, choose one project and comment the others, otherwise there will be issues with several projects using the same database.
+
+To run the Playwright tests, you need to have the test data initialized in the database and the backend running.<br>
+You can either run the Docker Compose for Playwright:
+
+```
+docker compose -f docker-compose.playwright.yml up -d
+```
+
+Or you can do it manually from the `backend` folder:
+
+```
+./scripts/create_test_data.sh
+source .venv/bin/activate
+fastapi dev ./app/main.py
+```
+
+_I recommend using the Docker Compose, this way you don't overwrite and clean your data in the local database._
+
+Now you can run the Playwright tests from the `frontend` folder:
+
+```
+npx playwright test --headed
+```
+
+The `--headed` argument makes the tests run in headed browsers. If you don't need that, just run:
+
+```
+npx playwright test
+```
+
+In the `package.json` I added serveral `npm` commands (scripts), feel free to take a look at them for more options.
+
+When the tests have finished, stop the Docker Compose:
+
+```
+docker compose -f docker-compose.playwright.yml down -v
+```
 
 ## Linting and Formatting
 

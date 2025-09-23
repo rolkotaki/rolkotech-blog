@@ -149,3 +149,60 @@ jobs:
 
       - name: Stop Docker Compose
         run: docker compose -f docker-compose.dev.yml down -v --remove-orphans
+
+  test_docker_compose_playwright:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          DEBUG=True
+          BACKEND_HOST=http://localhost:8000
+          FRONTEND_HOST=http://localhost:5173
+          API_VERSION_STR=/api
+          POSTGRES_SERVER=db
+          POSTGRES_PORT=5432
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          FIRST_SUPERUSER_EMAIL=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+          FIRST_SUPERUSER=${{ secrets.FIRST_SUPERUSER }}
+          FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
+          TEST_USER=${{ secrets.TEST_USER }}
+          TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          TEST_PLAYWRIGHT_USER=${{ secrets.TEST_PLAYWRIGHT_USER }}
+          TEST_PLAYWRIGHT_USER_EMAIL=${{ secrets.TEST_PLAYWRIGHT_USER_EMAIL }}
+          TEST_PLAYWRIGHT_USER_PASSWORD=${{ secrets.TEST_PLAYWRIGHT_USER_PASSWORD }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          MAILERSEND_API_KEY=${{ secrets.MAILERSEND_API_KEY }}
+          EMAIL_FROM=${{ secrets.FIRST_SUPERUSER_EMAIL }}
+          EMAIL_FROM_NAME=Rolkotech Blog
+          DOCKER_IMAGE_BACKEND=rolkotech-blog-backend
+          DOCKER_IMAGE_FRONTEND=rolkotech-blog-frontend
+          EOF
+
+      - name: Remove existing Docker Compose containers
+        run: docker compose -f docker-compose.playwright.yml down -v --remove-orphans
+
+      - name: Start Docker Compose (Playwright)
+        run: docker compose -f docker-compose.playwright.yml up -d --build --wait
+
+      - name: Test backend is up
+        run: curl http://localhost:8000/api/tags/
+
+      - name: Show container logs if failed
+        if: failure()
+        run: |
+          echo "DB Logs:"
+          docker compose logs db || true
+          echo "Backend Prestart Logs:"
+          docker compose logs backend_prestart || true
+          echo "Backend Logs:"
+          docker compose logs backend || true
+
+      - name: Stop Docker Compose
+        run: docker compose -f docker-compose.playwright.yml down -v --remove-orphans

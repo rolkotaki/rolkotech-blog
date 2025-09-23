@@ -71,6 +71,7 @@ Features of the website:
 - [React Markdown](https://www.npmjs.com/package/react-markdown): React component to render markdown
 - [ESLint](https://eslint.org/): Linting and formatting
 - [Prettier](https://prettier.io/): Formatting
+- [Playwright](https://playwright.dev/): End-to-end tests
 
 #### Generic
 
