@@ -46,7 +46,7 @@ function About() {
         .
       </p>
 
-      <img src={collageImage} alt="Roland Takacs" className="rounded-md my-4" />
+      <img src={collageImage} alt="RolkoTech adventures" className="rounded-md my-4" />
 
       <p className="text-base leading-relaxed">
         Thanks for stopping by — I hope you find something valuable or inspiring
