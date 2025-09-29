@@ -109,7 +109,10 @@ function Home() {
       {isLoading ? (
         <LoadingSpinner text="Loading tags..." />
       ) : (
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div
+          className="flex flex-wrap justify-center gap-2 mb-8"
+          data-testid="tags-list"
+        >
           {[
             { id: 0, name: "All" },
             ...tags.sort((a, b) =>
@@ -138,7 +141,10 @@ function Home() {
       {isLoading ? (
         <LoadingSpinner text="Loading recent posts..." />
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          data-testid="recent-posts"
+        >
           {recentPosts.map((post) => (
             <BlogPostBox
               key={post.id}
@@ -174,7 +180,10 @@ function Home() {
       {isLoading ? (
         <LoadingSpinner text="Loading featured posts..." />
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          data-testid="featured-posts"
+        >
           {featuredPosts.map((post) => (
             <BlogPostBox
               key={post.id}

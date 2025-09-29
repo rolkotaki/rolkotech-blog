@@ -152,11 +152,15 @@ test("Superuser can upload an image and add a new blog post successfully", async
 
   await page.getByRole("button", { name: "Blog Posts" }).click();
 
-  await page.getByPlaceholder("Blog post title...").fill("Blog Post 1");
-  await page.getByPlaceholder("Blog post URL slug...").fill("blog-post-1");
+  await page
+    .getByPlaceholder("Blog post title...")
+    .fill("Blog Post From Admin");
+  await page
+    .getByPlaceholder("Blog post URL slug...")
+    .fill("blog-post-from-admin");
   await page
     .getByPlaceholder("Blog post content...")
-    .fill("This is the content of Blog Post 1.");
+    .fill("This is the content of Admin Blog Post.");
   await page.getByPlaceholder("tag1,tag2,tag3...").fill("testtag");
   await expect(page.getByAltText("Selected image preview")).toBeHidden();
   await page

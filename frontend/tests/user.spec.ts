@@ -82,6 +82,7 @@ test("Update Profile validation works", async ({ page }) => {
   await loginTestUser(page);
   await page.goto("/me");
   await page.waitForURL("/me");
+  await page.waitForLoadState("networkidle", { timeout: 3000 });
 
   // Empty fields
   await page.getByPlaceholder("Username").fill("");
@@ -111,6 +112,7 @@ test("Update Profile works successfully", async ({ page }) => {
   const user = await loginPlaywrightUser(page, 1);
   await page.goto("/me");
   await page.waitForURL("/me");
+  await page.waitForLoadState("networkidle", { timeout: 3000 });
 
   await page.getByPlaceholder("Username").fill(user.username + "updated");
   await page.getByPlaceholder("Email").fill(user.email);
@@ -131,6 +133,7 @@ test("Update Profile error when account with email already exists", async ({
   await loginTestUser(page);
   await page.goto("/me");
   await page.waitForURL("/me");
+  await page.waitForLoadState("networkidle", { timeout: 3000 });
 
   await page.getByPlaceholder("Username").fill(testConfig.testUserName);
   await page.getByPlaceholder("Email").fill(testConfig.superuserEmail);
@@ -147,6 +150,7 @@ test("Update Profile error when account with username already exists", async ({
   await loginTestUser(page);
   await page.goto("/me");
   await page.waitForURL("/me");
+  await page.waitForLoadState("networkidle", { timeout: 3000 });
 
   await page.getByPlaceholder("Username").fill(testConfig.superuserName);
   await page.getByPlaceholder("Email").fill(testConfig.testUserEmail);

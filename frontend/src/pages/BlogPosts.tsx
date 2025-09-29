@@ -81,7 +81,10 @@ function BlogPosts() {
         currentSearchBy={searchBy}
         currentSearchValue={searchValue}
       />
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div
+        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+        data-testid="blogpost-list"
+      >
         {blogPosts.map((post) => (
           <BlogPostBox
             key={post.id}
@@ -96,7 +99,10 @@ function BlogPosts() {
           />
         ))}
       </div>
-      <div className="mt-auto flex justify-center space-x-2">
+      <div
+        className="mt-auto flex justify-center space-x-2"
+        data-testid="pagination"
+      >
         {totalCount > BLOGPOSTS_PER_PAGE && (
           <Pagination
             currentPage={currentPage}

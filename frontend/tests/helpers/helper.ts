@@ -74,7 +74,6 @@ export const logout = async (page: Page) => {
     await page.getByText(/Hello/).click();
   }
   await page.getByRole("button", { name: "Log Out" }).click();
-  await page.waitForURL("/");
 };
 
 export const createArticle = async (
@@ -113,4 +112,6 @@ export const createArticle = async (
   const dialog = await dialogPromise;
   expect(dialog.message()).toBe("Blog post created successfully!");
   await dialog.accept();
+
+  await logout(page);
 };

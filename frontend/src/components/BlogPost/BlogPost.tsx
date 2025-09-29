@@ -53,7 +53,7 @@ function BlogPost({ blogPost }: BlogPostProps) {
           </p>
 
           {blogPost.tags && blogPost.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" data-testid="blogpost-tags">
               {blogPost.tags
                 .sort((a, b) =>
                   a.name.toLowerCase().localeCompare(b.name.toLowerCase())

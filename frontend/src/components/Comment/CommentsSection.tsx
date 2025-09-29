@@ -355,7 +355,7 @@ function CommentsSection({
         <LoadingSpinner text="Loading comments..." />
       ) : (
         /* Comments */
-        <div>
+        <div data-testid="comments">
           {comments.length === 0 ? (
             <div className="text-center pt-4 py-12">
               <p className="text-gray-500">
