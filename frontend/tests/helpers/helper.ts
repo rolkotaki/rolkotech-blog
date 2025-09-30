@@ -68,8 +68,10 @@ export const loginSuperuser = async (page: Page) => {
 };
 
 export const logout = async (page: Page) => {
+  await page.keyboard.press("Home");
+  await page.waitForTimeout(300);
   if (isMobile(page)) {
-    await page.getByTestId("mobile-menu-button").click();
+    await page.getByTestId("mobile-menu-button").click({ force: true });
   } else {
     await page.getByText(/Hello/).click();
   }

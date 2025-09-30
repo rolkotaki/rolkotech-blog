@@ -13,7 +13,7 @@ test("Navbar loads with required elements when not logged in", async ({
   const header = page.locator("header");
 
   await expect(header.getByAltText("RolkoTech Logo")).toBeVisible();
-  await expect(header.getByText("RolkoTech")).toBeVisible();
+  await expect(header.getByText("RolkoTech", { exact: true })).toBeVisible();
 
   if (isMobile(page)) {
     await expect(header.getByTestId("mobile-menu-button")).toBeVisible();
@@ -37,7 +37,7 @@ test("Navbar loads with required elements when logged in as user", async ({
   const header = page.locator("header");
 
   await expect(header.getByAltText("RolkoTech Logo")).toBeVisible();
-  await expect(header.getByText("RolkoTech")).toBeVisible();
+  await expect(header.getByText("RolkoTech", { exact: true })).toBeVisible();
 
   if (isMobile(page)) {
     await expect(header.getByTestId("mobile-menu-button")).toBeVisible();
@@ -68,7 +68,7 @@ test("Navbar loads with required elements when logged in as superuser", async ({
   const header = page.locator("header");
 
   await expect(header.getByAltText("RolkoTech Logo")).toBeVisible();
-  await expect(header.getByText("RolkoTech")).toBeVisible();
+  await expect(header.getByText("RolkoTech", { exact: true })).toBeVisible();
 
   if (isMobile(page)) {
     await expect(header.getByTestId("mobile-menu-button")).toBeVisible();
