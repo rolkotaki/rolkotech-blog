@@ -180,4 +180,4 @@ With `ruff format app --diff` you can see the changes that would be applied by `
 
 #
 
-FastAPI's [full stack template](https://github.com/fastapi/full-stack-fastapi-template) was a great reference and guide.
+FastAPI's open source [full stack template](https://github.com/fastapi/full-stack-fastapi-template) was a great reference and guide, to which I was happy to contribute with [this PR](https://github.com/fastapi/full-stack-fastapi-template/pull/1672) to fix a bug.
