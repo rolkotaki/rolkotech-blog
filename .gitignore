@@ -4,3 +4,4 @@
 .coverage
 docker
 notes.txt
+*.code-workspace

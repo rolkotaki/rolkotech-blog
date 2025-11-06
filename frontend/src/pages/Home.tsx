@@ -91,20 +91,6 @@ function Home() {
 
   return (
     <div className="container mx-auto px-4 pt-4 pb-12 flex-grow">
-      {/* Title */}
-      <div className="text-center mb-6">
-        <h1 className="text-5xl font-bold text-blue-700 mb-3">RolkoTech</h1>
-        <p
-          className="text-md text-gray-600"
-          style={{
-            fontFamily:
-              "Fira Code, JetBrains Mono, Menlo, Monaco, Consolas, monospace"
-          }}
-        >
-          Real life solutions for real life problems.
-        </p>
-      </div>
-
       {/* Tags */}
       {isLoading ? (
         <LoadingSpinner text="Loading tags..." />

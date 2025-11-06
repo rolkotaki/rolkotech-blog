@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Dyson Sans Modern";
+  src: url("./assets/fonts/dyson-sans-modern.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Remove backticks from inline code */
 .prose code::before,
 .prose code::after {

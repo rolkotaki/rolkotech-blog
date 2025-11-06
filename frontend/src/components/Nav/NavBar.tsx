@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useScrollNavbar } from "../../hooks/useScrollNavbar";
 import Logo from "../Common/Logo";
 import AuthLinks from "./AuthLinks";
@@ -26,7 +27,9 @@ function NavBar() {
     >
       <div className="container mx-auto px-4 py-2 flex items-center justify-between relative">
         {/* Left: Logo */}
-        <Logo />
+        <Link to="/">
+          <Logo />
+        </Link>
         {/* Center: Nav links (desktop only) */}
         <DesktopNav />
         {/* Right: Auth links (desktop only) */}

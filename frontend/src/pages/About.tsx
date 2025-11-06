@@ -1,14 +1,19 @@
 import meImage from "../assets/images/about_me.jpeg";
+import meCartoonImage from "../assets/images/me_cartoon.png";
 import collageImage from "../assets/images/collage.jpg";
 
 function About() {
   return (
     <main className="container mx-auto px-4 pt-6 max-w-3xl flex-grow">
+      <img
+        src={meCartoonImage}
+        className="w-40 mx-auto mb-4"
+        data-testid="me-cartoon-image"
+      />
       <h1
         className="text-3xl text-blue-700 mb-6 text-center"
         style={{
-          fontFamily:
-            "Fira Mono, JetBrains Mono, IBM Plex Mono, Menlo, Consolas, monospace"
+          fontFamily: "Dyson Sans Modern, sans-serif"
         }}
       >
         Hey there, I'm Roland Takacs

@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test("About page loads with required elements", async ({ page }) => {
   await page.goto("/about");
+
+  await expect(page.getByTestId("me-cartoon-image")).toBeVisible();
   await expect(
     page.getByRole("heading", {
       name: "Hey there, I'm Roland Takacs",

@@ -13,12 +13,7 @@ test.describe.serial("Home Page Tests", () => {
   test("Home page loads with minimum required elements", async ({ page }) => {
     await page.goto("/");
 
-    // TODO: Logo
-
     // Minimum required elements
-    await expect(
-      page.getByText("Real life solutions for real life problems.")
-    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "All", exact: true })
     ).toBeVisible();
