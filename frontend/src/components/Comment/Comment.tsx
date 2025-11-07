@@ -149,6 +149,7 @@ function Comment({
                 rows={3}
                 maxLength={1000}
                 placeholder="Write your comment..."
+                autoFocus
               />
               <div className="flex justify-between items-center mt-1">
                 <span
@@ -228,6 +229,7 @@ function Comment({
               className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows={3}
               maxLength={1000}
+              autoFocus
             />
             <div className="flex justify-between items-center mt-1">
               <span
@@ -300,6 +302,7 @@ function Comment({
                       className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={3}
                       maxLength={1000}
+                      autoFocus
                     />
                     <div className="flex justify-between items-center mt-1">
                       <span
