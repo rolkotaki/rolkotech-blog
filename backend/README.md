@@ -144,6 +144,14 @@ fastapi dev ./app/main.py
 Backend: [localhost:8000](http://localhost:8000/) (Concatenate your API version string if you have.)<br>
 Backend docs: [localhost:8000/docs](http://localhost:8000/docs)
 
+## Production Features
+
+- **Rate Limiting**: Implemented with `slowapi` on login (5/min), signup and password reset (3/min)
+- **Health Check**: `/health` endpoint returns status, environment, and version
+- **Gunicorn**: Production server with 4 workers using `Uvicorn` worker class
+- **Logging**: Environment-aware JSON logging
+- **SEO**: Dynamic `sitemap.xml` endpoint at `/api/sitemap.xml`
+
 ## Run Tests
 
 Run tests using the script from the `backend` folder:
@@ -151,6 +159,8 @@ Run tests using the script from the `backend` folder:
 ```
 ./scripts/test.sh
 ```
+
+Rate limiting is disabled during tests via `TEST_MODE=True` environment variable.
 
 When the tests are run, a file named `htmlcov/index.html` is generated in the `backend/coverage`, you can open it in your browser to see the coverage results.
 

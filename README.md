@@ -9,11 +9,11 @@
 
 Full stack project with [FastAPI](https://fastapi.tiangolo.com/) and [React](https://react.dev/).
 
-_This project is still in progress..._
+Deployed at: [https://www.rolkotech.com/](https://www.rolkotech.com/)
 
 ## Description
 
-My professional blog for publishing articles on a wide range of IT topics. This website is intended to replace my current blog ([rolkotech.com](https://rolkotech.com/)), which is built on Google's [blogger.com](https://www.blogger.com/).
+My professional blog for publishing articles on a wide range of IT topics. This website replaces the former version of my blog which was built on Google's [blogger.com](https://www.blogger.com/).
 
 Features of the website:
 
@@ -44,6 +44,12 @@ Features of the website:
   - Image uploads
   - User management
   - API Docs
+- Production Features
+  - Rate limiting on authentication endpoints
+  - Health check endpoint for monitoring
+  - SEO optimization (`sitemap.xml`, `robots.txt`, meta tags)
+  - Security headers via `Nginx`
+  - Environment-aware logging
 
 ## Technology Stack
 
@@ -79,6 +85,7 @@ Features of the website:
 - [GitHub Actions](https://docs.github.com/en/actions): CI workflows
 - [MailerSend](https://www.mailersend.com/): Email API, SMTP service provider
 - [VS Code](https://code.visualstudio.com/): Source code editor
+- [Railway](https://railway.com/): Deployment platform
 
 ## Backend
 

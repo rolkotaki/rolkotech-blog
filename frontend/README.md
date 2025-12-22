@@ -83,9 +83,16 @@ npm run preview
 Open in the browser: [localhost:4173](http://localhost:4173/)<br>
 (Make sure you have it added to the CORS setting.)
 
+## Production Features
+
+- **SEO**: `robots.txt`, dynamic sitemap integration, Open Graph and Twitter meta tags
+- **Nginx**: Production builds served with security headers and gzip compression
+
 ## End-to-end Tests
 
-The frontend implements end-to-end tests using [Playwright](https://playwright.dev/). In the `playwright.config.ts` there are several projects defined with different browsers for desktop and mobile as well. If you want to run the tests locally, choose one project and comment the others, otherwise there will be issues with several projects using the same database.
+The frontend implements end-to-end tests using [Playwright](https://playwright.dev/). In the `playwright.config.ts` there are several projects defined with different browsers for desktop and mobile. For local testing, choose one project and comment the others to avoid database conflicts. Multiple projects work fine in CI environments.
+
+Rate limiting is disabled during tests via `TEST_MODE=True` environment variable.
 
 To run the Playwright tests, you need to have the test data initialized in the database and the backend running.<br>
 You can either run the Docker Compose for Playwright:
