@@ -5,9 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.logger import logger
 
 
@@ -20,6 +23,9 @@ app = FastAPI(
     openapi_url=f"{settings.API_VERSION_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 if settings.all_cors_origins:
     app.add_middleware(
@@ -67,3 +73,15 @@ async def global_exception_handler(request: Request, exc: Exception):
             else "Internal Server Error"
         },
     )
+
+
+@app.get("/health", tags=["health"])
+async def health_check():
+    """
+    Health check endpoint for monitoring.
+    """
+    return {
+        "status": "healthy",
+        "environment": settings.ENVIRONMENT,
+        "version": settings.API_VERSION_STR,
+    }

@@ -11,6 +11,7 @@ import ChangePassword from "./pages/ChangePassword";
 import EditBlogPost from "./pages/EditBlogPost";
 import Home from "./pages/Home";
 import LogIn from "./pages/Login";
+import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import SignUp from "./pages/SignUp";
 import UpdateMe from "./pages/UpdateMe";
@@ -33,6 +34,7 @@ function App() {
             <Route path="/me" element={<UpdateMe />} />
             <Route path="/me/password" element={<ChangePassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

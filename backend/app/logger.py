@@ -4,6 +4,8 @@ import logging
 from logging.config import dictConfig
 import os
 
+from app.core.config import settings
+
 
 __all__ = ["logger"]
 
@@ -31,6 +33,11 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(log_record)
 
 
+# Determine log level based on environment
+log_level = "DEBUG" if settings.DEBUG else "INFO"
+console_level = "DEBUG" if settings.DEBUG else "INFO"
+file_level = "INFO"  # Always INFO for files
+
 log_config = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -44,13 +51,13 @@ log_config = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": console_level,
             "formatter": "default",
             "stream": "ext://sys.stdout",
         },
         "rotating_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "level": "INFO",
+            "level": file_level,
             "formatter": "json",
             "filename": log_path,
             "maxBytes": 10485760,  # 10 MB
@@ -60,11 +67,11 @@ log_config = {
     "loggers": {
         logger_name: {
             "handlers": ["console", "rotating_file"],
-            "level": "DEBUG",
+            "level": log_level,
             "propagate": False,
         },
     },
-    "root": {"handlers": ["console"], "level": "DEBUG"},
+    "root": {"handlers": ["console"], "level": log_level},
 }
 
 dictConfig(log_config)

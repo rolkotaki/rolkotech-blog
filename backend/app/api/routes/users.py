@@ -3,6 +3,7 @@ import uuid
 
 from app.api.deps import SessionDep, CurrentUser, get_current_active_superuser
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.core.security import get_password_hash, verify_password, generate_token
 from app.db.crud import UserCRUD
 from app.logger import logger
@@ -80,6 +81,7 @@ def read_user_by_id(
 
 
 @router.post("/signup", response_model=UserPublic)
+@limiter.limit("3/minute")
 def register_user(
     request: Request,
     session: SessionDep,

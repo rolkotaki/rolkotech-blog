@@ -8,6 +8,7 @@ REPO_ROOT_DIR=$(dirname $(realpath $0))/../..
 BACKEND_DIR="$REPO_ROOT_DIR/backend"
 VENV_ACTIVATE_PATH="$BACKEND_DIR/.venv/bin/activate"
 COVERAGE_DIR="$BACKEND_DIR/coverage"
+BLOGPOSTS_UPLOADS_DIR="$BACKEND_DIR/uploads/images/blogposts"
 
 COMMIT_HASH="$1"
 shift || true
@@ -18,6 +19,12 @@ shift || true
 
     cd "$BACKEND_DIR"
     mkdir -p "$COVERAGE_DIR"
+
+    # Set the test mode to True
+    export TEST_MODE=True
+
+    # Remove previously uploaded test images
+    find "$BLOGPOSTS_UPLOADS_DIR" -type f -name "test_image*" -delete
 
     # Run tests with coverage
     TITLE=${COMMIT_HASH:-$(date '+%Y-%m-%d %H:%M:%S')}

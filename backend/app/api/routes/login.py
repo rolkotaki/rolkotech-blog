@@ -7,6 +7,7 @@ from typing import Annotated
 
 from app.api.deps import SessionDep
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.core.security import (
     verify_password,
     create_access_token,
@@ -40,8 +41,11 @@ def authenticate(session: Session, email: str, password: str) -> User | None:
 
 
 @router.post("/login/access-token")
+@limiter.limit("5/minute")
 def login_access_token(
-    session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    request: Request,
+    session: SessionDep,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
     """
     OAuth2 compatible token login, get an access token for future requests.
@@ -108,6 +112,7 @@ def activate_user(session: SessionDep, token: str) -> RedirectResponse:
 
 
 @router.post("/users/forgot-password", response_model=Message)
+@limiter.limit("3/minute")
 def forgot_password(
     request: Request, session: SessionDep, email: str, background_tasks: BackgroundTasks
 ):
@@ -131,7 +136,8 @@ def forgot_password(
 
 
 @router.post("/users/reset-password", response_model=Message)
-def reset_password(session: SessionDep, data: PasswordReset):
+@limiter.limit("3/minute")
+def reset_password(request: Request, session: SessionDep, data: PasswordReset):
     """
     Reset the user's password using the provided token.
     """

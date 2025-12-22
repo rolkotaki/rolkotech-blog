@@ -68,7 +68,7 @@ jobs:
         run: docker compose up -d --build --wait
 
       - name: Test backend is up
-        run: curl http://localhost:8000/api/tags/
+        run: curl http://localhost:8000/health/
 
       - name: Test frontend is up
         run: curl http://localhost
@@ -130,7 +130,7 @@ jobs:
         run: docker compose -f docker-compose.dev.yml up -d --build --wait
 
       - name: Test backend is up
-        run: curl http://localhost:8000/api/tags/
+        run: curl http://localhost:8000/health/
 
       - name: Test frontend is up
         run: curl http://localhost:5173
@@ -192,7 +192,7 @@ jobs:
         run: docker compose -f docker-compose.playwright.yml up -d --build --wait
 
       - name: Test backend is up
-        run: curl http://localhost:8000/api/tags/
+        run: curl http://localhost:8000/health/
 
       - name: Show container logs if failed
         if: failure()

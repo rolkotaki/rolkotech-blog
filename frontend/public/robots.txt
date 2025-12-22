@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+# TODO: Update backend URL
+Sitemap: https://backend:8000/api/sitemap.xml
