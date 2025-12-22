@@ -20,19 +20,48 @@ function About() {
       </h1>
 
       <p className="text-base leading-relaxed">
-        I'm not a Python nor or Database Developer — I'm a Software Engineer, a
-        problem solver who happens to be using Python these days to achieve
-        business goals and user happiness.
+        I'm neither a Python nor a Backend Developer — I'm a Software Engineer,
+        a problem solver who happens to be using Python and TypeScript these
+        days to achieve business goals and user happiness.
       </p>
 
       <img src={meImage} alt="Roland Takacs" className="rounded-md my-4" />
 
+      <p className="mb-4 text-base leading-relaxed">
+        Over the years, I've worked with a wide range of technologies:
+      </p>
+      <ul className="mb-4 text-base leading-relaxed space-y-1 list-none">
+        <li>
+          <strong>Backend:</strong> Python, FastAPI, Django, Flask, REST APIs
+        </li>
+        <li>
+          <strong>Frontend:</strong> TypeScript, React, Svelte, HTML, CSS,
+          JavaScript
+        </li>
+        <li>
+          <strong>Database:</strong> PostgreSQL, Oracle, PL/SQL
+        </li>
+        <li>
+          <strong>DevOps:</strong> Docker, Ansible, Jenkins, Linux, Bash
+          scripting, vSphere
+        </li>
+        <li>
+          <strong>Data:</strong> Hive, Trino DB, Airflow
+        </li>
+        <li>
+          <strong>Testing:</strong> Unit testing, Playwright, Robot Framework,
+          Selenium
+        </li>
+      </ul>
       <p className="mb-6 text-base leading-relaxed">
-        Over the years, I've worked with a wide range of technologies,
-        including: Python, Docker, Oracle, PL/SQL, REST APIs, Django, FastAPI,
-        React, TypeScript, Ansible, Jenkins, PostgreSQL, Linux Shell, Hive,
-        HTML, CSS, JavaScript, Airflow, vSphere, Trino DB, and VB. <br />
-        Lately, I've been exploring Mojo with growing interest.
+        I've also been exploring{" "}
+        <a
+          href="https://www.modular.com/mojo"
+          className="text-blue-600 hover:underline"
+        >
+          Mojo
+        </a>{" "}
+        with growing interest.
       </p>
 
       <p className="mb-6 text-base leading-relaxed">
