@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-# TODO: Update backend URL
-Sitemap: https://backend:8000/api/sitemap.xml
+Sitemap: https://rolkotech-blog-backend.up.railway.app/api/sitemap.xml
