@@ -11,5 +11,4 @@ ENV PYTHONPATH=/rolkotech-blog/backend
 ENV PATH="/app/backend/.venv/bin:$PATH"
 ENV UV_COMPILE_BYTECODE=1
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --group dev
+RUN uv sync --locked --group dev
