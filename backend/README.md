@@ -69,7 +69,7 @@ As a template, you can use the `.env_template` file that I committed to the repo
 
 ### Install `uv`
 
-I use `uv` as the package manager. To install `uv`, please follow this [simple guide](https://docs.astral.sh/uv/getting-started/installation/).
+I use `uv` as the package manager. To install `uv`, follow this [simple guide](https://docs.astral.sh/uv/getting-started/installation/).
 
 _If you still use `pip`, you can skip the `uv` part and check below for instructions._
 
@@ -87,7 +87,7 @@ Then you can activate the virtual environment:
 source .venv/bin/activate
 ```
 
-And to deactivate:
+To deactivate:
 
 ```
 deactivate
@@ -127,7 +127,7 @@ alembic revision --autogenerate -m "Your migration description"
 alembic upgrade head
 ```
 
-To create the superuser, you can call this Python script, assuming you have the virtual environment activated:
+To create the superuser you can call this Python script, assuming you have the virtual environment activated:
 
 ```
 python app/initial_data.py
@@ -162,7 +162,7 @@ Run tests using the script from the `backend` folder:
 
 Rate limiting is disabled during tests via `TEST_MODE=True` environment variable.
 
-When the tests are run, a file named `htmlcov/index.html` is generated in the `backend/coverage`, you can open it in your browser to see the coverage results.
+When the tests are executed, a file named `htmlcov/index.html` is generated in the `backend/coverage` folder, you can open it in your browser to see the coverage results.
 
 Run tests with `pytest`:
 

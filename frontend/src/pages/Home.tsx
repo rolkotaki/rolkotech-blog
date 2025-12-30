@@ -8,6 +8,8 @@ import LoadingSpinner from "../components/Common/LoadingSpinner";
 import PageLoadingError from "../components/Common/PageLoadingError";
 import type { BlogPost, Tag } from "../types";
 
+const VISIBLE_TAGS_LIMIT: number = 11; // All + first 10
+
 function Home() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("All");
@@ -16,6 +18,7 @@ function Home() {
   const [recentPostsCount, setRecentPostsCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [showAllTags, setShowAllTags] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -99,24 +102,64 @@ function Home() {
           className="flex flex-wrap justify-center gap-2 mb-8"
           data-testid="tags-list"
         >
-          {[
-            { id: 0, name: "All" },
-            ...tags.sort((a, b) =>
-              a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-            )
-          ].map((tag) => (
-            <button
-              key={tag.id}
-              onClick={() => handleTagClick(tag.name)}
-              className={`px-3 py-1 rounded uppercase text-xs font-medium transition-colors ${
-                selectedTag === tag.name
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-              }`}
-            >
-              {tag.name}
-            </button>
-          ))}
+          {(() => {
+            const allTags = [
+              { id: 0, name: "All" },
+              ...tags.sort((a, b) =>
+                a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+              )
+            ];
+
+            let visibleTags = showAllTags
+              ? allTags
+              : allTags.slice(0, VISIBLE_TAGS_LIMIT);
+
+            // If selectedTag isn't visible (and not 'All'), include it so user sees active state
+            if (
+              !showAllTags &&
+              selectedTag !== "All" &&
+              !visibleTags.some((t) => t.name === selectedTag)
+            ) {
+              const selectedTagOjbect = allTags.find(
+                (t) => t.name === selectedTag
+              );
+              if (selectedTagOjbect)
+                visibleTags = [...visibleTags, selectedTagOjbect];
+            }
+
+            return (
+              <>
+                {visibleTags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagClick(tag.name)}
+                    className={`px-3 py-1 rounded uppercase text-xs font-medium transition-colors ${
+                      selectedTag === tag.name
+                        ? "bg-blue-600 text-white"
+                        : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    }`}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+
+                {allTags.length > VISIBLE_TAGS_LIMIT && (
+                  <button
+                    onClick={() => setShowAllTags((s) => !s)}
+                    className="px-3 py-1 rounded uppercase text-xs font-medium ml-1 text-blue-600 hover:text-blue-800"
+                    aria-expanded={showAllTags}
+                    aria-label={
+                      showAllTags ? "Show fewer tags" : "Show all tags"
+                    }
+                  >
+                    {showAllTags
+                      ? "Show less"
+                      : `+${allTags.length - VISIBLE_TAGS_LIMIT} more`}
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 

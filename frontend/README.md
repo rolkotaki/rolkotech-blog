@@ -94,7 +94,7 @@ The frontend implements end-to-end tests using [Playwright](https://playwright.d
 
 Rate limiting is disabled during tests via `TEST_MODE=True` environment variable.
 
-To run the Playwright tests, you need to have the test data initialized in the database and the backend running.<br>
+To run the Playwright tests you need to have the test data initialized in the database and the backend running.<br>
 You can either run the Docker Compose for Playwright:
 
 ```
@@ -123,7 +123,7 @@ The `--headed` argument makes the tests run in headed browsers. If you don't nee
 npx playwright test
 ```
 
-In the `package.json` I added serveral `npm` commands (scripts), feel free to take a look at them for more options.
+In the `package.json` I added serveral `npm` commands (scripts), take a look at them for more options.
 
 When the tests have finished, stop the Docker Compose:
 
