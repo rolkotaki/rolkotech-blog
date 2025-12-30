@@ -95,6 +95,10 @@ Backend docs: [backend/README.md](./backend/README.md).
 
 Frontend docs: [frontend/README.md](./frontend/README.md).
 
+## Screenshots
+
+[SCREENSHOTS.md](./SCREENSHOTS.md)
+
 ## License
 
 This project is licensed under the terms of the MIT license.
